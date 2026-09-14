@@ -5,55 +5,50 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Kobbleston — Make something.</title>
 <meta name="description" content="Kobbleston is where people build their own little corners of the internet, share them, and discover what everyone else is making.">
+<link rel="icon" href="kobbleston favicon.png">
+<link rel="apple-touch-icon" href="kobbleston favicon.png">
 
-<!-- Filled icon set, per the Kobbleston icon rule -->
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
 
 <!--
   TEMPORARY TYPE FALLBACK
-  Kobbleston's real display face is BD Gravel-VF (not supplied yet).
-  Sora stands in for it — geometric with a bit of irregularity, and it
-  reads fine at large sizes. Once BD Gravel-VF is available, add an
-  @font-face for it and point --font-display at it. Nothing else in this
-  file references a font by name, so that's the only change needed.
+  The real wordmark (kobbleston wordmark.png) shows Kobbleston's actual
+  brand face: a blocky, pixel-cut geometric letterform. BD Gravel-VF isn't
+  in this build yet, so Archivo (very bold, confident, geometric) stands
+  in for headline type until it's supplied — swap it by changing
+  --font-display, nothing else references a font by name.
 -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Sora:wght@600;700;800&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800;900&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
 
 <style>
   :root{
-    /* brand */
     --blue: #1B34E8;
-    --blue-dim: #16299f;
+    --blue-bright: #3450ff;
+    --navy: #162382;
     --green: #1CAE71;
     --grey: #6b6f77;
 
-    /* surfaces */
     --bg: #101012;
     --bg-raised: #17181c;
     --bg-raised-2: #1d1e23;
     --border: #26272d;
 
-    /* text */
     --text: #f1f1f4;
     --text-dim: #9a9ca4;
     --text-faint: #616269;
 
-    /* type */
-    --font-display: 'Sora', system-ui, sans-serif;
+    --font-display: 'Archivo', system-ui, sans-serif;
     --font-body: 'Manrope', system-ui, sans-serif;
 
-    --radius-s: 8px;
     --radius-m: 14px;
     --radius-l: 22px;
   }
 
   *{ box-sizing: border-box; }
   html{ scroll-behavior: smooth; }
-  @media (prefers-reduced-motion: reduce){
-    html{ scroll-behavior: auto; }
-  }
+  @media (prefers-reduced-motion: reduce){ html{ scroll-behavior: auto; } }
 
   body{
     margin: 0;
@@ -63,374 +58,285 @@
     line-height: 1.5;
     -webkit-font-smoothing: antialiased;
   }
-
   img{ max-width: 100%; display: block; }
   a{ color: inherit; }
 
   .skip-link{
-    position: absolute;
-    left: 12px;
-    top: -60px;
-    background: var(--blue);
-    color: #fff;
-    padding: 10px 16px;
-    border-radius: var(--radius-s);
-    z-index: 100;
+    position: absolute; left: 12px; top: -60px;
+    background: var(--blue); color: #fff;
+    padding: 10px 16px; border-radius: 8px; z-index: 100;
     transition: top .15s ease;
   }
   .skip-link:focus{ top: 12px; }
+  :focus-visible{ outline: 2px solid var(--blue-bright); outline-offset: 3px; border-radius: 4px; }
 
-  :focus-visible{
-    outline: 2px solid var(--blue);
-    outline-offset: 3px;
-    border-radius: 4px;
-  }
+  .wrap{ max-width: 1180px; margin: 0 auto; padding: 0 28px; }
 
-  .wrap{
-    max-width: 1180px;
-    margin: 0 auto;
-    padding: 0 28px;
+  /* squircle clip, reused for icon-scale chips only */
+  .squircle{ clip-path: url(#squircle); }
+
+  /* ---------- utility bar ---------- */
+  .utility-bar{
+    background: var(--blue);
+    color: #fff;
+    font-size: .82rem;
+    font-weight: 600;
+    text-align: center;
+    padding: 8px 16px;
   }
 
   /* ---------- header ---------- */
   header.site{
-    position: fixed;
-    top: 0; left: 0; right: 0;
-    z-index: 40;
-    padding: 18px 0;
-    background: linear-gradient(to bottom, rgba(16,16,18,.92), rgba(16,16,18,0));
-  }
-  header.site.scrolled{
-    background: rgba(16,16,18,.85);
+    position: sticky; top: 0; z-index: 40;
+    padding: 16px 0;
+    background: rgba(16,16,18,.7);
     backdrop-filter: blur(10px);
-    border-bottom: 1px solid var(--border);
+    border-bottom: 1px solid transparent;
+    transition: border-color .2s ease, background .2s ease;
   }
-  .site nav{
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 20px;
-  }
-  .wordmark{
-    font-family: var(--font-display);
-    font-weight: 800;
-    font-size: 1.35rem;
-    letter-spacing: -0.01em;
-    color: var(--text);
-    text-decoration: none;
-    display: flex;
-    align-items: center;
-    gap: 9px;
-  }
-  /*
-    Swap this span for <img src="assets/kobbleston-wordmark.png" alt="Kobbleston">
-    once the wordmark asset is wired into the build. Kept as text for now so
-    layout works with zero asset dependencies.
-  */
-  .wordmark .mark{
-    width: 26px; height: 26px;
-    border-radius: 7px;
-    background: var(--blue);
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    font-size: .8rem;
-  }
+  header.site.scrolled{ border-color: var(--border); background: rgba(16,16,18,.92); }
+  .site nav{ display: flex; align-items: center; justify-content: space-between; gap: 20px; }
+  .wordmark img{ height: 20px; width: auto; }
+  .wordmark{ display: flex; align-items: center; text-decoration: none; }
   .nav-actions{ display: flex; align-items: center; gap: 10px; }
 
   .btn{
-    font-family: var(--font-body);
-    font-weight: 600;
-    font-size: .92rem;
-    border: none;
-    border-radius: 999px;
-    padding: 10px 20px;
-    cursor: pointer;
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
+    font-family: var(--font-body); font-weight: 700; font-size: .88rem;
+    border: none; border-radius: 999px; padding: 9px 18px; cursor: pointer;
+    display: inline-flex; align-items: center; gap: 8px;
     transition: transform .12s ease, background .15s ease, border-color .15s ease;
   }
-  .btn:active{ transform: scale(.97); }
+  .btn:active{ transform: scale(.96); }
   .btn-primary{ background: var(--blue); color: #fff; }
-  .btn-primary:hover{ background: #2c42ee; }
-  .btn-ghost{ background: transparent; color: var(--text); border: 1px solid var(--border); }
-  .btn-ghost:hover{ border-color: #3a3b42; background: var(--bg-raised); }
-  .btn-enter{ background: var(--green); color: #06231a; }
-  .btn-enter:hover{ background: #21c17f; }
-  .btn-lg{ padding: 14px 26px; font-size: 1rem; }
+  .btn-primary:hover{ background: var(--blue-bright); }
+  .btn-ghost{ background: rgba(255,255,255,.06); color: var(--text); border: 1px solid var(--border); }
+  .btn-ghost:hover{ border-color: #3a3b42; background: rgba(255,255,255,.1); }
+  .btn-on-blue{ background: #fff; color: var(--navy); }
+  .btn-on-blue:hover{ background: #e6e9ff; }
+  .btn-on-blue-ghost{ background: rgba(255,255,255,.14); color: #fff; border: 1px solid rgba(255,255,255,.35); }
+  .btn-on-blue-ghost:hover{ background: rgba(255,255,255,.22); }
 
   /* ---------- hero ---------- */
-  .hero{
-    position: relative;
-    padding: 168px 0 96px;
-    overflow: hidden;
+  .hero{ position: relative; overflow: hidden; padding: 88px 0 64px; }
+  .hero-art{
+    position: absolute; inset: 0; z-index: 0;
+    background-image:
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='6' height='6'%3E%3Ccircle cx='1' cy='1' r='1' fill='white' fill-opacity='0.5'/%3E%3C/svg%3E"),
+      linear-gradient(100deg, rgba(16,16,18,.97) 18%, rgba(16,16,18,.55) 55%, rgba(20,28,110,.55) 100%),
+      url('background.png');
+    background-repeat: repeat, no-repeat, no-repeat;
+    background-size: 5px 5px, cover, cover;
+    background-position: center, center, center right;
+    background-blend-mode: overlay, normal, normal;
+    filter: saturate(1.05);
   }
-  #pixel-field{
-    position: absolute;
-    inset: 0;
-    z-index: 0;
-    opacity: .55;
-    pointer-events: none;
+  .hero-art::after{
+    content: ""; position: absolute; inset: 0;
+    background: linear-gradient(180deg, rgba(16,16,18,0) 55%, var(--bg) 100%);
   }
-  .hero-inner{
-    position: relative;
-    z-index: 1;
-    max-width: 720px;
-  }
-  .eyebrow-tag{
-    font-family: var(--font-body);
-    font-weight: 600;
-    font-size: .92rem;
-    color: var(--blue);
-    background: rgba(27,52,232,.12);
-    border: 1px solid rgba(27,52,232,.35);
-    display: inline-flex;
-    padding: 6px 14px;
-    border-radius: 999px;
-    margin-bottom: 22px;
-  }
+  .hero-inner{ position: relative; z-index: 1; max-width: 620px; }
+
   h1.hero-title{
-    font-family: var(--font-display);
-    font-weight: 800;
-    font-size: clamp(2.6rem, 6vw, 4.4rem);
-    line-height: 1.03;
-    letter-spacing: -0.02em;
-    margin: 0 0 18px;
+    font-family: var(--font-display); font-weight: 900;
+    font-size: clamp(2.5rem, 5.6vw, 4rem);
+    line-height: 1.04; letter-spacing: -0.015em;
+    margin: 0 0 16px;
   }
-  .hero-sub{
-    font-size: 1.15rem;
-    color: var(--text-dim);
-    max-width: 540px;
-    margin: 0 0 34px;
-  }
-  .hero-cta{ display: flex; flex-wrap: wrap; gap: 14px; margin-bottom: 20px; }
-  .hero-note{
-    font-size: .88rem;
-    color: var(--text-faint);
-  }
+  .hero-sub{ font-size: 1.1rem; color: var(--text-dim); max-width: 520px; margin: 0 0 28px; }
+  .hero-cta{ display: flex; flex-wrap: wrap; align-items: center; gap: 12px; margin-bottom: 14px; }
+  .hero-note{ font-size: .85rem; color: var(--text-faint); }
 
-  .kobby-float{
-    position: absolute;
-    right: -20px;
-    top: 130px;
-    width: 220px;
-    z-index: 1;
-    animation: kobby-bob 5s ease-in-out infinite;
+  .hero-side{
+    position: relative; z-index: 1;
+    display: flex; justify-content: flex-end; align-items: flex-end;
+    min-height: 380px;
   }
-  @media (prefers-reduced-motion: reduce){
-    .kobby-float{ animation: none; }
-  }
+  .kobby-hero{ width: 260px; animation: kobby-bob 5s ease-in-out infinite; }
+  @media (prefers-reduced-motion: reduce){ .kobby-hero{ animation: none; } }
   @keyframes kobby-bob{
-    0%, 100%{ transform: translateY(0) rotate(-2deg); }
-    50%{ transform: translateY(-14px) rotate(2deg); }
+    0%,100%{ transform: translateY(0) rotate(-1.5deg); }
+    50%{ transform: translateY(-12px) rotate(1.5deg); }
   }
-  /*
-    Placeholder mascot mark, standing in for Kobby.png until the real asset
-    is dropped into /assets. Replace .kobby-placeholder with:
-    <img src="assets/kobby.png" alt="" class="kobby-float">
-  */
-  .kobby-placeholder{
-    width: 100%;
-    aspect-ratio: 1;
-    border-radius: 32% 68% 61% 39% / 45% 40% 60% 55%;
-    background: radial-gradient(circle at 35% 30%, #2f45ee, var(--blue) 60%, var(--blue-dim));
-    border: 3px solid rgba(255,255,255,.08);
-    box-shadow: 0 30px 60px -20px rgba(27,52,232,.55);
+  .brrr-badge{
+    position: absolute; top: 30px; right: 60px;
+    background: var(--text); color: var(--bg);
+    font-family: var(--font-display); font-weight: 800; font-size: .8rem;
+    padding: 7px 14px; border-radius: 999px;
+    transform: rotate(-6deg);
   }
 
-  @media (max-width: 880px){
-    .kobby-float{ display: none; }
-  }
-
-  /* ---------- stats strip ---------- */
-  .stats{
-    border-top: 1px solid var(--border);
-    border-bottom: 1px solid var(--border);
-    background: var(--bg-raised);
-  }
-  .stats-grid{
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-  }
-  .stat{
-    padding: 34px 28px;
-    border-left: 1px solid var(--border);
-  }
-  .stat:first-child{ border-left: none; }
-  .stat-value{
-    font-family: var(--font-display);
-    font-weight: 700;
-    font-size: 2.2rem;
-    letter-spacing: -0.01em;
-  }
-  .stat-value .unit{ font-size: 1.1rem; color: var(--text-dim); margin-left: 3px; }
-  .stat-label{
-    color: var(--text-dim);
-    font-size: .9rem;
-    margin-top: 4px;
-  }
-  @media (max-width: 780px){
-    .stats-grid{ grid-template-columns: repeat(2, 1fr); }
-    .stat:nth-child(3){ border-left: none; }
-  }
-  @media (max-width: 460px){
-    .stats-grid{ grid-template-columns: 1fr; }
-    .stat{ border-left: none; border-top: 1px solid var(--border); }
-    .stat:first-child{ border-top: none; }
-  }
-
-  /* ---------- live activity ---------- */
-  .activity{ padding: 84px 0; }
-  .section-head{ max-width: 560px; margin-bottom: 34px; }
-  .section-head h2{
-    font-family: var(--font-display);
-    font-weight: 700;
-    font-size: clamp(1.7rem, 3vw, 2.2rem);
-    margin: 0 0 10px;
-    letter-spacing: -0.01em;
-  }
-  .section-head p{ color: var(--text-dim); margin: 0; }
-
-  .feed{
-    background: var(--bg-raised);
-    border: 1px solid var(--border);
-    border-radius: var(--radius-l);
+  /* code/script card — the "pixel as code" visual */
+  .script-card{
+    position: absolute; z-index: 1; left: 0; bottom: -18px;
+    width: 340px; max-width: calc(100vw - 56px);
+    background: #0b0b0d; border: 1px solid var(--border); border-radius: var(--radius-m);
+    box-shadow: 0 30px 60px -20px rgba(0,0,0,.6);
     overflow: hidden;
   }
-  .feed-row{
-    display: flex;
-    align-items: center;
-    gap: 14px;
-    padding: 15px 22px;
-    border-bottom: 1px solid var(--border);
-    font-size: .95rem;
+  .script-card-head{
+    display: flex; align-items: center; gap: 8px;
+    padding: 9px 12px; background: #131316; border-bottom: 1px solid var(--border);
   }
-  .feed-row:last-child{ border-bottom: none; }
-  .dot{
-    width: 8px; height: 8px;
-    border-radius: 50%;
-    flex-shrink: 0;
+  .script-dot{ width: 9px; height: 9px; border-radius: 50%; background: #3a3b42; }
+  .script-title{ margin-left: 4px; font-size: .74rem; color: var(--text-faint); font-family: var(--font-body); }
+  .script-body{
+    font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+    font-size: .82rem; line-height: 1.7; padding: 14px 16px 18px;
+    display: grid; grid-template-columns: 20px 1fr; gap: 0 12px;
   }
-  .dot-platform{ background: var(--blue); box-shadow: 0 0 0 3px rgba(27,52,232,.18); }
-  .dot-space{ background: var(--green); box-shadow: 0 0 0 3px rgba(28,174,113,.18); }
-  .feed-who{ font-weight: 600; }
-  .feed-time{ margin-left: auto; color: var(--text-faint); font-size: .85rem; white-space: nowrap; }
+  .script-ln{ color: var(--text-faint); text-align: right; user-select: none; }
+  .script-code{ color: var(--text); white-space: pre; }
+  .tok-fn{ color: var(--blue-bright); }
+  .tok-str{ color: var(--green); }
+  .tok-cm{ color: var(--text-faint); }
+  .caret{
+    display: inline-block; width: 7px; height: 1.1em; background: var(--blue-bright);
+    vertical-align: text-bottom; margin-left: 1px; animation: caret-blink 1s steps(1) infinite;
+  }
+  @media (prefers-reduced-motion: reduce){ .caret{ animation: none; } }
+  @keyframes caret-blink{ 50%{ opacity: 0; } }
 
-  /* ---------- founder ---------- */
-  .founder{ padding: 84px 0 96px; }
-  .founder-card{
-    display: grid;
-    grid-template-columns: 190px 1fr;
-    gap: 40px;
-    align-items: center;
-    background: var(--bg-raised);
-    border: 1px solid var(--border);
-    border-radius: var(--radius-l);
-    padding: 44px;
+  @media (max-width: 900px){
+    .hero{ padding-bottom: 150px; }
+    .hero-side{ position: absolute; right: 16px; top: 70px; min-height: 0; opacity: .5; }
+    .kobby-hero{ width: 150px; }
+    .brrr-badge{ display: none; }
+    .script-card{ left: 50%; transform: translateX(-50%); bottom: -60px; }
   }
-  .founder-portrait{
-    width: 150px; height: 150px;
-    border-radius: 50%;
-    background: linear-gradient(160deg, var(--blue), #0c1a86);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-family: var(--font-display);
-    font-weight: 800;
-    font-size: 3rem;
-    color: #fff;
-    /*
-      Placeholder for Staw's portrait / an approved Kobby illustration.
-      Replace with a real <img> once an asset is provided.
-    */
+
+  /* ---------- feature rows ---------- */
+  .feature{ padding: 76px 0; }
+  .feature-row{
+    display: grid; grid-template-columns: 240px 1fr; gap: 48px; align-items: center;
   }
-  .founder-quote{
-    font-size: 1.15rem;
-    line-height: 1.55;
-    margin: 0 0 22px;
-    color: var(--text);
+  .feature-row.reverse{ grid-template-columns: 1fr 240px; }
+  .feature-row.reverse .feature-art{ order: 2; }
+  .feature-art img{ width: 100%; }
+  .feature-text h2{
+    font-family: var(--font-display); font-weight: 800;
+    font-size: clamp(1.6rem, 3vw, 2.1rem); letter-spacing: -0.01em; margin: 0 0 12px;
   }
-  .founder-sign{ display: flex; align-items: center; gap: 14px; }
-  .founder-name{ font-weight: 700; }
-  .founder-role{ color: var(--text-faint); font-size: .88rem; }
-  .signature{ width: 130px; height: 46px; }
-  .signature path{
-    fill: none;
-    stroke: var(--blue);
-    stroke-width: 3;
-    stroke-linecap: round;
-    stroke-linejoin: round;
-    stroke-dasharray: 260;
-    stroke-dashoffset: 260;
-    animation: sign-draw 1.6s ease forwards;
-    animation-play-state: paused;
-  }
-  .signature.in-view path{ animation-play-state: running; }
-  @media (prefers-reduced-motion: reduce){
-    .signature path{ stroke-dashoffset: 0; animation: none; }
-  }
-  @keyframes sign-draw{ to{ stroke-dashoffset: 0; } }
+  .feature-text p{ color: var(--text-dim); max-width: 480px; margin: 0; font-size: 1.02rem; }
+  .feature-rule{ border: none; border-top: 1px solid var(--border); max-width: 1180px; margin: 0 auto; }
 
   @media (max-width: 720px){
-    .founder-card{ grid-template-columns: 1fr; text-align: center; padding: 32px; }
-    .founder-portrait{ margin: 0 auto; }
-    .founder-sign{ justify-content: center; }
+    .feature-row, .feature-row.reverse{ grid-template-columns: 1fr; text-align: left; }
+    .feature-row.reverse .feature-art{ order: 0; }
+    .feature-art{ width: 150px; }
   }
 
-  /* ---------- closing cta ---------- */
-  .closing{
-    padding: 90px 0 120px;
-    text-align: center;
+  /* ---------- live band (navy) ---------- */
+  .live-band{
+    background: var(--navy);
+    background-image:
+      linear-gradient(180deg, rgba(22,35,130,.4), var(--navy) 40%),
+      url('topbar.png');
+    background-repeat: no-repeat; background-position: top center; background-size: cover, cover;
+    padding: 72px 0 80px;
+    color: #fff;
   }
+  .live-head{ max-width: 560px; margin-bottom: 34px; }
+  .live-head h2{
+    font-family: var(--font-display); font-weight: 800;
+    font-size: clamp(1.7rem, 3vw, 2.2rem); margin: 0 0 10px; letter-spacing: -0.01em;
+  }
+  .live-head p{ color: rgba(255,255,255,.72); margin: 0; }
+
+  .stats-grid{
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 1px;
+    background: rgba(255,255,255,.14);
+    border-radius: var(--radius-m); overflow: hidden; margin-bottom: 30px;
+  }
+  .stat{ background: rgba(10,16,66,.55); padding: 26px 22px; }
+  .stat-value{ font-family: var(--font-display); font-weight: 800; font-size: 2rem; }
+  .stat-label{ color: rgba(255,255,255,.65); font-size: .88rem; margin-top: 4px; }
+  @media (max-width: 780px){ .stats-grid{ grid-template-columns: repeat(2, 1fr); } }
+
+  .feed{
+    background: rgba(10,16,66,.55); border: 1px solid rgba(255,255,255,.12);
+    border-radius: var(--radius-m); overflow: hidden;
+  }
+  .feed-row{ display: flex; align-items: center; gap: 14px; padding: 14px 20px; border-bottom: 1px solid rgba(255,255,255,.1); font-size: .94rem; }
+  .feed-row:last-child{ border-bottom: none; }
+  .dot{ width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+  .dot-platform{ background: #fff; box-shadow: 0 0 0 3px rgba(255,255,255,.18); }
+  .dot-space{ background: var(--green); box-shadow: 0 0 0 3px rgba(28,174,113,.25); }
+  .feed-time{ margin-left: auto; color: rgba(255,255,255,.5); font-size: .84rem; white-space: nowrap; }
+
+  /* ---------- founder ---------- */
+  .founder{ padding: 90px 0; text-align: center; }
+  .founder img.crown{ width: 92px; margin: 0 auto 18px; }
+  .founder-kicker{ color: var(--text-faint); font-size: .85rem; margin: 0 0 8px; }
+  .founder-quote{
+    font-family: var(--font-display); font-weight: 700; font-size: clamp(1.25rem, 2.6vw, 1.7rem);
+    line-height: 1.4; max-width: 640px; margin: 0 auto 26px; letter-spacing: -0.01em;
+  }
+  .founder-sign{ display: inline-flex; flex-direction: column; align-items: center; gap: 4px; }
+  .signature{ width: 130px; height: 46px; }
+  .signature path{
+    fill: none; stroke: var(--blue-bright); stroke-width: 3;
+    stroke-linecap: round; stroke-linejoin: round;
+    stroke-dasharray: 260; stroke-dashoffset: 260;
+    animation: sign-draw 1.6s ease forwards; animation-play-state: paused;
+  }
+  .signature.in-view path{ animation-play-state: running; }
+  @media (prefers-reduced-motion: reduce){ .signature path{ stroke-dashoffset: 0; animation: none; } }
+  @keyframes sign-draw{ to{ stroke-dashoffset: 0; } }
+  .founder-role{ color: var(--text-faint); font-size: .85rem; }
+
+  /* ---------- closing ---------- */
+  .closing{ position: relative; overflow: hidden; padding: 110px 0; text-align: center; }
+  .closing-art{
+    position: absolute; inset: 0; z-index: 0;
+    background-image:
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='6' height='6'%3E%3Ccircle cx='1' cy='1' r='1' fill='white' fill-opacity='0.45'/%3E%3C/svg%3E"),
+      linear-gradient(0deg, var(--bg) 4%, rgba(16,16,18,.55) 42%, rgba(16,16,18,.25) 100%),
+      url('banner3.png');
+    background-repeat: repeat, no-repeat, no-repeat;
+    background-size: 5px 5px, cover, cover;
+    background-position: center, center, center 30%;
+    background-blend-mode: overlay, normal, normal;
+  }
+  .closing-inner{ position: relative; z-index: 1; }
   .closing h2{
-    font-family: var(--font-display);
-    font-weight: 800;
-    font-size: clamp(2rem, 4vw, 2.8rem);
-    margin: 0 0 14px;
-    letter-spacing: -0.02em;
+    font-family: var(--font-display); font-weight: 900;
+    font-size: clamp(2rem, 4.2vw, 2.9rem); margin: 0 0 14px; letter-spacing: -0.02em;
   }
-  .closing p{ color: var(--text-dim); margin: 0 0 30px; }
+  .closing p{ color: var(--text-dim); margin: 0 0 26px; }
   .closing .hero-cta{ justify-content: center; }
 
   /* ---------- footer ---------- */
-  footer.site{
-    border-top: 1px solid var(--border);
-    padding: 34px 0;
-  }
-  footer.site .wrap{
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: 14px;
-  }
-  .footer-tagline{ color: var(--text-faint); font-size: .88rem; }
+  footer.site{ border-top: 1px solid var(--border); padding: 30px 0; }
+  footer.site .wrap{ display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 14px; }
+  .footer-brand{ display: flex; align-items: center; gap: 12px; }
+  .footer-brand img{ height: 15px; opacity: .8; }
+  .footer-tagline{ color: var(--text-faint); font-size: .84rem; }
   .footer-links{ display: flex; gap: 20px; }
-  .footer-links a{
-    color: var(--text-dim);
-    text-decoration: none;
-    font-size: .88rem;
-  }
+  .footer-links a{ color: var(--text-dim); text-decoration: none; font-size: .87rem; }
   .footer-links a:hover{ color: var(--text); }
 
-  .sr-only{
-    position: absolute; width: 1px; height: 1px;
-    padding: 0; margin: -1px; overflow: hidden;
-    clip: rect(0,0,0,0); white-space: nowrap; border: 0;
-  }
+  .sr-only{ position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }
 </style>
 </head>
 <body>
 
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <clipPath id="squircle" clipPathUnits="objectBoundingBox">
+      <path d="M 0.5 0 C 0.1 0 0 0.1 0 0.5 C 0 0.9 0.1 1 0.5 1 C 0.9 1 1 0.9 1 0.5 C 1 0.1 0.9 0 0.5 0 Z"/>
+    </clipPath>
+  </defs>
+</svg>
+
 <a class="skip-link" href="#main">Skip to content</a>
+
+<div class="utility-bar">Kobbleston is in early alpha — things may look a little unfinished while we build.</div>
 
 <header class="site" id="siteHeader">
   <div class="wrap">
     <nav aria-label="Primary">
       <a class="wordmark" href="#top">
-        <span class="mark" aria-hidden="true">K</span>
-        Kobbleston
+        <img src="kobbleston-wordmark-white.png" alt="Kobbleston">
       </a>
       <div class="nav-actions">
         <a class="btn btn-ghost" href="/login">Sign in</a>
@@ -444,10 +350,9 @@
 
   <!-- ================= HERO ================= -->
   <section class="hero" id="top">
-    <canvas id="pixel-field" aria-hidden="true"></canvas>
-    <div class="wrap">
+    <div class="hero-art" aria-hidden="true"></div>
+    <div class="wrap" style="position:relative; display:grid; grid-template-columns: 1fr 420px; gap: 24px;">
       <div class="hero-inner">
-        <span class="eyebrow-tag">Pixels go brrr</span>
         <h1 class="hero-title">Make something.<br>See who shows up.</h1>
         <p class="hero-sub">
           Kobbleston is a place to build your own little corner of the internet —
@@ -455,92 +360,97 @@
           who'll actually poke around in it.
         </p>
         <div class="hero-cta">
-          <a class="btn btn-primary btn-lg" href="/signup">Join Kobbleston</a>
-          <a class="btn btn-ghost btn-lg" href="#activity">See what's live</a>
+          <a class="btn btn-primary" href="/signup">Create an account</a>
+          <a class="btn btn-ghost" href="/login">Sign in</a>
         </div>
         <p class="hero-note">Free to join. You'll need to be 15 or older.</p>
       </div>
-      <div class="kobby-float" role="img" aria-label="Kobby, Kobbleston's mascot, waving">
-        <div class="kobby-placeholder"></div>
+      <div class="hero-side">
+        <span class="brrr-badge">pixels go brrr</span>
+        <img class="kobby-hero" src="Kobby.png" alt="Kobby, Kobbleston's mascot">
+      </div>
+    </div>
+    <div class="wrap" style="position:relative;">
+      <div class="script-card" id="scriptCard">
+        <div class="script-card-head">
+          <span class="script-dot"></span><span class="script-dot"></span><span class="script-dot"></span>
+          <span class="script-title">welcome.kbl</span>
+        </div>
+        <div class="script-body" id="scriptBody" aria-hidden="true"></div>
       </div>
     </div>
   </section>
 
-  <!-- ================= LIVE STATS ================= -->
-  <section class="stats" aria-label="Kobbleston platform statistics">
-    <div class="wrap">
-      <div class="stats-grid" id="statsGrid">
-        <div class="stat">
-          <div class="stat-value" data-stat="accounts">—</div>
-          <div class="stat-label">People on Kobbleston</div>
-        </div>
-        <div class="stat">
-          <div class="stat-value" data-stat="spaces">—</div>
-          <div class="stat-label">Published Spaces</div>
-        </div>
-        <div class="stat">
-          <div class="stat-value" data-stat="visits">—</div>
-          <div class="stat-label">Total visits</div>
-        </div>
-        <div class="stat">
-          <div class="stat-value" data-stat="updates">—</div>
-          <div class="stat-label">Updates shipped</div>
-        </div>
+  <!-- ================= FEATURES ================= -->
+  <section class="feature">
+    <div class="wrap feature-row">
+      <div class="feature-art"><img src="kobby_notification.png" alt=""></div>
+      <div class="feature-text">
+        <h2>Make something, not a "web app"</h2>
+        <p>A Space can be a personal page, a hangout for your friends, a weird one-off experiment — there's no wrong way to do it. Kobbleston is built for making things, not managing a professional portfolio.</p>
+      </div>
+    </div>
+  </section>
+  <hr class="feature-rule">
+  <section class="feature">
+    <div class="wrap feature-row reverse">
+      <div class="feature-art"><img src="kobby_crown.png" alt=""></div>
+      <div class="feature-text">
+        <h2>Bring your friends along</h2>
+        <p>Add friends, chat, and see when someone's actually inside a Space right now — that's what the green dot means. Kobbleston is better with people in it.</p>
       </div>
     </div>
   </section>
 
-  <!-- ================= LIVE ACTIVITY ================= -->
-  <section class="activity" id="activity">
+  <!-- ================= LIVE BAND ================= -->
+  <section class="live-band" id="activity">
     <div class="wrap">
-      <div class="section-head">
+      <div class="live-head">
         <h2>Right now on Kobbleston</h2>
-        <p>A live look at what people are building and visiting. Nothing private, just the pulse of the place.</p>
+        <p>A live look at what people are building and visiting. Nothing private — just the pulse of the place.</p>
       </div>
-      <div class="feed" id="activityFeed" aria-live="polite" aria-label="Recent activity">
-        <!-- Rows are inserted by JS. Structure kept in markup so it degrades
-             sensibly with JS disabled — see fallback rows in <noscript>. -->
+      <div class="stats-grid">
+        <div class="stat"><div class="stat-value" data-stat="accounts">—</div><div class="stat-label">People on Kobbleston</div></div>
+        <div class="stat"><div class="stat-value" data-stat="spaces">—</div><div class="stat-label">Published Spaces</div></div>
+        <div class="stat"><div class="stat-value" data-stat="visits">—</div><div class="stat-label">Total visits</div></div>
+        <div class="stat"><div class="stat-value" data-stat="updates">—</div><div class="stat-label">Updates shipped</div></div>
       </div>
+      <div class="feed" id="activityFeed" aria-live="polite" aria-label="Recent activity"></div>
       <noscript>
-        <div class="feed">
-          <div class="feed-row"><span class="dot dot-platform"></span> Kobbleston is loading its live activity feed.</div>
-        </div>
+        <div class="feed"><div class="feed-row"><span class="dot dot-platform"></span> Kobbleston is loading its live activity feed.</div></div>
       </noscript>
     </div>
   </section>
 
-  <!-- ================= FOUNDER MOMENT ================= -->
+  <!-- ================= FOUNDER ================= -->
   <section class="founder">
     <div class="wrap">
-      <div class="founder-card">
-        <div class="founder-portrait" aria-hidden="true">S</div>
-        <div>
-          <p class="founder-quote">
-            "I built Kobbleston because I wanted a place that felt like the
-            internet used to — where making something weird and small was
-            the whole point. Come make something."
-          </p>
-          <div class="founder-sign">
-            <div>
-              <div class="founder-name">Staw</div>
-              <div class="founder-role">Founder, Kobbleston</div>
-            </div>
-            <svg class="signature" viewBox="0 0 140 50" aria-hidden="true">
-              <path d="M6 36 C 18 10, 26 10, 30 30 C 33 44, 40 20, 46 30 C 50 38, 56 16, 62 26 C 68 36, 74 12, 82 24 C 90 36, 96 18, 104 22 C 112 26, 120 34, 132 20" />
-            </svg>
-          </div>
-        </div>
+      <img class="crown" src="kobby_crown.png" alt="">
+      <p class="founder-kicker">Built by an actual person</p>
+      <p class="founder-quote">
+        "I built Kobbleston because I wanted a place that felt like the internet
+        used to — where making something weird and small was the whole point.
+        Come make something."
+      </p>
+      <div class="founder-sign">
+        <div>Signed,</div>
+        <svg class="signature" viewBox="0 0 140 50" aria-hidden="true">
+          <path d="M6 36 C 18 10, 26 10, 30 30 C 33 44, 40 20, 46 30 C 50 38, 56 16, 62 26 C 68 36, 74 12, 82 24 C 90 36, 96 18, 104 22 C 112 26, 120 34, 132 20" />
+        </svg>
+        <div class="founder-role">Staw, Founder of Kobbleston</div>
       </div>
     </div>
   </section>
 
-  <!-- ================= CLOSING CTA ================= -->
+  <!-- ================= CLOSING ================= -->
   <section class="closing">
-    <div class="wrap">
+    <div class="closing-art" aria-hidden="true"></div>
+    <div class="wrap closing-inner">
       <h2>What are you going to make?</h2>
-      <p>It takes about a minute to set up your account.</p>
+      <p>It's free, and it takes about a minute to set up.</p>
       <div class="hero-cta">
-        <a class="btn btn-primary btn-lg" href="/signup">Join Kobbleston</a>
+        <a class="btn btn-primary" href="/signup">Create an account</a>
+        <a class="btn btn-ghost" href="/login">Sign in</a>
       </div>
     </div>
   </section>
@@ -549,7 +459,10 @@
 
 <footer class="site">
   <div class="wrap">
-    <span class="footer-tagline">Kobbleston — pixels go brrr.</span>
+    <div class="footer-brand">
+      <img src="kobbleston-wordmark-white.png" alt="Kobbleston">
+      <span class="footer-tagline">pixels go brrr</span>
+    </div>
     <div class="footer-links">
       <a href="/guidelines">Community Guidelines</a>
       <a href="/terms">Terms</a>
@@ -561,65 +474,97 @@
 <script>
 (function(){
   "use strict";
-
   var reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-  /* ---------- header background on scroll ---------- */
   var header = document.getElementById("siteHeader");
-  function onScroll(){
-    header.classList.toggle("scrolled", window.scrollY > 8);
-  }
+  function onScroll(){ header.classList.toggle("scrolled", window.scrollY > 8); }
   document.addEventListener("scroll", onScroll, { passive: true });
   onScroll();
 
-  /* ---------- pixel field behind the hero ----------
-     A quiet grid of squares in Kobbleston blue that drift in and out of
-     visibility. Deliberately restrained: no particles, no physics, just a
-     slow flicker so it reads as "digital" rather than decorative noise.
-  */
-  var canvas = document.getElementById("pixel-field");
-  var ctx = canvas.getContext("2d");
-  var cell = 22;
-  var cols, rows, cells, raf;
+  /* ---------- script/terminal card: typed once, then idle cursor ---------- */
+  var lines = [
+    { tokens: [{t:"fn", v:"space.create"}, {t:"n", v:"("}, {t:"str", v:'"my-corner"'}, {t:"n", v:")"}] },
+    { tokens: [{t:"fn", v:"kobby.wave"}, {t:"n", v:"()"}] },
+    { tokens: [{t:"fn", v:"friends.invite"}, {t:"n", v:"("}, {t:"str", v:'"you"'}, {t:"n", v:")"}] },
+    { tokens: [{t:"fn", v:"publish"}, {t:"n", v:"() "}, {t:"cm", v:"// pixels go brrr"}] }
+  ];
 
-  function resize(){
-    var hero = canvas.parentElement;
-    canvas.width = hero.offsetWidth;
-    canvas.height = hero.offsetHeight;
-    cols = Math.ceil(canvas.width / cell);
-    rows = Math.ceil(canvas.height / cell);
-    cells = [];
-    for (var i = 0; i < cols * rows; i++){
-      cells.push({
-        phase: Math.random() * Math.PI * 2,
-        speed: 0.4 + Math.random() * 0.6,
-        base: Math.random() < 0.16 ? (0.06 + Math.random() * 0.16) : 0
-      });
+  var body = document.getElementById("scriptBody");
+
+  function lineHTML(line, upToChars){
+    var out = "";
+    var remaining = upToChars;
+    for (var i = 0; i < line.tokens.length; i++){
+      var tok = line.tokens[i];
+      if (remaining <= 0) break;
+      var slice = tok.v.slice(0, remaining);
+      remaining -= slice.length;
+      var cls = tok.t === "fn" ? "tok-fn" : tok.t === "str" ? "tok-str" : tok.t === "cm" ? "tok-cm" : "";
+      out += cls ? '<span class="' + cls + '">' + escapeHTML(slice) + '</span>' : escapeHTML(slice);
     }
+    return out;
+  }
+  function lineLength(line){
+    return line.tokens.reduce(function(sum, t){ return sum + t.v.length; }, 0);
+  }
+  function escapeHTML(s){
+    return s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
   }
 
-  function draw(t){
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    for (var y = 0; y < rows; y++){
-      for (var x = 0; x < cols; x++){
-        var c = cells[y * cols + x];
-        if (c.base === 0) continue;
-        var flicker = (Math.sin(t * 0.0006 * c.speed + c.phase) + 1) / 2;
-        var alpha = c.base * flicker;
-        if (alpha < 0.015) continue;
-        ctx.fillStyle = "rgba(27,52,232," + alpha.toFixed(3) + ")";
-        ctx.fillRect(x * cell, y * cell, cell - 2, cell - 2);
+  function renderStatic(){
+    var html = "";
+    lines.forEach(function(line, idx){
+      html += '<div class="script-ln">' + (idx+1) + '</div><div class="script-code">' + lineHTML(line, lineLength(line)) + '</div>';
+    });
+    html += '<div></div><div class="script-code"><span class="caret"></span></div>';
+    body.innerHTML = html;
+  }
+
+  function typeSequence(){
+    var flat = [];
+    lines.forEach(function(line, idx){
+      flat.push({ idx: idx, chars: lineLength(line) });
+    });
+    var li = 0, ci = 0;
+
+    function frame(){
+      var html = "";
+      for (var k = 0; k < lines.length; k++){
+        var chars = (k < li) ? lineLength(lines[k]) : (k === li ? ci : 0);
+        if (k > li) break;
+        html += '<div class="script-ln">' + (k+1) + '</div><div class="script-code">' + lineHTML(lines[k], chars);
+        if (k === li) html += '<span class="caret"></span>';
+        html += '</div>';
+      }
+      body.innerHTML = html;
+
+      if (li >= lines.length) return;
+      var lineLen = lineLength(lines[li]);
+      if (ci < lineLen){
+        ci += 1;
+        setTimeout(frame, 22 + Math.random() * 28);
+      } else {
+        li += 1; ci = 0;
+        setTimeout(frame, 260);
       }
     }
-    if (!reduceMotion) raf = requestAnimationFrame(draw);
+    frame();
   }
 
-  resize();
-  window.addEventListener("resize", resize);
-  if (reduceMotion){
-    draw(0); // paint a single static frame, no loop
+  if ("IntersectionObserver" in window){
+    var startedTyping = false;
+    var scriptIO = new IntersectionObserver(function(entries){
+      entries.forEach(function(entry){
+        if (entry.isIntersecting && !startedTyping){
+          startedTyping = true;
+          if (reduceMotion) renderStatic(); else typeSequence();
+          scriptIO.disconnect();
+        }
+      });
+    }, { threshold: 0.4 });
+    scriptIO.observe(document.getElementById("scriptCard"));
   } else {
-    raf = requestAnimationFrame(draw);
+    renderStatic();
   }
 
   /* ---------- signature draw-on-scroll ---------- */
@@ -627,63 +572,34 @@
   if ("IntersectionObserver" in window){
     var io = new IntersectionObserver(function(entries){
       entries.forEach(function(entry){
-        if (entry.isIntersecting){
-          sig.classList.add("in-view");
-          io.disconnect();
-        }
+        if (entry.isIntersecting){ sig.classList.add("in-view"); io.disconnect(); }
       });
     }, { threshold: 0.6 });
     io.observe(sig);
-  } else {
-    sig.classList.add("in-view");
-  }
+  } else { sig.classList.add("in-view"); }
 
   /* =========================================================
-     BACKEND WIRING (Supabase)
-     -----------------------------------------------------------
-     This page never invents numbers. Until the Supabase client
-     is wired up, the stats stay as "—" and the feed stays empty
-     with a quiet placeholder row, per the "don't fake it" rule.
-
-     To connect for real:
-       1. Include the Supabase JS client and initialize it with
-          the project URL and the PUBLISHABLE (anon) key only —
-          never a service-role key in this file.
-       2. Replace loadStats()/loadActivity() below with real
-          queries (e.g. a `platform_stats` view, and a
-          `activity_events` table filtered to public rows).
-       3. Subscribe to the activity table with Supabase Realtime
-          instead of the setInterval demo pulse used below.
+     BACKEND WIRING (Supabase) — see previous notes: this page
+     never invents numbers or activity. Wire a Supabase client
+     with the PUBLISHABLE key only, then replace loadStats()/
+     loadActivity() with real queries + Realtime subscriptions.
      ========================================================= */
+  var supabaseClient = window.supabaseClient || null;
 
-  var SUPABASE_URL = "https://sdnjdgeqrhzkyfyohcsz.supabase.co";
-  var supabaseClient = window.supabaseClient || null; // set this up where the anon key is available
-
-  function formatNumber(n){
-    return new Intl.NumberFormat("en-US").format(n);
-  }
+  function formatNumber(n){ return new Intl.NumberFormat("en-US").format(n); }
 
   function renderStats(data){
     document.querySelectorAll("[data-stat]").forEach(function(el){
       var key = el.getAttribute("data-stat");
-      el.textContent = (data && typeof data[key] === "number")
-        ? formatNumber(data[key])
-        : "—";
+      el.textContent = (data && typeof data[key] === "number") ? formatNumber(data[key]) : "—";
     });
   }
-
   function loadStats(){
-    if (!supabaseClient){
-      renderStats(null); // stays as em-dashes until wired up
-      return;
-    }
-    // Example shape once wired up:
-    // supabaseClient.from("platform_stats").select("*").single()
-    //   .then(function(res){ renderStats(res.data); });
+    if (!supabaseClient){ renderStats(null); return; }
+    // supabaseClient.from("platform_stats").select("*").single().then(r => renderStats(r.data));
   }
 
   var feedEl = document.getElementById("activityFeed");
-
   function renderActivity(events){
     feedEl.innerHTML = "";
     if (!events || events.length === 0){
@@ -697,28 +613,17 @@
       var row = document.createElement("div");
       row.className = "feed-row";
       var dotClass = evt.type === "space_enter" ? "dot-space" : "dot-platform";
-      row.innerHTML =
-        '<span class="dot ' + dotClass + '"></span>' +
-        '<span class="feed-who">' + evt.text + '</span>' +
-        '<span class="feed-time">' + evt.time + '</span>';
+      row.innerHTML = '<span class="dot ' + dotClass + '"></span><span>' + evt.text + '</span><span class="feed-time">' + evt.time + '</span>';
       feedEl.appendChild(row);
     });
   }
-
   function loadActivity(){
-    if (!supabaseClient){
-      renderActivity([]); // honest empty state, not fake activity
-      return;
-    }
-    // Example shape once wired up:
-    // supabaseClient.from("activity_events").select("*")
-    //   .order("created_at", { ascending: false }).limit(8)
-    //   .then(function(res){ renderActivity(res.data); });
+    if (!supabaseClient){ renderActivity([]); return; }
+    // supabaseClient.from("activity_events").select("*").order("created_at",{ascending:false}).limit(8).then(r => renderActivity(r.data));
   }
 
   loadStats();
   loadActivity();
-
 })();
 </script>
 
