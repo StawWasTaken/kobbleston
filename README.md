@@ -17,6 +17,21 @@ npm run dev
 
 `npm run build` typechecks and builds to `dist/`.
 
+## Deploying
+
+Pushing to `main` builds the site and publishes it to GitHub Pages via
+`.github/workflows/deploy.yml`. Enable it once under **Settings → Pages →
+Source → GitHub Actions**.
+
+Pages serves the repo from `/kobbleston/`, so `vite.config.ts` sets that as
+the base path, the router picks it up through `import.meta.env.BASE_URL`, and
+files in `public/` are referenced through the `asset()` helper rather than a
+leading slash. Deploying to a domain root instead is one change: build with
+`VITE_BASE=/`.
+
+Pages has no server-side rewrites, so the build also writes `404.html`
+alongside `index.html` and deep links like `/discover` reach the router.
+
 ## The database
 
 Supabase backs everything. Apply the four migrations in `supabase/migrations`
@@ -50,8 +65,9 @@ supabase/          schema, policies, functions, realtime
   `#101012` is everything behind it.
 - `#1CAE71` means one thing only: a Space. Entering one, being inside one.
   Presence on the platform itself is blue; offline is grey.
-- Headings are BD Gravel-VF. Drop `BDGravel-VF.woff2` into `public/fonts` and
-  it takes over from the fallback with no other change.
+- Headings are BD Gravel-VF. Create `public/fonts/` and drop
+  `BDGravel-VF.woff2` in; it takes over from the fallback with no other
+  change.
 - Icons are filled Font Awesome, no exceptions.
 - Kobby appears in empty states, notifications, errors and 404s — moments,
   not decoration.

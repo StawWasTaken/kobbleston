@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { useReducedMotion } from '@/hooks/useReducedMotion'
 import { cn } from '@/lib/cn'
+import { asset } from '@/lib/asset'
 
 /**
  * Staw's signature: white artwork, wiped in from the left as if it were
@@ -15,7 +16,7 @@ export function Signature({ className }: { className?: string }) {
 
   useEffect(() => {
     const img = new Image()
-    img.src = '/brand/staw-signature.png'
+    img.src = asset('/brand/staw-signature.png')
     img.onload = () => setState('ready')
     img.onerror = () => setState('missing')
   }, [])
@@ -44,7 +45,7 @@ export function Signature({ className }: { className?: string }) {
   return (
     <div ref={ref} className={cn('overflow-hidden', className)}>
       <img
-        src="/brand/staw-signature.png"
+        src={asset('/brand/staw-signature.png')}
         alt="Staw"
         className="h-20 w-auto select-none transition-[clip-path] duration-[1600ms] ease-out"
         style={{ clipPath: drawn ? 'inset(0 0 0 0)' : 'inset(0 100% 0 0)' }}

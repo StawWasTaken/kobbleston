@@ -6,6 +6,7 @@ import { Badge } from '@/components/ui/Badge'
 import { formatCount, timeAgo } from '@/lib/format'
 import { cn } from '@/lib/cn'
 import type { Space, SpaceCategory } from '@/types/db'
+import { asset } from '@/lib/asset'
 
 export const categoryLabels: Record<SpaceCategory, string> = {
   personal: 'Personal',
@@ -17,7 +18,7 @@ export const categoryLabels: Record<SpaceCategory, string> = {
 }
 
 /** Covers are optional; the brand art stands in so the grid never has holes. */
-const fallbackCovers = ['/brand/banner.png', '/brand/banner2.png', '/brand/banner3.png']
+const fallbackCovers = [asset('/brand/banner.png'), asset('/brand/banner2.png'), asset('/brand/banner3.png')]
 
 export function coverFor(space: Space) {
   if (space.cover_url) return space.cover_url

@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom'
 import { cn } from '@/lib/cn'
+import { asset } from '@/lib/asset'
 
 /**
  * The wordmark and logomark ship as black artwork, so on the dark interface
@@ -8,7 +9,7 @@ import { cn } from '@/lib/cn'
 export function Wordmark({ className, to = '/' }: { className?: string; to?: string | null }) {
   const img = (
     <img
-      src="/brand/wordmark.png"
+      src={asset(('/brand/wordmark.png'))}
       alt="Kobbleston"
       className={cn('kob-mark-light h-5 w-auto select-none sm:h-6', className)}
     />
@@ -25,7 +26,7 @@ export function Wordmark({ className, to = '/' }: { className?: string; to?: str
 export function Logomark({ className }: { className?: string }) {
   return (
     <img
-      src="/brand/logomark.png"
+      src={asset(('/brand/logomark.png'))}
       alt=""
       aria-hidden="true"
       className={cn('kob-mark-light h-7 w-auto select-none', className)}

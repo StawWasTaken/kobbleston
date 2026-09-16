@@ -16,6 +16,7 @@ import { ActivityFeed } from '@/components/social/ActivityFeed'
 import { PlatformStats } from '@/components/social/PlatformStats'
 import { useAsync } from '@/hooks/useAsync'
 import { listSpaces } from '@/lib/api'
+import { asset } from '@/lib/asset'
 
 const pitches: { icon: IconDefinition; title: string; body: string }[] = [
   {
@@ -165,7 +166,7 @@ export default function Landing() {
       <section className="mx-auto max-w-6xl px-4 py-14 sm:px-6 sm:py-20">
         <Card className="relative overflow-hidden">
           <img
-            src="/brand/background.png"
+            src={asset(('/brand/background.png'))}
             alt=""
             aria-hidden="true"
             className="absolute inset-0 h-full w-full object-cover opacity-25"

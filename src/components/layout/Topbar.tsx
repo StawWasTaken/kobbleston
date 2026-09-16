@@ -7,6 +7,7 @@ import { Avatar } from '@/components/ui/Avatar'
 import { NotificationsPanel } from '@/components/social/NotificationsPanel'
 import { useAuth } from '@/hooks/useAuth'
 import { supabase } from '@/lib/supabase'
+import { asset } from '@/lib/asset'
 
 export function Topbar({ onOpenNav }: { onOpenNav: () => void }) {
   const { profile } = useAuth()
@@ -54,7 +55,7 @@ export function Topbar({ onOpenNav }: { onOpenNav: () => void }) {
           sidebar colour instead of sitting on top as a loose image */}
       <div className="absolute inset-y-0 right-0 left-0 -z-10 bg-brand-deep lg:left-60">
         <img
-          src="/brand/topbar.png"
+          src={asset(('/brand/topbar.png'))}
           alt=""
           aria-hidden="true"
           className="h-full w-full object-cover object-center opacity-90"

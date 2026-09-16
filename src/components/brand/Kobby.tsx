@@ -1,16 +1,17 @@
 import { cn } from '@/lib/cn'
+import { asset } from '@/lib/asset'
 
 /**
  * Kobby shows up for moments, not for decoration on every screen: empty
  * states, notifications, errors, the odd celebration.
  */
 export const kobbyArt = {
-  default: '/brand/kobby.png',
-  notification: '/brand/kobby_notification.png',
-  construction: '/brand/kobby_under_construction.png',
-  crown: '/brand/kobby_crown.png',
-  emptyBox: '/brand/kobby_empty_box.png',
-  noResults: '/brand/kobby_no_results.png',
+  default: asset('/brand/kobby.png'),
+  notification: asset('/brand/kobby_notification.png'),
+  construction: asset('/brand/kobby_under_construction.png'),
+  crown: asset('/brand/kobby_crown.png'),
+  emptyBox: asset('/brand/kobby_empty_box.png'),
+  noResults: asset('/brand/kobby_no_results.png'),
 } as const
 
 export type KobbyMood = keyof typeof kobbyArt

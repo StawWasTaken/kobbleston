@@ -12,6 +12,7 @@ import { ActivityFeed } from '@/components/social/ActivityFeed'
 import { useAuth } from '@/hooks/useAuth'
 import { useAsync } from '@/hooks/useAsync'
 import { listFriendships, listSpaces, listSpacesByOwner } from '@/lib/api'
+import { asset } from '@/lib/asset'
 
 function FriendRail() {
   const { profile } = useAuth()
@@ -186,7 +187,7 @@ export default function Home() {
 
           <Card className="relative overflow-hidden p-5">
             <img
-              src="/brand/banner2.png"
+              src={asset(('/brand/banner2.png'))}
               alt=""
               aria-hidden="true"
               className="absolute inset-0 h-full w-full object-cover opacity-30"

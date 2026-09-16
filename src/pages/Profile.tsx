@@ -19,6 +19,7 @@ import {
   getProfileByUsername, listFriendships, listSpacesByOwner, sendFriendRequest, startConversation,
 } from '@/lib/api'
 import { formatCount } from '@/lib/format'
+import { asset } from '@/lib/asset'
 
 export default function Profile() {
   const { username = '' } = useParams()
@@ -97,7 +98,7 @@ export default function Profile() {
   return (
     <>
       <div className="relative h-36 overflow-hidden bg-brand-ink sm:h-48">
-        <img src="/brand/banner3.png" alt="" aria-hidden="true" className="h-full w-full object-cover opacity-70" />
+        <img src={asset(('/brand/banner3.png'))} alt="" aria-hidden="true" className="h-full w-full object-cover opacity-70" />
         <div className="absolute inset-0 bg-gradient-to-t from-ink to-transparent" />
       </div>
 

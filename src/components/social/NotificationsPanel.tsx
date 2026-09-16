@@ -12,6 +12,7 @@ import { useAsync } from '@/hooks/useAsync'
 import { listNotifications, markNotificationsRead } from '@/lib/api'
 import { timeAgo } from '@/lib/format'
 import type { Notification } from '@/types/db'
+import { asset } from '@/lib/asset'
 
 const icons: Record<Notification['kind'], IconDefinition> = {
   friend_request: faUserPlus,
@@ -78,7 +79,7 @@ export function NotificationsPanel({
       <div className="fixed inset-0 z-40" onClick={onClose} aria-hidden="true" />
       <div className="absolute right-2 top-[3.25rem] z-50 w-[min(94vw,23rem)] animate-pop-in overflow-hidden rounded-2xl border border-ink-line bg-ink-card shadow-pop sm:right-5">
         <div className="flex items-center gap-2 border-b border-ink-line px-4 py-3">
-          <img src="/brand/kobby_notification.png" alt="" aria-hidden="true" className="h-7 w-auto" />
+          <img src={asset(('/brand/kobby_notification.png'))} alt="" aria-hidden="true" className="h-7 w-auto" />
           <h2 className="text-sm font-extrabold">Notifications</h2>
         </div>
 
