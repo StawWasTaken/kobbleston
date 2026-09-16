@@ -1,0 +1,67 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* BD Gravel-VF is the Kobbleston display face. Drop the file into
+   /public/fonts and this picks it up; until then the fallback in
+   tailwind.config.js carries the headings. */
+@font-face {
+  font-family: 'BD Gravel-VF';
+  src: url('/fonts/BDGravel-VF.woff2') format('woff2-variations');
+  font-weight: 100 900;
+  font-display: swap;
+}
+
+@layer base {
+  :root {
+    color-scheme: dark;
+  }
+
+  html {
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  body {
+    @apply bg-ink text-white font-sans antialiased;
+  }
+
+  ::selection {
+    background: #1B34E8;
+    color: #fff;
+  }
+
+  :focus-visible {
+    @apply outline-none ring-2 ring-brand-bright ring-offset-2 ring-offset-ink rounded-lg;
+  }
+
+  h1, h2, h3 {
+    @apply font-display tracking-tight;
+  }
+}
+
+@layer components {
+  .kob-scroll {
+    scrollbar-width: thin;
+    scrollbar-color: #2a2a33 transparent;
+  }
+  .kob-scroll::-webkit-scrollbar { width: 10px; height: 10px; }
+  .kob-scroll::-webkit-scrollbar-thumb {
+    background: #2a2a33;
+    border-radius: 999px;
+    border: 3px solid transparent;
+    background-clip: content-box;
+  }
+  .kob-scroll::-webkit-scrollbar-thumb:hover { background: #3a3a47; background-clip: content-box; }
+
+  /* the black wordmark/logomark assets sit on a dark interface */
+  .kob-mark-light { filter: invert(1) brightness(1.6); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

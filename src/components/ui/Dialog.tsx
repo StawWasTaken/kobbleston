@@ -1,0 +1,110 @@
+import { useEffect, useRef } from 'react'
+import type { ReactNode } from 'react'
+import { createPortal } from 'react-dom'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faXmark } from '@fortawesome/free-solid-svg-icons'
+import { cn } from '@/lib/cn'
+
+/**
+ * The popup card that most Kobbleston interactions live in: focus is trapped
+ * while it is open, Escape closes it, and the page behind it stops scrolling.
+ */
+export function Dialog({
+  open,
+  onClose,
+  title,
+  description,
+  children,
+  footer,
+  size = 'md',
+}: {
+  open: boolean
+  onClose: () => void
+  title: string
+  description?: string
+  children?: ReactNode
+  footer?: ReactNode
+  size?: 'sm' | 'md' | 'lg'
+}) {
+  const panel = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    if (!open) return
+    const previous = document.activeElement as HTMLElement | null
+    const { overflow } = document.body.style
+    document.body.style.overflow = 'hidden'
+
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        onClose()
+        return
+      }
+      if (e.key !== 'Tab' || !panel.current) return
+      const focusable = panel.current.querySelectorAll<HTMLElement>(
+        'a[href], button:not([disabled]), textarea, input, select, [tabindex]:not([tabindex="-1"])',
+      )
+      if (!focusable.length) return
+      const first = focusable[0]
+      const last = focusable[focusable.length - 1]
+      if (e.shiftKey && document.activeElement === first) {
+        e.preventDefault()
+        last.focus()
+      } else if (!e.shiftKey && document.activeElement === last) {
+        e.preventDefault()
+        first.focus()
+      }
+    }
+
+    document.addEventListener('keydown', onKey)
+    panel.current?.querySelector<HTMLElement>('input, button')?.focus()
+
+    return () => {
+      document.removeEventListener('keydown', onKey)
+      document.body.style.overflow = overflow
+      previous?.focus()
+    }
+  }, [open, onClose])
+
+  if (!open) return null
+
+  return createPortal(
+    <div className="fixed inset-0 z-50 flex items-end justify-center p-0 sm:items-center sm:p-6">
+      <div
+        className="absolute inset-0 bg-black/70 backdrop-blur-sm"
+        onClick={onClose}
+        aria-hidden="true"
+      />
+      <div
+        ref={panel}
+        role="dialog"
+        aria-modal="true"
+        aria-label={title}
+        className={cn(
+          'relative w-full animate-pop-in rounded-t-2xl border border-ink-line bg-ink-card shadow-pop sm:rounded-2xl',
+          size === 'sm' && 'sm:max-w-sm',
+          size === 'md' && 'sm:max-w-lg',
+          size === 'lg' && 'sm:max-w-2xl',
+        )}
+      >
+        <div className="flex items-start gap-4 border-b border-ink-line px-5 py-4">
+          <div className="min-w-0 flex-1">
+            <h2 className="text-lg font-extrabold">{title}</h2>
+            {description && <p className="mt-1 text-sm text-muted">{description}</p>}
+          </div>
+          <button
+            onClick={onClose}
+            aria-label="Close"
+            className="grid h-8 w-8 shrink-0 place-items-center rounded-lg text-white/50 transition-colors hover:bg-white/10 hover:text-white"
+          >
+            <FontAwesomeIcon icon={faXmark} />
+          </button>
+        </div>
+        <div className="max-h-[70vh] overflow-y-auto px-5 py-5 kob-scroll">{children}</div>
+        {footer && (
+          <div className="flex items-center justify-end gap-2 border-t border-ink-line px-5 py-4">{footer}</div>
+        )}
+      </div>
+    </div>,
+    document.body,
+  )
+}

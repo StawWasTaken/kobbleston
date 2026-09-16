@@ -1,0 +1,147 @@
+import { useEffect, useState } from 'react'
+import { faRightFromBracket } from '@fortawesome/free-solid-svg-icons'
+import { Page } from '@/components/layout/AppShell'
+import { Button } from '@/components/ui/Button'
+import { Card, SectionHeading } from '@/components/ui/Card'
+import { Input, Textarea } from '@/components/ui/Input'
+import { Avatar } from '@/components/ui/Avatar'
+import { useToast } from '@/components/ui/Toast'
+import { useAuth } from '@/hooks/useAuth'
+import { updateProfile } from '@/lib/api'
+
+export default function Settings() {
+  const { profile, session, refreshProfile, signOut } = useAuth()
+  const toast = useToast()
+
+  const [displayName, setDisplayName] = useState('')
+  const [username, setUsername] = useState('')
+  const [bio, setBio] = useState('')
+  const [avatarUrl, setAvatarUrl] = useState('')
+  const [pending, setPending] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+
+  useEffect(() => {
+    if (!profile) return
+    setDisplayName(profile.display_name)
+    setUsername(profile.username)
+    setBio(profile.bio ?? '')
+    setAvatarUrl(profile.avatar_url ?? '')
+  }, [profile])
+
+  const save = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!profile) return
+    if (!/^[a-zA-Z0-9_]{3,20}$/.test(username)) {
+      setError('Letters, numbers and underscores. 3 to 20 characters.')
+      return
+    }
+    setPending(true)
+    setError(null)
+    try {
+      await updateProfile(profile.id, {
+        display_name: displayName.trim(),
+        username,
+        bio: bio.trim() || null,
+        avatar_url: avatarUrl.trim() || null,
+      })
+      await refreshProfile()
+      toast('Saved.', 'success')
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'That did not save.'
+      setError(message.includes('duplicate') ? 'That @name is taken.' : message)
+    } finally {
+      setPending(false)
+    }
+  }
+
+  return (
+    <Page className="max-w-2xl space-y-8">
+      <header>
+        <h1 className="font-display text-3xl font-extrabold sm:text-4xl">Settings</h1>
+        <p className="mt-1.5 text-muted">How you show up on Kobbleston.</p>
+      </header>
+
+      <form onSubmit={save} className="space-y-4">
+        <Card className="space-y-5 p-5 sm:p-6">
+          <div className="flex items-center gap-4">
+            <Avatar src={avatarUrl || null} name={displayName || 'K'} size="lg" />
+            <div className="flex-1">
+              <Input
+                label="Avatar image URL"
+                value={avatarUrl}
+                onChange={(e) => setAvatarUrl(e.target.value)}
+                placeholder="https://…"
+                hint="Paste a link to an image. Uploads are coming later."
+              />
+            </div>
+          </div>
+
+          <Input
+            label="Display name"
+            value={displayName}
+            onChange={(e) => setDisplayName(e.target.value)}
+            maxLength={32}
+            required
+          />
+
+          <Input
+            label="@name"
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
+            maxLength={20}
+            required
+            error={error}
+            hint={`kobbleston.com/u/${username || '…'}`}
+          />
+
+          <Textarea
+            label="Bio"
+            value={bio}
+            onChange={(e) => setBio(e.target.value)}
+            maxLength={300}
+            placeholder="Say something about yourself."
+            hint={`${bio.length}/300`}
+          />
+        </Card>
+
+        <div className="flex justify-end">
+          <Button type="submit" size="lg" loading={pending}>Save changes</Button>
+        </div>
+      </form>
+
+      <section>
+        <SectionHeading title="Account" />
+        <Card className="divide-y divide-ink-line">
+          <div className="flex items-center justify-between gap-4 px-5 py-4">
+            <div className="min-w-0">
+              <p className="text-sm font-semibold">Email</p>
+              <p className="truncate text-sm text-muted">{session?.user.email}</p>
+            </div>
+          </div>
+          <div className="flex items-center justify-between gap-4 px-5 py-4">
+            <div>
+              <p className="text-sm font-semibold">Log out</p>
+              <p className="text-sm text-muted">Ends this session on this device.</p>
+            </div>
+            <Button variant="subtle" icon={faRightFromBracket} onClick={signOut}>Log out</Button>
+          </div>
+        </Card>
+      </section>
+
+      <section>
+        <SectionHeading title="Safety" />
+        <Card className="space-y-3 p-5 text-sm leading-relaxed text-white/65">
+          <p>
+            Kobbleston is for people aged 15 and over. Report anything that shouldn&apos;t be
+            here using the flag on a profile or Space — reports go straight to moderators and
+            the person you report isn&apos;t told who reported them.
+          </p>
+          <p>
+            Harassment, threats, sexual content involving minors, spam and impersonation get
+            content removed and accounts suspended.
+          </p>
+        </Card>
+      </section>
+    </Page>
+  )
+}
