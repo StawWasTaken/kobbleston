@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faPlus, faXmark } from '@fortawesome/free-solid-svg-icons'
+import { faRightToBracket, faUserPlus, faXmark } from '@fortawesome/free-solid-svg-icons'
 import { Dialog } from '@/components/ui/Dialog'
 import { Button } from '@/components/ui/Button'
 import { Avatar } from '@/components/ui/Avatar'
@@ -19,10 +19,12 @@ export function SwitchAccounts({ open, onClose }: { open: boolean; onClose: () =
     navigate(`/login?email=${encodeURIComponent(email)}`)
   }
 
-  const addAnother = async () => {
+  // Signing out first means signup starts clean. Once the new account has a
+  // session its profile loads and it joins this list on its own.
+  const goTo = async (path: string) => {
     onClose()
     await signOut()
-    navigate('/login')
+    navigate(path)
   }
 
   const others = accounts.filter((a) => a.id !== profile?.id)
@@ -68,9 +70,14 @@ export function SwitchAccounts({ open, onClose }: { open: boolean; onClose: () =
         ))}
       </ul>
 
-      <Button variant="subtle" block icon={faPlus} className="mt-4" onClick={addAnother}>
-        Log in to another account
-      </Button>
+      <div className="mt-4 space-y-2">
+        <Button variant="subtle" block icon={faRightToBracket} onClick={() => goTo('/login')}>
+          Log in to another account
+        </Button>
+        <Button block icon={faUserPlus} onClick={() => goTo('/signup')}>
+          Create a new account
+        </Button>
+      </div>
     </Dialog>
   )
 }

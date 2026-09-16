@@ -163,6 +163,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         })
         if (error) throw error
 
+        // Joins the account switcher straight away. Supabase returns the new
+        // user even when it is still waiting on an email confirmation, so
+        // this does not depend on a session existing yet; the real picture
+        // and name overwrite this once the profile loads.
+        if (data.user) {
+          rememberAccount({
+            id: data.user.id,
+            email: details.email,
+            username: details.username,
+            displayName: details.displayName || details.username,
+            avatarUrl: null,
+          })
+        }
+
         // Storage needs a signed-in user. When the project asks for email
         // confirmation there is no session yet, so the picture is set on the
         // first sign-in instead and a Kobby picture stands in until then.
