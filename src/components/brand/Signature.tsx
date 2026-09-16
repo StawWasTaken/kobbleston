@@ -3,9 +3,9 @@ import { useReducedMotion } from '@/hooks/useReducedMotion'
 import { cn } from '@/lib/cn'
 
 /**
- * Staw's signature. If `staw-signature.png` is in /brand it gets wiped in as
- * if it were being written; otherwise nothing is drawn rather than a made-up
- * signature standing in for a real one.
+ * Staw's signature: white artwork, wiped in from the left as if it were
+ * being written. If the file is missing nothing renders, rather than a
+ * made-up signature standing in for a real one.
  */
 export function Signature({ className }: { className?: string }) {
   const [state, setState] = useState<'loading' | 'ready' | 'missing'>('loading')
@@ -46,7 +46,7 @@ export function Signature({ className }: { className?: string }) {
       <img
         src="/brand/staw-signature.png"
         alt="Staw"
-        className="kob-mark-light h-14 w-auto select-none transition-[clip-path] duration-[1600ms] ease-out"
+        className="h-20 w-auto select-none transition-[clip-path] duration-[1600ms] ease-out"
         style={{ clipPath: drawn ? 'inset(0 0 0 0)' : 'inset(0 100% 0 0)' }}
       />
     </div>
