@@ -19,18 +19,25 @@ npm run dev
 
 ## Deploying
 
-Pushing to `main` builds the site and publishes it to GitHub Pages via
-`.github/workflows/deploy.yml`. Enable it once under **Settings → Pages →
-Source → GitHub Actions**.
+GitHub Pages publishes this repository's root from `main`, so the built site
+is committed there: `index.html`, `404.html`, `assets/` and `brand/`. The
+`Build site` workflow rebuilds and commits them on every push, so you do not
+have to remember. To do it by hand:
+
+```bash
+npm run deploy
+```
+
+Because the built `index.html` lives at the root, the document Vite builds
+*from* is `app.html`. That is the only reason it is named that way. `404.html`
+is the same document again: Pages has no rewrites, so it is what hands a deep
+link like `/discover` to the router.
 
 Pages serves the repo from `/kobbleston/`, so `vite.config.ts` sets that as
 the base path, the router picks it up through `import.meta.env.BASE_URL`, and
 files in `public/` are referenced through the `asset()` helper rather than a
 leading slash. Deploying to a domain root instead is one change: build with
 `VITE_BASE=/`.
-
-Pages has no server-side rewrites, so the build also writes `404.html`
-alongside `index.html` and deep links like `/discover` reach the router.
 
 ## The database
 
@@ -56,6 +63,7 @@ src/components/
 src/hooks/         auth + presence, async requests, reduced motion
 src/lib/           supabase client, the whole data layer, helpers
 src/pages/         one file per route
+scripts/           copies the build to the repository root
 supabase/          schema, policies, functions, realtime
 ```
 

@@ -1,17 +1,17 @@
-name: Deploy to GitHub Pages
+name: Build site
 
+# GitHub Pages publishes this repository's root from main, so the built site
+# is committed there. This keeps that copy in step with src/ on every push.
 on:
   push:
     branches: [main]
   workflow_dispatch:
 
 permissions:
-  contents: read
-  pages: write
-  id-token: write
+  contents: write
 
 concurrency:
-  group: pages
+  group: build-site
   cancel-in-progress: true
 
 jobs:
@@ -23,19 +23,21 @@ jobs:
         with:
           node-version: 22
           cache: npm
+
       - run: npm ci
       - run: npm run build
-      - uses: actions/configure-pages@v5
-      - uses: actions/upload-pages-artifact@v3
-        with:
-          path: dist
+      - run: node scripts/publish-to-root.mjs
 
-  deploy:
-    needs: build
-    runs-on: ubuntu-latest
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    steps:
-      - id: deployment
-        uses: actions/deploy-pages@v4
+      # Pushing with GITHUB_TOKEN does not start another workflow run, so
+      # this cannot loop.
+      - name: Commit the built site
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html 404.html assets brand
+          if git diff --staged --quiet; then
+            echo "Build output is already up to date."
+            exit 0
+          fi
+          git commit -m "Rebuild site from ${GITHUB_SHA::7}"
+          git push
