@@ -133,7 +133,7 @@ export default function Settings() {
         <Card className="space-y-3 p-5 text-sm leading-relaxed text-white/65">
           <p>
             Kobbleston is for people aged 15 and over. Report anything that shouldn&apos;t be
-            here using the flag on a profile or Space — reports go straight to moderators and
+            here using the flag on a profile or Space, reports go straight to moderators and
             the person you report isn&apos;t told who reported them.
           </p>
           <p>

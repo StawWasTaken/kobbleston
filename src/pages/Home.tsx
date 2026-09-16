@@ -89,7 +89,7 @@ export default function Home() {
             Something to build, somewhere to go, someone to show it to.
           </p>
           <div className="mt-6 flex flex-wrap gap-3">
-            <Button to="/create" icon={faPlus}>Make a Space</Button>
+            <Button to="/spaces/new" icon={faPlus}>Make a Space</Button>
             <Button variant="subtle" to="/discover" icon={faCompass}>Discover</Button>
           </div>
         </div>
@@ -102,7 +102,7 @@ export default function Home() {
             <SectionHeading
               title="Your Spaces"
               subtitle="Everything you've made, drafts included."
-              action={<Button size="sm" variant="subtle" to="/create" icon={faPlus}>New</Button>}
+              action={<Button size="sm" variant="subtle" to="/spaces/new" icon={faPlus}>New</Button>}
             />
             {mine.loading && (
               <div className="grid gap-4 sm:grid-cols-2">
@@ -116,7 +116,7 @@ export default function Home() {
                   mood="emptyBox"
                   title="You haven't made anything yet"
                   body="A Space can be a page about your cat. That is a completely valid use of this website."
-                  action={<Button to="/create" icon={faPlus}>Make your first Space</Button>}
+                  action={<Button to="/spaces/new" icon={faPlus}>Make your first Space</Button>}
                 />
               </Card>
             )}
@@ -197,7 +197,7 @@ export default function Home() {
               <p className="mt-1.5 text-sm text-white/65">
                 Nobody is going to make the weird thing except you.
               </p>
-              <Button size="sm" to="/create" className="mt-4" icon={faPlus}>Start one</Button>
+              <Button size="sm" to="/spaces/new" className="mt-4" icon={faPlus}>Start one</Button>
             </div>
           </Card>
         </aside>

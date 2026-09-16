@@ -35,7 +35,7 @@ alongside `index.html` and deep links like `/discover` reach the router.
 ## The database
 
 Supabase backs everything. Apply the four migrations in `supabase/migrations`
-in order from the Supabase SQL editor before running the app — see
+in order from the Supabase SQL editor before running the app, see
 [`supabase/README.md`](supabase/README.md).
 
 Only the publishable key ever reaches the browser. Every counter the platform
@@ -65,16 +65,36 @@ supabase/          schema, policies, functions, realtime
   `#101012` is everything behind it.
 - `#1CAE71` means one thing only: a Space. Entering one, being inside one.
   Presence on the platform itself is blue; offline is grey.
-- Headings are BD Gravel-VF. Create `public/fonts/` and drop
-  `BDGravel-VF.woff2` in; it takes over from the fallback with no other
-  change.
+- Headings are BD Gravel-VF, loaded from Typekit and set at `ROND 100`.
 - Icons are filled Font Awesome, no exceptions.
-- Kobby appears in empty states, notifications, errors and 404s — moments,
+- Kobby appears in empty states, notifications, errors and 404s, moments,
   not decoration.
 - Everything animated respects `prefers-reduced-motion`.
+
+## Kobbleston Create
+
+The creator marketplace at `/create`. People upload images, audio, video,
+fonts and models; everything enters a review queue and stays private to its
+uploader until it is approved. Uploads by the Kobbleston account carry a
+verified mark. See [`supabase/README.md`](supabase/README.md) for how review
+is wired and what still needs deploying.
+
+## Kobbleston Create
+
+The creator marketplace at `/create`. People upload images, audio, video,
+fonts and models; everything enters a review queue and stays private to its
+uploader until it is approved. Uploads by the Kobbleston account carry a
+verified mark. See [`supabase/README.md`](supabase/README.md) for how review
+is wired and what still needs deploying.
 
 ## Not built yet
 
 The Kobbleston editor (building the inside of a Space) is deliberately out of
 scope for now, and the UI says so where it would otherwise be a dead end
 rather than pretending it exists.
+
+The review worker that approves Create uploads is not deployed. Until it is,
+uploads stay pending rather than publishing themselves.
+
+The review worker that approves Create uploads is not deployed. Until it is,
+uploads stay pending rather than publishing themselves.

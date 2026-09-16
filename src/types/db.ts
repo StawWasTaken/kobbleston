@@ -11,6 +11,9 @@ export type Profile = {
   last_seen_at: string
   in_space_id: string | null
   is_moderator: boolean
+  is_admin: boolean
+  birth_date: string | null
+  gender: 'male' | 'female' | 'other' | null
   created_at: string
 }
 
@@ -50,6 +53,37 @@ export type ActivityEvent = {
   space_id: string | null
   space_name: string | null
   space_slug: string | null
+}
+
+export type AssetKind = 'image' | 'audio' | 'video' | 'font' | 'model'
+export type ModerationStatus = 'pending' | 'approved' | 'rejected'
+
+export type MarketAsset = {
+  id: string
+  kind: AssetKind
+  name: string
+  description: string | null
+  file_path: string
+  thumbnail_path: string | null
+  download_count: number
+  created_at: string
+  creator_username: string
+  creator_display_name: string
+  creator_avatar_url: string | null
+  creator_is_admin: boolean
+}
+
+export type OwnAsset = {
+  id: string
+  kind: AssetKind
+  name: string
+  description: string | null
+  file_path: string
+  status: ModerationStatus
+  review_note: string | null
+  byte_size: number
+  download_count: number
+  created_at: string
 }
 
 export type FriendshipStatus = 'pending' | 'accepted' | 'blocked'

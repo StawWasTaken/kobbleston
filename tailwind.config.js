@@ -25,14 +25,13 @@ export default {
         muted: '#8b8b99',
       },
       fontFamily: {
-        display: ['"BD Gravel-VF"', '"Bricolage Grotesque"', 'system-ui', 'sans-serif'],
+        display: ['bd-gravel-vf', 'system-ui', 'sans-serif'],
         sans: ['Inter', 'system-ui', '-apple-system', 'Segoe UI', 'sans-serif'],
       },
       borderRadius: { xl2: '1.25rem' },
       boxShadow: {
         card: '0 1px 0 0 rgba(255,255,255,0.04) inset, 0 8px 24px -12px rgba(0,0,0,0.8)',
         pop: '0 24px 60px -20px rgba(0,0,0,0.85)',
-        brand: '0 8px 24px -10px rgba(27,52,232,0.7)',
       },
       keyframes: {
         'pop-in': {

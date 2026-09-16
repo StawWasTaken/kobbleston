@@ -12,7 +12,10 @@ import NotFound from '@/pages/NotFound'
 
 // Everything behind the front door loads on demand.
 const SpacePage = lazy(() => import('@/pages/SpacePage'))
-const CreateSpace = lazy(() => import('@/pages/CreateSpace'))
+const Create = lazy(() => import('@/pages/Create'))
+const NewSpace = lazy(() => import('@/pages/NewSpace'))
+const Terms = lazy(() => import('@/pages/Policies').then((m) => ({ default: m.Terms })))
+const Guidelines = lazy(() => import('@/pages/Policies').then((m) => ({ default: m.Guidelines })))
 const Friends = lazy(() => import('@/pages/Friends'))
 const Chat = lazy(() => import('@/pages/Chat'))
 const Library = lazy(() => import('@/pages/Library'))
@@ -55,12 +58,15 @@ export default function App() {
               <Route element={<AppShell />}>
                 {/* public inside the shell so a shared link works logged out */}
                 <Route path="/discover" element={<Discover />} />
+                <Route path="/create" element={<Create />} />
+                <Route path="/terms" element={<Terms />} />
+                <Route path="/guidelines" element={<Guidelines />} />
                 <Route path="/u/:username" element={<Profile />} />
                 <Route path="/u/:username/:slug" element={<SpacePage />} />
 
                 <Route element={<RequireAuth />}>
                   <Route path="/home" element={<Home />} />
-                  <Route path="/create" element={<CreateSpace />} />
+                  <Route path="/spaces/new" element={<NewSpace />} />
                   <Route path="/friends" element={<Friends />} />
                   <Route path="/chat" element={<Chat />} />
                   <Route path="/chat/:conversationId" element={<Chat />} />

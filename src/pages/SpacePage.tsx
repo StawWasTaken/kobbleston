@@ -105,7 +105,7 @@ export default function SpacePage() {
           <EmptyState
             mood="noResults"
             title="No Space here"
-            body={`@${username} doesn't have a Space called "${slug}" — or it isn't published yet.`}
+            body={`@${username} doesn't have a Space called "${slug}", or it isn't published yet.`}
             action={<Button to="/discover">Discover Spaces</Button>}
           />
         </Card>
@@ -127,15 +127,15 @@ export default function SpacePage() {
         <Page className="-mt-20 sm:-mt-24">
           <div className="grid gap-6 lg:grid-cols-[1fr_19rem] lg:items-start">
             <div className="min-w-0">
-              <div className="flex flex-wrap items-center gap-2">
-                <Badge tone="brand">{categoryLabels[space.category]}</Badge>
-                {!space.is_published && <Badge tone="warm">Draft — only you can see this</Badge>}
-                {inside && <Badge tone="space">You&apos;re inside</Badge>}
-              </div>
-
-              <h1 className="mt-3 font-display text-4xl font-extrabold leading-none sm:text-5xl">
+              <h1 className="font-display text-4xl font-extrabold leading-none sm:text-5xl">
                 {space.name}
               </h1>
+
+              <div className="mt-3 flex flex-wrap items-center gap-2">
+                <Badge tone="brand">{categoryLabels[space.category]}</Badge>
+                {!space.is_published && <Badge tone="warm">Draft, only you can see this</Badge>}
+                {inside && <Badge tone="space">You&apos;re inside</Badge>}
+              </div>
 
               {owner && (
                 <Link
@@ -208,7 +208,7 @@ export default function SpacePage() {
                 </p>
               )}
 
-              {/* The Space itself is not built yet — Workspace comes later,
+              {/* The Space itself is not built yet, Workspace comes later,
                   so this says so plainly instead of faking a viewer. */}
               <Card className="mt-8">
                 {inside ? (

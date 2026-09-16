@@ -10,13 +10,14 @@ const field =
 
 export type InputProps = InputHTMLAttributes<HTMLInputElement> & {
   label?: string
+  labelNote?: string
   hint?: string
   error?: string | null
   icon?: IconDefinition
 }
 
 export const Input = forwardRef<HTMLInputElement, InputProps>(function Input(
-  { label, hint, error, icon, className, id, ...props },
+  { label, labelNote, hint, error, icon, className, id, ...props },
   ref,
 ) {
   const generated = useId()
@@ -24,8 +25,9 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(function Input(
   return (
     <div className="w-full">
       {label && (
-        <label htmlFor={inputId} className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-muted">
+        <label htmlFor={inputId} className="mb-1.5 block text-xs font-bold uppercase tracking-wide text-muted">
           {label}
+          {labelNote && <span className="ml-1.5 font-medium normal-case text-white/30">{labelNote}</span>}
         </label>
       )}
       <div className="relative">
@@ -55,12 +57,13 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(function Input(
 
 export type TextareaProps = TextareaHTMLAttributes<HTMLTextAreaElement> & {
   label?: string
+  labelNote?: string
   hint?: string
   error?: string | null
 }
 
 export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(function Textarea(
-  { label, hint, error, className, id, ...props },
+  { label, labelNote, hint, error, className, id, ...props },
   ref,
 ) {
   const generated = useId()
@@ -68,8 +71,9 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(function 
   return (
     <div className="w-full">
       {label && (
-        <label htmlFor={inputId} className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-muted">
+        <label htmlFor={inputId} className="mb-1.5 block text-xs font-bold uppercase tracking-wide text-muted">
           {label}
+          {labelNote && <span className="ml-1.5 font-medium normal-case text-white/30">{labelNote}</span>}
         </label>
       )}
       <textarea

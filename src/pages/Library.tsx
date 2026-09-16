@@ -106,7 +106,7 @@ export default function Library() {
         <SectionHeading
           title="Published"
           subtitle="Live on Kobbleston."
-          action={<Button size="sm" variant="subtle" to="/create" icon={faPlus}>New Space</Button>}
+          action={<Button size="sm" variant="subtle" to="/spaces/new" icon={faPlus}>New Space</Button>}
         />
         {mine.loading && (
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -120,7 +120,7 @@ export default function Library() {
               mood="emptyBox"
               title="Nothing published"
               body="Make a Space and publish it so people can come and visit."
-              action={<Button to="/create" icon={faPlus}>Make a Space</Button>}
+              action={<Button to="/spaces/new" icon={faPlus}>Make a Space</Button>}
             />
           </Card>
         )}

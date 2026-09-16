@@ -11,13 +11,13 @@ type Size = 'sm' | 'md' | 'lg'
 
 const variants: Record<Variant, string> = {
   primary:
-    'bg-brand text-white hover:bg-brand-bright active:bg-brand shadow-brand border border-brand-bright/40',
+    'bg-brand text-white hover:bg-brand-bright active:bg-brand border-b-[3px] border-brand-ink active:border-b-0 active:mt-[3px]',
   enter:
-    'bg-space text-white hover:bg-space-bright active:bg-space border border-space-bright/40 shadow-[0_8px_24px_-10px_rgba(28,174,113,0.7)]',
+    'bg-space text-white hover:bg-space-bright active:bg-space border-b-[3px] border-space-deep active:border-b-0 active:mt-[3px]',
   ghost:
     'bg-transparent text-white/80 hover:bg-white/10 hover:text-white border border-transparent',
   subtle:
-    'bg-white/[0.06] text-white hover:bg-white/[0.12] border border-white/10',
+    'bg-ink-hover text-white hover:bg-[#2c2c36] border border-ink-line',
   danger:
     'bg-red-500/15 text-red-300 hover:bg-red-500/25 border border-red-500/30',
 }

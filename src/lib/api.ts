@@ -1,6 +1,7 @@
 import { supabase } from './supabase'
 import type {
-  ActivityEvent, Friendship, Message, Notification, PlatformStats, Profile, Space, SpaceCategory,
+  ActivityEvent, AssetKind, Friendship, MarketAsset, Message, Notification, OwnAsset,
+  PlatformStats, Profile, Space, SpaceCategory,
 } from '@/types/db'
 
 const SPACE_FIELDS =
@@ -268,4 +269,75 @@ export async function submitReport(input: {
     reason: input.reason,
     details: input.details || null,
   }).select('id').single())
+}
+
+// ------------------------------------------------------- Kobbleston Create
+
+export const assetBucket = 'uploads'
+
+export function assetUrl(path: string) {
+  return supabase.storage.from(assetBucket).getPublicUrl(path).data.publicUrl
+}
+
+export async function listAssets(options: {
+  kind?: AssetKind | 'all'
+  search?: string
+  limit?: number
+} = {}): Promise<MarketAsset[]> {
+  const { kind = 'all', search, limit = 24 } = options
+  return unwrap(await supabase.rpc('list_assets', {
+    kind_filter: kind === 'all' ? null : kind,
+    search: search?.trim() || null,
+    limit_count: limit,
+  })) ?? []
+}
+
+export async function listOwnAssets(userId: string): Promise<OwnAsset[]> {
+  return (unwrap(await supabase.from('assets')
+    .select('id, kind, name, description, file_path, status, review_note, byte_size, download_count, created_at')
+    .eq('creator_id', userId)
+    .order('created_at', { ascending: false })) as unknown as OwnAsset[]) ?? []
+}
+
+/**
+ * Uploads the file, then records it as pending. Nothing the browser can call
+ * sets a status, so an upload stays invisible until the review pipeline
+ * approves it.
+ */
+export async function uploadAsset(input: {
+  userId: string
+  file: File
+  kind: AssetKind
+  name: string
+  description: string
+}): Promise<OwnAsset> {
+  const extension = input.file.name.split('.').pop()?.toLowerCase() ?? 'bin'
+  const path = `${input.userId}/${crypto.randomUUID()}.${extension}`
+
+  const uploaded = await supabase.storage
+    .from(assetBucket)
+    .upload(path, input.file, { contentType: input.file.type, upsert: false })
+  if (uploaded.error) throw new Error(uploaded.error.message)
+
+  try {
+    return unwrap(await supabase.from('assets').insert({
+      creator_id: input.userId,
+      kind: input.kind,
+      name: input.name.trim(),
+      description: input.description.trim() || null,
+      file_path: path,
+      byte_size: input.file.size,
+    }).select('id, kind, name, description, file_path, status, review_note, byte_size, download_count, created_at')
+      .single()) as unknown as OwnAsset
+  } catch (err) {
+    // Never leave a file in storage with no row pointing at it.
+    await supabase.storage.from(assetBucket).remove([path])
+    throw err
+  }
+}
+
+export async function deleteAsset(id: string, filePath: string) {
+  const { error } = await supabase.from('assets').delete().eq('id', id)
+  if (error) throw new Error(error.message)
+  await supabase.storage.from(assetBucket).remove([filePath])
 }

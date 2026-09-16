@@ -186,7 +186,7 @@ export default function Profile() {
                     ? 'Your Spaces will show up here once you make one.'
                     : `${user.display_name} hasn't published anything yet.`
                 }
-                action={isMe ? <Button to="/create">Make a Space</Button> : undefined}
+                action={isMe ? <Button to="/spaces/new">Make a Space</Button> : undefined}
               />
             </Card>
           )}

@@ -9,9 +9,19 @@ type AuthValue = {
   profile: Profile | null
   loading: boolean
   signIn: (email: string, password: string) => Promise<void>
-  signUp: (email: string, password: string, username: string) => Promise<void>
+  signUp: (details: SignupDetails) => Promise<void>
   signOut: () => Promise<void>
   refreshProfile: () => Promise<void>
+}
+
+export type SignupDetails = {
+  email: string
+  password: string
+  username: string
+  displayName: string
+  avatarUrl: string
+  birthDate: string
+  gender: string
 }
 
 const AuthContext = createContext<AuthValue | null>(null)
@@ -99,11 +109,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         const { error } = await supabase.auth.signInWithPassword({ email, password })
         if (error) throw error
       },
-      async signUp(email, password, username) {
+      async signUp(details) {
         const { error } = await supabase.auth.signUp({
-          email,
-          password,
-          options: { data: { username, display_name: username } },
+          email: details.email,
+          password: details.password,
+          options: {
+            data: {
+              username: details.username,
+              display_name: details.displayName || details.username,
+              avatar_url: details.avatarUrl,
+              birth_date: details.birthDate,
+              gender: details.gender,
+            },
+          },
         })
         if (error) throw error
       },
