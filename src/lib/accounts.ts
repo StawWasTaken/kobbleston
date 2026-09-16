@@ -1,10 +1,11 @@
 /**
- * Accounts used on this device, so switching between them is a password away
- * rather than typing an email again.
+ * Accounts used on this device.
  *
- * Only what is needed to show a face and a name is kept. Sessions are not:
- * holding several refresh tokens in the browser would mean one stolen token
- * hands over every account, so switching asks for the password again.
+ * Switching is instant, so the session for each account is kept here, not
+ * just its name. That is a deliberate trade: anything able to read this
+ * origin's storage can reach every account listed, rather than only the one
+ * signed in. Logging an account out drops its tokens, and a guest is never
+ * stored at all.
  */
 const KEY = 'kobbleston.accounts'
 const LIMIT = 5
@@ -16,6 +17,7 @@ export type RememberedAccount = {
   displayName: string
   avatarUrl: string | null
   lastUsed: number
+  session?: { access_token: string; refresh_token: string }
 }
 
 function read(): RememberedAccount[] {
@@ -41,10 +43,26 @@ export function rememberedAccounts(): RememberedAccount[] {
   return read().sort((a, b) => b.lastUsed - a.lastUsed)
 }
 
-export function rememberAccount(account: Omit<RememberedAccount, 'lastUsed'>) {
-  if (!account.email) return
+export function rememberAccount(
+  account: Omit<RememberedAccount, 'lastUsed' | 'session'>,
+  session?: RememberedAccount['session'],
+) {
+  const existing = read().find((a) => a.id === account.id)
   const rest = read().filter((a) => a.id !== account.id)
-  write([{ ...account, lastUsed: Date.now() }, ...rest])
+  write([
+    {
+      ...account,
+      // Keep whatever session we already hold when this call has none.
+      session: session ?? existing?.session,
+      lastUsed: Date.now(),
+    },
+    ...rest,
+  ])
+}
+
+/** Drops the tokens but keeps the name, so the account stays offerable. */
+export function clearAccountSession(id: string) {
+  write(read().map((a) => (a.id === id ? { ...a, session: undefined } : a)))
 }
 
 export function forgetAccount(id: string) {

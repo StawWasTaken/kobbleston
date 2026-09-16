@@ -16,6 +16,8 @@ Apply the migrations in order from the SQL editor (or `supabase db push`):
 10. `0010_fix_publish_event.sql` - fixes the publish announcement
 11. `0011_automated_review.sql` - the automated content filter
 12. `0012_space_chat.sql` - the chat that comes with every Space
+13. `0013_guest_limits.sql` - what a guest may and may not do
+14. `0014_group_chats.sql` - named group conversations
 
 Notes:
 
@@ -110,6 +112,21 @@ A signed-in moderator can still read the backlog through `review_queue()` and
 decide by hand with `review_asset()`, which remains revoked from `anon` and
 `authenticated` and is meant for a worker holding the service role key.
 
+## Logging in with a username
+
+Supabase signs people in with an email, so `supabase/functions/login` turns a
+username into one behind the service role key. Doing that lookup in the
+browser would hand anyone who knows a username the address behind it, so it
+does not happen there. Deploy it before anyone tries to log in:
+
+```bash
+supabase functions deploy login
+```
+
+It answers the same way whether a username does not exist or the password is
+wrong, so it cannot be used to find out which names are real. An email typed
+into the username box still works.
+
 ## Guests
 
 Guest mode uses Supabase anonymous sign-in, so turn on
@@ -118,8 +135,19 @@ Guest mode uses Supabase anonymous sign-in, so turn on
 pretending to work.
 
 A guest is a real account with `is_guest` set, so presence, entering a Space
-and the chat dock behave normally. Guests get no Pixels and are left out of
-the public account and activity counts.
+and looking around behave normally. What a guest cannot do is enforced by
+policy in `0013_guest_limits.sql`, not by hiding buttons: no making Spaces,
+Communities or uploads, no likes, favourites, follows or friend requests, no
+messages anywhere, and no renaming itself into something that looks like a
+real account. Guests get no Pixels and stay out of the public counts.
+
+Two more caps on churn: no more than 200 guests may join in an hour, and
+`sweep_guests()` deletes guests not seen for a day. Point a scheduled job at
+that function, or run it by hand:
+
+```sql
+select public.sweep_guests();
+```
 
 ## Pixels
 
@@ -150,3 +178,11 @@ Every Space has a chat. Its owner sets `chat_enabled`, `chat_greeting` and
 those columns, and `space_messages_screen` enforces slow mode and runs the
 same filter as everything else before a message is stored. The owner can
 clear anything said in their Space.
+
+## Group chats
+
+`create_group_conversation(title, members)` makes a named conversation with up
+to five friends. Everyone added has to already be a friend, checked in the
+function, so a group cannot be used to reach strangers. `my_conversations()`
+returns everything the chat dock shows, including unread counts and who is in
+each conversation, in one read.

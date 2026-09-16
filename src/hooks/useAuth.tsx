@@ -2,9 +2,9 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useRef, use
 import type { ReactNode } from 'react'
 import type { Session } from '@supabase/supabase-js'
 import { supabase } from '@/lib/supabase'
-import { uploadAvatar } from '@/lib/api'
+import { signInWithUsername, uploadAvatar } from '@/lib/api'
 import { randomAvatar } from '@/lib/avatars'
-import { rememberAccount } from '@/lib/accounts'
+import { clearAccountSession, rememberAccount } from '@/lib/accounts'
 import type { Profile } from '@/types/db'
 
 type AuthValue = {
@@ -13,7 +13,9 @@ type AuthValue = {
   loading: boolean
   signIn: (email: string, password: string) => Promise<void>
   signUp: (details: SignupDetails) => Promise<void>
+  signInWithName: (username: string, password: string) => Promise<void>
   signInAsGuest: () => Promise<void>
+  switchTo: (account: { id: string; session?: { access_token: string; refresh_token: string } }) => Promise<boolean>
   signOut: () => Promise<void>
   refreshProfile: () => Promise<void>
 }
@@ -48,20 +50,27 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const userId = session?.user.id ?? null
   const heartbeat = useRef<number | undefined>(undefined)
 
-  const loadProfile = useCallback(async (id: string, email?: string) => {
+  const loadProfile = useCallback(async (
+    id: string,
+    email?: string,
+    session?: { access_token: string; refresh_token: string },
+  ) => {
     const { data } = await supabase.from('profiles').select('*').eq('id', id).maybeSingle()
     const loaded = (data as Profile | null) ?? null
     setProfile(loaded)
 
     // Guests are throwaway, so they are not offered on the switcher.
     if (loaded && email && !loaded.is_guest) {
-      rememberAccount({
-        id: loaded.id,
-        email,
-        username: loaded.username,
-        displayName: loaded.display_name,
-        avatarUrl: loaded.avatar_url,
-      })
+      rememberAccount(
+        {
+          id: loaded.id,
+          email,
+          username: loaded.username,
+          displayName: loaded.display_name,
+          avatarUrl: loaded.avatar_url,
+        },
+        session,
+      )
     }
   }, [])
 
@@ -98,7 +107,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           // Not worth blocking sign-in over; the picture can be set later.
         }
       }
-      await loadProfile(userId, session?.user.email ?? undefined)
+      await loadProfile(
+        userId,
+        session?.user.email ?? undefined,
+        session
+          ? { access_token: session.access_token, refresh_token: session.refresh_token }
+          : undefined,
+      )
     }
 
     run().finally(() => {
@@ -187,6 +202,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           pendingAvatar = details.avatarFile
         }
       },
+      async signInWithName(username, password) {
+        await signInWithUsername(username, password)
+      },
+      async switchTo(account) {
+        if (!account.session) return false
+        const { error } = await supabase.auth.setSession(account.session)
+        // A refresh token that has expired or been used elsewhere means this
+        // account has to sign in again.
+        if (error) {
+          clearAccountSession(account.id)
+          return false
+        }
+        return true
+      },
       async signInAsGuest() {
         // A guest is a real but throwaway account, so presence, entering a
         // Space and the chat dock all behave normally. Supabase needs
@@ -196,6 +225,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       },
       async signOut() {
         await supabase.rpc('touch_presence', { online: false })
+        // Logging out has to actually log out, so the stored session goes
+        // with it while the account stays on the switcher.
+        if (userId) clearAccountSession(userId)
         await supabase.auth.signOut()
       },
       async refreshProfile() {

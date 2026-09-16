@@ -9,6 +9,7 @@ import { Card } from '@/components/ui/Card'
 import { Input } from '@/components/ui/Input'
 import { EmptyState, ErrorState, Skeleton } from '@/components/ui/States'
 import { useToast } from '@/components/ui/Toast'
+import { GuestGate } from '@/components/ui/GuestGate'
 import { AssetTile, kindIcons, kindLabels } from '@/components/create/AssetTile'
 import { UploadDialog } from '@/components/create/UploadDialog'
 import { useAuth } from '@/hooks/useAuth'
@@ -94,9 +95,11 @@ export default function Create() {
               Images, sounds, video and fonts, made by people here.
             </p>
           </div>
-          <Button icon={faUpload} onClick={() => setUploading(true)} disabled={!profile}>
-            Upload
-          </Button>
+          <GuestGate action="upload">
+            <Button icon={faUpload} onClick={() => setUploading(true)} disabled={!profile}>
+              Upload
+            </Button>
+          </GuestGate>
         </header>
 
         <div className="mb-5 space-y-3">

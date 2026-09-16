@@ -191,3 +191,17 @@ export type SpaceMessage = {
   created_at: string
   sender?: Pick<Profile, 'username' | 'display_name' | 'avatar_url' | 'is_admin'> | null
 }
+
+export type ConversationMember = Pick<
+  Profile, 'id' | 'username' | 'display_name' | 'avatar_url' | 'is_online' | 'in_space_id'
+>
+
+export type Conversation = {
+  id: string
+  title: string | null
+  is_group: boolean
+  last_message_at: string
+  last_message: string | null
+  unread_count: number
+  members: ConversationMember[]
+}

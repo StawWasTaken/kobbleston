@@ -2,7 +2,7 @@ import { supabase } from './supabase'
 import type {
   ActivityEvent, AssetKind, Community, CommunityRole, EarnedBadge, Friendship, MarketAsset,
   MemberCommunity, Message, Notification, OwnAsset, PixelTransaction, PlatformStats, Profile,
-  ProfileOverview, Space, SpaceBadge, SpaceCategory, SpaceMessage,
+  ProfileOverview, Space, SpaceBadge, SpaceCategory, SpaceMessage, Conversation,
 } from '@/types/db'
 
 const SPACE_FIELDS =
@@ -177,46 +177,6 @@ export async function removeFriendship(id: string) {
 }
 
 // -------------------------------------------------------------------- chat
-
-export type ConversationSummary = {
-  id: string
-  last_message_at: string
-  other: Profile
-  lastMessage: string | null
-}
-
-export async function listConversations(userId: string): Promise<ConversationSummary[]> {
-  const memberships = unwrap(await supabase.from('conversation_members')
-    .select('conversation_id').eq('user_id', userId)) as { conversation_id: string }[]
-  if (!memberships?.length) return []
-
-  const ids = memberships.map((m) => m.conversation_id)
-  const [conversations, others, latest] = await Promise.all([
-    supabase.from('conversations').select('id, last_message_at').in('id', ids)
-      .order('last_message_at', { ascending: false }),
-    supabase.from('conversation_members')
-      .select('conversation_id, profiles:profiles!conversation_members_user_id_fkey (*)')
-      .in('conversation_id', ids).neq('user_id', userId),
-    supabase.from('messages').select('conversation_id, body, created_at')
-      .in('conversation_id', ids).order('created_at', { ascending: false }).limit(200),
-  ])
-
-  const otherRows = (others.data ?? []) as unknown as
-    { conversation_id: string; profiles: Profile }[]
-  const profileByConversation = new Map(otherRows.map((r) => [r.conversation_id, r.profiles]))
-
-  const lastByConversation = new Map<string, string>()
-  for (const m of (latest.data ?? []) as { conversation_id: string; body: string }[]) {
-    if (!lastByConversation.has(m.conversation_id)) lastByConversation.set(m.conversation_id, m.body)
-  }
-
-  return ((conversations.data ?? []) as { id: string; last_message_at: string }[]).flatMap((c) => {
-    const other = profileByConversation.get(c.id)
-    return other
-      ? [{ id: c.id, last_message_at: c.last_message_at, other, lastMessage: lastByConversation.get(c.id) ?? null }]
-      : []
-  })
-}
 
 export async function startConversation(otherId: string): Promise<string> {
   return unwrap(await supabase.rpc('start_conversation', { other: otherId })) as string
@@ -543,4 +503,48 @@ export async function updateSpaceChatSettings(spaceId: string, patch: {
 export async function checkUsername(candidate: string): Promise<{ ok: boolean; reason: string | null }> {
   const rows = unwrap(await supabase.rpc('check_username', { candidate }))
   return (Array.isArray(rows) ? rows[0] : rows) as { ok: boolean; reason: string | null }
+}
+
+/**
+ * Signs in with a username. The lookup from username to email runs in the
+ * `login` edge function behind the service role key, so nothing here can be
+ * used to harvest addresses.
+ */
+export async function signInWithUsername(username: string, password: string) {
+  const { data, error } = await supabase.functions.invoke('login', {
+    body: { username, password },
+  })
+
+  if (error) {
+    // The function returns its own message in the body on a refusal.
+    const detail = await (error as { context?: Response }).context?.json?.().catch(() => null)
+    throw new Error(detail?.error ?? 'Wrong username or password.')
+  }
+
+  const { access_token, refresh_token } = data as { access_token: string; refresh_token: string }
+  const applied = await supabase.auth.setSession({ access_token, refresh_token })
+  if (applied.error) throw new Error(applied.error.message)
+  return applied.data.session
+}
+
+// -------------------------------------------------------------- group chat
+
+export async function myConversations(): Promise<Conversation[]> {
+  return (unwrap(await supabase.rpc('my_conversations')) as Conversation[]) ?? []
+}
+
+export async function createGroupConversation(title: string, memberIds: string[]): Promise<string> {
+  return unwrap(await supabase.rpc('create_group_conversation', {
+    title: title.trim(),
+    members: memberIds,
+  })) as string
+}
+
+/** What a conversation is called when it has no name of its own. */
+export function conversationName(conversation: Conversation) {
+  if (conversation.title) return conversation.title
+  const names = conversation.members.map((m) => m.display_name)
+  if (!names.length) return 'Empty chat'
+  if (names.length <= 2) return names.join(' and ')
+  return `${names.slice(0, 2).join(', ')} and ${names.length - 2} more`
 }

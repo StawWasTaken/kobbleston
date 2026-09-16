@@ -106,7 +106,10 @@ is wired and what still needs deploying.
   can shape or switch off, and friends, follows and notifications.
 - **Automated review** of usernames, Space text, uploads and messages, which
   decides as things are submitted rather than queueing them.
-- **Account switching** between accounts used on this device.
+- **Account switching** between accounts used on this device, without logging
+  in again.
+- **Group chats** of up to five friends, in a dock that remembers whether you
+  left it open.
 
 ## Not built yet
 
@@ -118,6 +121,11 @@ Content review is a rule based filter, not a model. It catches the obvious
 cases and the common ways around them; it is not a substitute for people
 reporting things.
 
+Account switching keeps each account's session in this origin's storage so
+switching is instant. That is a deliberate trade: anything able to read that
+storage reaches every listed account, not just the current one. Logging out
+drops that account's tokens, and guests are never stored.
+
 Ads are not built. When they are, the share owed to the person whose Space
 shows one is 15 percent, and `pixel_transactions` already has the shape to
 record it.
@@ -128,6 +136,11 @@ there is no editor yet for a Space to award them from.
 Content review is a rule based filter, not a model. It catches the obvious
 cases and the common ways around them; it is not a substitute for people
 reporting things.
+
+Account switching keeps each account's session in this origin's storage so
+switching is instant. That is a deliberate trade: anything able to read that
+storage reaches every listed account, not just the current one. Logging out
+drops that account's tokens, and guests are never stored.
 
 Ads are not built. When they are, the share owed to the person whose Space
 shows one is 15 percent, and `pixel_transactions` already has the shape to

@@ -9,6 +9,7 @@ import { Dialog } from '@/components/ui/Dialog'
 import { Input, Textarea } from '@/components/ui/Input'
 import { EmptyState, ErrorState, Skeleton } from '@/components/ui/States'
 import { useToast } from '@/components/ui/Toast'
+import { GuestGate } from '@/components/ui/GuestGate'
 import { useAuth } from '@/hooks/useAuth'
 import { useAsync } from '@/hooks/useAsync'
 import { createCommunity, listCommunities, listMemberCommunities } from '@/lib/api'
@@ -96,9 +97,11 @@ export default function Communities() {
             <h1 className="font-display text-3xl font-extrabold sm:text-4xl">Communities</h1>
             <p className="mt-1.5 text-muted">Groups of people building around the same thing.</p>
           </div>
-          <Button icon={faPlus} onClick={() => setMaking(true)} disabled={!profile}>
-            New Community
-          </Button>
+          <GuestGate action="make a Community">
+            <Button icon={faPlus} onClick={() => setMaking(true)} disabled={!profile}>
+              New Community
+            </Button>
+          </GuestGate>
         </header>
 
         <Input

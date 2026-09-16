@@ -1,0 +1,1 @@
+import{In as e,Pn as t,o as n,xn as r,yt as i}from"./Card-uk4MG5Ce.js";var a=e(t(),1),o=r();function s({action:e,side:t=`top`,children:r}){let{profile:s}=i();return s?.is_guest?(0,o.jsx)(n,{label:`Guests cannot ${e}. Make an account and you can.`,side:t,children:(0,o.jsx)(`span`,{className:`inline-flex`,children:(0,a.cloneElement)(r,{disabled:!0})})}):r}export{s as t};
