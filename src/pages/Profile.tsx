@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useNavigate, useParams } from 'react-router-dom'
+import { useParams } from 'react-router-dom'
 import {
   faCalendarDays, faComment, faFlag, faGear, faUserCheck, faUserPlus, faClock,
 } from '@fortawesome/free-solid-svg-icons'
@@ -13,6 +13,7 @@ import { EmptyState, ErrorState, SpaceCardSkeleton, Skeleton } from '@/component
 import { useToast } from '@/components/ui/Toast'
 import { ReportDialog } from '@/components/social/ReportDialog'
 import { SpaceCard } from '@/components/spaces/SpaceCard'
+import { useChatDock } from '@/components/chat/ChatDock'
 import { useAuth } from '@/hooks/useAuth'
 import { useAsync } from '@/hooks/useAsync'
 import {
@@ -24,7 +25,7 @@ import { asset } from '@/lib/asset'
 export default function Profile() {
   const { username = '' } = useParams()
   const { profile: me } = useAuth()
-  const navigate = useNavigate()
+  const { openConversation } = useChatDock()
   const toast = useToast()
   const [reporting, setReporting] = useState(false)
 
@@ -59,7 +60,7 @@ export default function Profile() {
   const message = async () => {
     if (!person.data) return
     try {
-      navigate(`/chat/${await startConversation(person.data.id)}`)
+      openConversation(await startConversation(person.data.id))
     } catch (err) {
       toast(err instanceof Error ? err.message : 'You can only message friends.', 'error')
     }

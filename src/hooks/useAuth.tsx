@@ -2,6 +2,8 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useRef, use
 import type { ReactNode } from 'react'
 import type { Session } from '@supabase/supabase-js'
 import { supabase } from '@/lib/supabase'
+import { uploadAvatar } from '@/lib/api'
+import { randomAvatar } from '@/lib/avatars'
 import type { Profile } from '@/types/db'
 
 type AuthValue = {
@@ -19,7 +21,7 @@ export type SignupDetails = {
   password: string
   username: string
   displayName: string
-  avatarUrl: string
+  avatarFile: File | null
   birthDate: string
   gender: string
 }
@@ -33,6 +35,9 @@ export function useAuth() {
 }
 
 const PRESENCE_INTERVAL = 60_000
+
+/** Held when signup could not upload yet because no session existed. */
+let pendingAvatar: File | null = null
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [session, setSession] = useState<Session | null>(null)
@@ -67,9 +72,25 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (!userId) return
     let cancelled = false
     setLoading(true)
-    loadProfile(userId).finally(() => {
+
+    const run = async () => {
+      if (pendingAvatar) {
+        const file = pendingAvatar
+        pendingAvatar = null
+        try {
+          const url = await uploadAvatar(userId, file)
+          await supabase.from('profiles').update({ avatar_url: url }).eq('id', userId)
+        } catch {
+          // Not worth blocking sign-in over; the picture can be set later.
+        }
+      }
+      await loadProfile(userId)
+    }
+
+    run().finally(() => {
       if (!cancelled) setLoading(false)
     })
+
     return () => {
       cancelled = true
     }
@@ -110,20 +131,32 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         if (error) throw error
       },
       async signUp(details) {
-        const { error } = await supabase.auth.signUp({
+        const { data, error } = await supabase.auth.signUp({
           email: details.email,
           password: details.password,
           options: {
             data: {
               username: details.username,
               display_name: details.displayName || details.username,
-              avatar_url: details.avatarUrl,
+              // No upload means one of the Kobby pictures, decided here so
+              // the account always has one.
+              avatar_url: details.avatarFile ? '' : randomAvatar(),
               birth_date: details.birthDate,
               gender: details.gender,
             },
           },
         })
         if (error) throw error
+
+        // Storage needs a signed-in user. When the project asks for email
+        // confirmation there is no session yet, so the picture is set on the
+        // first sign-in instead and a Kobby picture stands in until then.
+        if (details.avatarFile && data.session) {
+          const url = await uploadAvatar(data.session.user.id, details.avatarFile)
+          await supabase.from('profiles').update({ avatar_url: url }).eq('id', data.session.user.id)
+        } else if (details.avatarFile) {
+          pendingAvatar = details.avatarFile
+        }
       },
       async signOut() {
         await supabase.rpc('touch_presence', { online: false })

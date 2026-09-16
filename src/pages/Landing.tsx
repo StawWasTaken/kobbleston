@@ -1,5 +1,4 @@
-import { useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faUsers, faShapes } from '@fortawesome/free-solid-svg-icons'
 import type { IconDefinition } from '@fortawesome/fontawesome-svg-core'
@@ -11,65 +10,9 @@ import { Kobby } from '@/components/brand/Kobby'
 import { SpaceCard } from '@/components/spaces/SpaceCard'
 import { AssetTile } from '@/components/create/AssetTile'
 import { SignupForm } from '@/components/auth/SignupForm'
-import { useAuth } from '@/hooks/useAuth'
 import { useAsync } from '@/hooks/useAsync'
 import { listAssets, listSpaces } from '@/lib/api'
 import { asset } from '@/lib/asset'
-
-function TopBar() {
-  const { signIn } = useAuth()
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
-  const [failed, setFailed] = useState(false)
-
-  const submit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    try {
-      await signIn(email, password)
-    } catch {
-      setFailed(true)
-    }
-  }
-
-  return (
-    <header className="sticky top-0 z-30 border-b-2 border-brand-ink bg-brand-deep">
-      <div className="mx-auto flex h-14 max-w-6xl items-center gap-6 px-4 sm:px-6">
-        <Wordmark to={null} className="h-5" />
-
-        <nav className="hidden items-center gap-5 text-sm font-bold text-white/75 sm:flex">
-          <Link to="/discover" className="hover:text-white">Discover</Link>
-          <Link to="/create" className="hover:text-white">Create</Link>
-        </nav>
-
-        <form onSubmit={submit} className="ml-auto flex items-center gap-2">
-          <label className="sr-only" htmlFor="quick-email">Email</label>
-          <input
-            id="quick-email"
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            placeholder="Email"
-            className="hidden h-8 w-36 rounded-md border border-white/20 bg-black/30 px-2.5 text-sm text-white placeholder:text-white/40 focus:border-white/50 md:block"
-          />
-          <label className="sr-only" htmlFor="quick-password">Password</label>
-          <input
-            id="quick-password"
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            placeholder="Password"
-            className="hidden h-8 w-32 rounded-md border border-white/20 bg-black/30 px-2.5 text-sm text-white placeholder:text-white/40 focus:border-white/50 md:block"
-          />
-          <Button type="submit" size="sm" variant="subtle" className="hidden md:inline-flex">Log In</Button>
-          <Button size="sm" to="/login" className="md:hidden">Log In</Button>
-          {failed && (
-            <p role="alert" className="hidden text-xs text-red-300 lg:block">Wrong email or password</p>
-          )}
-        </form>
-      </div>
-    </header>
-  )
-}
 
 function Feature({
   icon, title, children,
@@ -95,9 +38,7 @@ export default function Landing() {
   const assets = useAsync(() => listAssets({ limit: 8 }), [])
 
   return (
-    <div className="min-h-dvh bg-ink">
-      <TopBar />
-
+    <>
       {/* ----------------------------------------------------------- hero */}
       <section className="relative border-b-4 border-brand-ink">
         <img
@@ -244,13 +185,6 @@ export default function Landing() {
         </div>
       </section>
 
-      <footer className="mx-auto flex max-w-6xl flex-col items-center gap-x-6 gap-y-2 px-4 py-8 text-sm text-muted sm:flex-row sm:px-6">
-        <Wordmark to={null} className="h-4 opacity-60" />
-        <Link to="/discover" className="hover:text-white">Discover</Link>
-        <Link to="/create" className="hover:text-white">Create</Link>
-        <Link to="/terms" className="hover:text-white">Terms</Link>
-        <Link to="/guidelines" className="hover:text-white">Guidelines</Link>
-      </footer>
-    </div>
+    </>
   )
 }

@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link } from 'react-router-dom'
 import {
   faCheck, faComment, faMagnifyingGlass, faUserMinus, faUserPlus, faXmark,
 } from '@fortawesome/free-solid-svg-icons'
@@ -11,6 +11,7 @@ import { Avatar } from '@/components/ui/Avatar'
 import { PresenceLabel, StatusDot, presenceOf } from '@/components/ui/StatusDot'
 import { EmptyState, ErrorState, Skeleton } from '@/components/ui/States'
 import { useToast } from '@/components/ui/Toast'
+import { useChatDock } from '@/components/chat/ChatDock'
 import { useAuth } from '@/hooks/useAuth'
 import { useAsync } from '@/hooks/useAsync'
 import {
@@ -126,7 +127,7 @@ function FindPeople({ onChanged }: { onChanged: () => void }) {
 
 export default function Friends() {
   const { profile } = useAuth()
-  const navigate = useNavigate()
+  const { openConversation } = useChatDock()
   const toast = useToast()
   const { data, error, loading, reload } = useAsync(
     async () => (profile ? listFriendships(profile.id) : []),
@@ -163,8 +164,7 @@ export default function Friends() {
 
   const message = async (otherId: string) => {
     try {
-      const conversationId = await startConversation(otherId)
-      navigate(`/chat/${conversationId}`)
+      openConversation(await startConversation(otherId))
     } catch (err) {
       toast(err instanceof Error ? err.message : 'Could not open that chat.', 'error')
     }

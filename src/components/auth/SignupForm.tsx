@@ -1,31 +1,38 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
-import { BirthdayPicker, birthdayToDate } from './BirthdayPicker'
+import { Reveal } from '@/components/ui/Reveal'
+import { BirthdayPicker, birthdayToDate, emptyBirthday } from './BirthdayPicker'
 import type { Birthday } from './BirthdayPicker'
 import { GenderPicker } from './GenderPicker'
 import type { Gender } from './GenderPicker'
-import { AvatarPicker } from './AvatarPicker'
+import { AvatarUpload } from './AvatarUpload'
 import { useAuth } from '@/hooks/useAuth'
 import { isOldEnough, MINIMUM_AGE } from '@/lib/age'
-import { randomAvatar } from '@/lib/avatars'
 
 type Errors = Partial<Record<'birthday' | 'username' | 'email' | 'password' | 'confirm' | 'form', string>>
 
 export function SignupForm({ onSent }: { onSent: (email: string) => void }) {
   const { signUp } = useAuth()
 
-  const [birthday, setBirthday] = useState<Birthday>({ day: '', month: '', year: '' })
-  const [displayName, setDisplayName] = useState('')
+  const [birthday, setBirthday] = useState<Birthday>(emptyBirthday)
   const [username, setUsername] = useState('')
-  const [avatar, setAvatar] = useState('')
+  const [displayName, setDisplayName] = useState('')
+  const [displayNameTouched, setDisplayNameTouched] = useState(false)
+  const [avatar, setAvatar] = useState<File | null>(null)
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [confirm, setConfirm] = useState('')
   const [gender, setGender] = useState<Gender>('')
   const [errors, setErrors] = useState<Errors>({})
   const [pending, setPending] = useState(false)
+
+  // The display name starts as a copy of the username and follows it until
+  // the person edits it themselves.
+  useEffect(() => {
+    if (!displayNameTouched) setDisplayName(username)
+  }, [username, displayNameTouched])
 
   const validate = () => {
     const found: Errors = {}
@@ -38,7 +45,7 @@ export function SignupForm({ onSent }: { onSent: (email: string) => void }) {
       found.username = 'Letters, numbers and underscores. 3 to 20 characters.'
     }
     if (password.length < 8) found.password = 'At least 8 characters.'
-    if (password !== confirm) found.confirm = 'Both passwords need to match.'
+    else if (password !== confirm) found.confirm = 'Both passwords need to match.'
 
     setErrors(found)
     return Object.keys(found).length === 0
@@ -54,8 +61,8 @@ export function SignupForm({ onSent }: { onSent: (email: string) => void }) {
         email,
         password,
         username,
-        displayName: displayName.trim(),
-        avatarUrl: avatar || randomAvatar(),
+        displayName: displayName.trim() || username,
+        avatarFile: avatar,
         birthDate: birthdayToDate(birthday),
         gender,
       })
@@ -81,16 +88,20 @@ export function SignupForm({ onSent }: { onSent: (email: string) => void }) {
         placeholder="3 to 20 characters, no spaces"
       />
 
-      <Input
-        label="Display name"
-        labelNote="optional"
-        value={displayName}
-        onChange={(e) => setDisplayName(e.target.value)}
-        maxLength={32}
-        placeholder="What people see instead of your @name"
-      />
+      <Reveal when={username.length > 0}>
+        <Input
+          label="Display name"
+          labelNote="what people see, you can change it"
+          value={displayName}
+          onChange={(e) => {
+            setDisplayNameTouched(true)
+            setDisplayName(e.target.value)
+          }}
+          maxLength={32}
+        />
+      </Reveal>
 
-      <AvatarPicker value={avatar} onChange={setAvatar} />
+      <AvatarUpload file={avatar} onChange={setAvatar} />
 
       <Input
         label="Email"
@@ -112,14 +123,16 @@ export function SignupForm({ onSent }: { onSent: (email: string) => void }) {
         placeholder="At least 8 characters"
       />
 
-      <Input
-        label="Confirm password"
-        type="password"
-        value={confirm}
-        onChange={(e) => setConfirm(e.target.value)}
-        autoComplete="new-password"
-        error={errors.confirm}
-      />
+      <Reveal when={password.length > 0}>
+        <Input
+          label="Confirm password"
+          type="password"
+          value={confirm}
+          onChange={(e) => setConfirm(e.target.value)}
+          autoComplete="new-password"
+          error={errors.confirm}
+        />
+      </Reveal>
 
       <GenderPicker value={gender} onChange={setGender} />
 

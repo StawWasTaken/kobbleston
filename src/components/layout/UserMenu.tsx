@@ -1,0 +1,84 @@
+import { useEffect, useRef, useState } from 'react'
+import { Link } from 'react-router-dom'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import {
+  faGear, faShieldHalved, faRightFromBracket, faUser, faScroll,
+} from '@fortawesome/free-solid-svg-icons'
+import type { IconDefinition } from '@fortawesome/fontawesome-svg-core'
+import { useAuth } from '@/hooks/useAuth'
+
+type Item = { to?: string; label: string; icon: IconDefinition; onSelect?: () => void }
+
+export function UserMenu() {
+  const { profile, signOut } = useAuth()
+  const [open, setOpen] = useState(false)
+  const root = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    if (!open) return
+    const onPointer = (e: PointerEvent) => {
+      if (!root.current?.contains(e.target as Node)) setOpen(false)
+    }
+    const onKey = (e: KeyboardEvent) => e.key === 'Escape' && setOpen(false)
+    document.addEventListener('pointerdown', onPointer)
+    document.addEventListener('keydown', onKey)
+    return () => {
+      document.removeEventListener('pointerdown', onPointer)
+      document.removeEventListener('keydown', onKey)
+    }
+  }, [open])
+
+  const items: Item[] = [
+    ...(profile ? [{ to: `/u/${profile.username}`, label: 'My Profile', icon: faUser }] : []),
+    { to: '/settings', label: 'Settings', icon: faGear },
+    { to: '/guidelines', label: 'Help & Safety', icon: faShieldHalved },
+    { to: '/terms', label: 'Terms', icon: faScroll },
+    ...(profile ? [{ label: 'Log Out', icon: faRightFromBracket, onSelect: signOut }] : []),
+  ]
+
+  return (
+    <div ref={root} className="relative">
+      <button
+        onClick={() => setOpen((v) => !v)}
+        aria-haspopup="menu"
+        aria-expanded={open}
+        aria-label="Account menu"
+        className="grid h-9 w-9 place-items-center rounded-lg text-white/85 transition-colors hover:bg-white/15"
+      >
+        <FontAwesomeIcon icon={faGear} />
+      </button>
+
+      {open && (
+        <div
+          role="menu"
+          className="absolute right-0 top-[calc(100%+6px)] z-50 w-52 animate-pop-in overflow-hidden rounded-lg border border-ink-line bg-ink-card py-1 shadow-pop"
+        >
+          {items.map((item) =>
+            item.to ? (
+              <Link
+                key={item.label}
+                to={item.to}
+                role="menuitem"
+                onClick={() => setOpen(false)}
+                className="flex items-center gap-3 px-4 py-2.5 text-sm font-semibold text-white/80 transition-colors hover:bg-ink-hover hover:text-white"
+              >
+                <FontAwesomeIcon icon={item.icon} className="w-4 text-white/45" />
+                {item.label}
+              </Link>
+            ) : (
+              <button
+                key={item.label}
+                role="menuitem"
+                onClick={() => { setOpen(false); item.onSelect?.() }}
+                className="flex w-full items-center gap-3 px-4 py-2.5 text-left text-sm font-semibold text-white/80 transition-colors hover:bg-ink-hover hover:text-white"
+              >
+                <FontAwesomeIcon icon={item.icon} className="w-4 text-white/45" />
+                {item.label}
+              </button>
+            ),
+          )}
+        </div>
+      )}
+    </div>
+  )
+}

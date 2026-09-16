@@ -1,6 +1,7 @@
 import { Suspense, lazy } from 'react'
 import { BrowserRouter, Navigate, Outlet, Route, Routes } from 'react-router-dom'
 import { AppShell } from '@/components/layout/AppShell'
+import { PublicLayout } from '@/components/layout/PublicLayout'
 import { ToastProvider } from '@/components/ui/Toast'
 import { AuthProvider, useAuth } from '@/hooks/useAuth'
 import { Logomark } from '@/components/brand/Wordmark'
@@ -13,11 +14,11 @@ import NotFound from '@/pages/NotFound'
 // Everything behind the front door loads on demand.
 const SpacePage = lazy(() => import('@/pages/SpacePage'))
 const Create = lazy(() => import('@/pages/Create'))
+const Search = lazy(() => import('@/pages/Search'))
 const NewSpace = lazy(() => import('@/pages/NewSpace'))
 const Terms = lazy(() => import('@/pages/Policies').then((m) => ({ default: m.Terms })))
 const Guidelines = lazy(() => import('@/pages/Policies').then((m) => ({ default: m.Guidelines })))
 const Friends = lazy(() => import('@/pages/Friends'))
-const Chat = lazy(() => import('@/pages/Chat'))
 const Library = lazy(() => import('@/pages/Library'))
 const Profile = lazy(() => import('@/pages/Profile'))
 const Settings = lazy(() => import('@/pages/Settings'))
@@ -51,16 +52,21 @@ export default function App() {
         <ToastProvider>
           <Suspense fallback={<Booting />}>
             <Routes>
-              <Route path="/" element={<RootRoute />} />
               <Route path="/login" element={<Auth mode="login" />} />
               <Route path="/signup" element={<Auth mode="signup" />} />
 
-              <Route element={<AppShell />}>
-                {/* public inside the shell so a shared link works logged out */}
-                <Route path="/discover" element={<Discover />} />
-                <Route path="/create" element={<Create />} />
+              {/* the side of the site anyone can read without an account */}
+              <Route element={<PublicLayout />}>
+                <Route path="/" element={<RootRoute />} />
                 <Route path="/terms" element={<Terms />} />
                 <Route path="/guidelines" element={<Guidelines />} />
+              </Route>
+
+              <Route element={<AppShell />}>
+                {/* open to guests so a shared link works logged out */}
+                <Route path="/discover" element={<Discover />} />
+                <Route path="/create" element={<Create />} />
+                <Route path="/search" element={<Search />} />
                 <Route path="/u/:username" element={<Profile />} />
                 <Route path="/u/:username/:slug" element={<SpacePage />} />
 
@@ -68,8 +74,6 @@ export default function App() {
                   <Route path="/home" element={<Home />} />
                   <Route path="/spaces/new" element={<NewSpace />} />
                   <Route path="/friends" element={<Friends />} />
-                  <Route path="/chat" element={<Chat />} />
-                  <Route path="/chat/:conversationId" element={<Chat />} />
                   <Route path="/library" element={<Library />} />
                   <Route path="/settings" element={<Settings />} />
                 </Route>

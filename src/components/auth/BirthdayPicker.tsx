@@ -1,23 +1,21 @@
-import { useId } from 'react'
+import { Picker } from '@/components/ui/Picker'
 
 const months = [
   'January', 'February', 'March', 'April', 'May', 'June',
   'July', 'August', 'September', 'October', 'November', 'December',
 ]
 
-const field =
-  'h-10 rounded-lg border border-ink-line bg-ink-raised px-2.5 text-sm text-white ' +
-  'transition-colors focus:border-brand-bright'
-
 const thisYear = new Date().getFullYear()
-const years = Array.from({ length: 90 }, (_, i) => thisYear - i)
+const years = Array.from({ length: 90 }, (_, i) => String(thisYear - i))
 
 function daysIn(month: number, year: number) {
-  if (!month || !year) return 31
-  return new Date(year, month, 0).getDate()
+  if (!month) return 31
+  return new Date(year || 2000, month, 0).getDate()
 }
 
 export type Birthday = { day: string; month: string; year: string }
+
+export const emptyBirthday: Birthday = { day: '', month: '', year: '' }
 
 export const birthdayToDate = (b: Birthday) =>
   b.day && b.month && b.year
@@ -33,52 +31,48 @@ export function BirthdayPicker({
   onChange: (next: Birthday) => void
   error?: string | null
 }) {
-  const id = useId()
   const dayCount = daysIn(Number(value.month), Number(value.year))
+
+  // A shorter month clears a day that no longer exists rather than quietly
+  // holding an impossible date.
+  const setMonth = (month: string) => {
+    const limit = daysIn(Number(month), Number(value.year))
+    onChange({ ...value, month, day: Number(value.day) > limit ? '' : value.day })
+  }
 
   return (
     <fieldset>
       <legend className="mb-1.5 text-xs font-bold uppercase tracking-wide text-muted">Birthday</legend>
-      <div className="grid grid-cols-[1.4fr_1fr_1.2fr] gap-2">
-        <label className="sr-only" htmlFor={`${id}-month`}>Month</label>
-        <select
-          id={`${id}-month`}
-          className={field}
+      <div className="grid grid-cols-[1.5fr_1fr_1.1fr] gap-2">
+        <Picker
+          label="Birth month"
+          placeholder="Month"
           value={value.month}
-          onChange={(e) => onChange({ ...value, month: e.target.value })}
-          required
-        >
-          <option value="">Month</option>
-          {months.map((name, i) => (
-            <option key={name} value={String(i + 1)}>{name}</option>
-          ))}
-        </select>
-
-        <label className="sr-only" htmlFor={`${id}-day`}>Day</label>
-        <select
-          id={`${id}-day`}
-          className={field}
+          invalid={Boolean(error)}
+          columns={2}
+          onChange={setMonth}
+          options={months.map((name, i) => ({ value: String(i + 1), label: name.slice(0, 3) }))}
+        />
+        <Picker
+          label="Birth day"
+          placeholder="Day"
           value={value.day}
-          onChange={(e) => onChange({ ...value, day: e.target.value })}
-          required
-        >
-          <option value="">Day</option>
-          {Array.from({ length: dayCount }, (_, i) => (
-            <option key={i + 1} value={String(i + 1)}>{i + 1}</option>
-          ))}
-        </select>
-
-        <label className="sr-only" htmlFor={`${id}-year`}>Year</label>
-        <select
-          id={`${id}-year`}
-          className={field}
+          invalid={Boolean(error)}
+          columns={4}
+          onChange={(day) => onChange({ ...value, day })}
+          options={Array.from({ length: dayCount }, (_, i) => ({
+            value: String(i + 1),
+            label: String(i + 1),
+          }))}
+        />
+        <Picker
+          label="Birth year"
+          placeholder="Year"
           value={value.year}
-          onChange={(e) => onChange({ ...value, year: e.target.value })}
-          required
-        >
-          <option value="">Year</option>
-          {years.map((y) => <option key={y} value={String(y)}>{y}</option>)}
-        </select>
+          invalid={Boolean(error)}
+          onChange={(year) => onChange({ ...value, year })}
+          options={years.map((y) => ({ value: y, label: y }))}
+        />
       </div>
       {error && <p className="mt-1.5 text-xs text-red-400">{error}</p>}
     </fieldset>

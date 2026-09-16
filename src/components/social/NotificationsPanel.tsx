@@ -37,7 +37,7 @@ function describe(n: Notification) {
 
 function linkFor(n: Notification) {
   if (n.kind === 'friend_request' || n.kind === 'friend_accepted') return '/friends'
-  if (n.kind === 'message') return '/chat'
+  if (n.kind === 'message') return '/friends'
   if (n.space && n.actor) return `/u/${n.actor.username}/${n.space.slug}`
   return '/home'
 }

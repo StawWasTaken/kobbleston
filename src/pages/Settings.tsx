@@ -4,10 +4,10 @@ import { Page } from '@/components/layout/AppShell'
 import { Button } from '@/components/ui/Button'
 import { Card, SectionHeading } from '@/components/ui/Card'
 import { Input, Textarea } from '@/components/ui/Input'
-import { Avatar } from '@/components/ui/Avatar'
+import { AvatarUpload } from '@/components/auth/AvatarUpload'
 import { useToast } from '@/components/ui/Toast'
 import { useAuth } from '@/hooks/useAuth'
-import { updateProfile } from '@/lib/api'
+import { updateProfile, uploadAvatar } from '@/lib/api'
 
 export default function Settings() {
   const { profile, session, refreshProfile, signOut } = useAuth()
@@ -16,7 +16,7 @@ export default function Settings() {
   const [displayName, setDisplayName] = useState('')
   const [username, setUsername] = useState('')
   const [bio, setBio] = useState('')
-  const [avatarUrl, setAvatarUrl] = useState('')
+  const [avatarFile, setAvatarFile] = useState<File | null>(null)
   const [pending, setPending] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -25,7 +25,6 @@ export default function Settings() {
     setDisplayName(profile.display_name)
     setUsername(profile.username)
     setBio(profile.bio ?? '')
-    setAvatarUrl(profile.avatar_url ?? '')
   }, [profile])
 
   const save = async (e: React.FormEvent) => {
@@ -38,12 +37,17 @@ export default function Settings() {
     setPending(true)
     setError(null)
     try {
+      const avatar_url = avatarFile
+        ? await uploadAvatar(profile.id, avatarFile)
+        : profile.avatar_url
+
       await updateProfile(profile.id, {
         display_name: displayName.trim(),
         username,
         bio: bio.trim() || null,
-        avatar_url: avatarUrl.trim() || null,
+        avatar_url,
       })
+      setAvatarFile(null)
       await refreshProfile()
       toast('Saved.', 'success')
     } catch (err) {
@@ -63,17 +67,20 @@ export default function Settings() {
 
       <form onSubmit={save} className="space-y-4">
         <Card className="space-y-5 p-5 sm:p-6">
-          <div className="flex items-center gap-4">
-            <Avatar src={avatarUrl || null} name={displayName || 'K'} size="lg" />
-            <div className="flex-1">
-              <Input
-                label="Avatar image URL"
-                value={avatarUrl}
-                onChange={(e) => setAvatarUrl(e.target.value)}
-                placeholder="https://…"
-                hint="Paste a link to an image. Uploads are coming later."
+          <div className="flex items-start gap-4">
+            {!avatarFile && profile?.avatar_url && (
+              <img
+                src={profile.avatar_url}
+                alt=""
+                className="h-16 w-16 shrink-0 rounded-xl border border-ink-line object-cover"
               />
-            </div>
+            )}
+            <AvatarUpload
+              file={avatarFile}
+              onChange={setAvatarFile}
+              note="Upload a new one to replace what you have."
+              className="flex-1"
+            />
           </div>
 
           <Input

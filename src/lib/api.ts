@@ -341,3 +341,17 @@ export async function deleteAsset(id: string, filePath: string) {
   if (error) throw new Error(error.message)
   await supabase.storage.from(assetBucket).remove([filePath])
 }
+
+// --------------------------------------------------------- profile picture
+
+export async function uploadAvatar(userId: string, file: File): Promise<string> {
+  const extension = file.name.split('.').pop()?.toLowerCase() ?? 'png'
+  const path = `${userId}/${Date.now()}.${extension}`
+
+  const { error } = await supabase.storage
+    .from('avatars')
+    .upload(path, file, { contentType: file.type, upsert: true })
+  if (error) throw new Error(error.message)
+
+  return supabase.storage.from('avatars').getPublicUrl(path).data.publicUrl
+}
