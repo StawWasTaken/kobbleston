@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faUsers, faShapes } from '@fortawesome/free-solid-svg-icons'
@@ -10,6 +11,7 @@ import { Kobby } from '@/components/brand/Kobby'
 import { SpaceCard } from '@/components/spaces/SpaceCard'
 import { AssetTile } from '@/components/create/AssetTile'
 import { SignupForm } from '@/components/auth/SignupForm'
+import { useAuth } from '@/hooks/useAuth'
 import { useAsync } from '@/hooks/useAsync'
 import { listAssets, listSpaces } from '@/lib/api'
 import { asset } from '@/lib/asset'
@@ -34,6 +36,23 @@ function Feature({
 
 export default function Landing() {
   const navigate = useNavigate()
+  const { signInAsGuest } = useAuth()
+  const [guestPending, setGuestPending] = useState(false)
+  const [guestError, setGuestError] = useState<string | null>(null)
+
+  const enterAsGuest = async () => {
+    setGuestPending(true)
+    setGuestError(null)
+    try {
+      await signInAsGuest()
+      navigate('/home')
+    } catch {
+      setGuestError('Guest mode is not switched on for this site yet.')
+    } finally {
+      setGuestPending(false)
+    }
+  }
+
   const spaces = useAsync(() => listSpaces({ sort: 'trending', limit: 6 }), [])
   const assets = useAsync(() => listAssets({ limit: 8 }), [])
 
@@ -60,8 +79,11 @@ export default function Landing() {
             </p>
             <div className="mt-6 flex flex-wrap gap-3">
               <Button size="lg" to="/discover">Look Around</Button>
-              <Button size="lg" variant="subtle" to="/create">Start Building</Button>
+              <Button size="lg" variant="subtle" loading={guestPending} onClick={enterAsGuest}>
+                Play as Guest
+              </Button>
             </div>
+            {guestError && <p className="mt-2 text-sm text-red-300">{guestError}</p>}
           </div>
 
           <div className="rounded-xl border border-ink-line bg-ink-card p-5">

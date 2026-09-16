@@ -1,55 +1,103 @@
-import { useState } from 'react'
-import { useParams } from 'react-router-dom'
-import {
-  faCalendarDays, faComment, faFlag, faGear, faUserCheck, faUserPlus, faClock,
-} from '@fortawesome/free-solid-svg-icons'
+import { useEffect, useState } from 'react'
+import { Link, useParams } from 'react-router-dom'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import {
+  faComment, faFlag, faGear, faUserPlus, faClock, faUserCheck, faCircleCheck, faAward,
+} from '@fortawesome/free-solid-svg-icons'
 import { Page } from '@/components/layout/AppShell'
 import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
 import { Avatar } from '@/components/ui/Avatar'
+import { Badge } from '@/components/ui/Badge'
 import { PresenceLabel, presenceOf } from '@/components/ui/StatusDot'
 import { EmptyState, ErrorState, SpaceCardSkeleton, Skeleton } from '@/components/ui/States'
 import { useToast } from '@/components/ui/Toast'
 import { ReportDialog } from '@/components/social/ReportDialog'
 import { SpaceCard } from '@/components/spaces/SpaceCard'
+import { BadgeTile } from '@/components/spaces/BadgeGrid'
 import { useChatDock } from '@/components/chat/ChatDock'
 import { useAuth } from '@/hooks/useAuth'
 import { useAsync } from '@/hooks/useAsync'
 import {
-  getProfileByUsername, listFriendships, listSpacesByOwner, sendFriendRequest, startConversation,
+  getProfileByUsername, getProfileOverview, isFollowing, listEarnedBadges, listFriendships,
+  listMemberCommunities, listSpacesByOwner, sendFriendRequest, setFollowing, startConversation,
 } from '@/lib/api'
 import { formatCount } from '@/lib/format'
 import { asset } from '@/lib/asset'
+import { cn } from '@/lib/cn'
+
+const tabs = ['About', 'Creations'] as const
+type Tab = (typeof tabs)[number]
+
+function Count({ label, value }: { label: string; value: number }) {
+  return (
+    <span className="rounded-lg border border-ink-line bg-ink-card px-2.5 py-1 text-xs font-bold">
+      {formatCount(value)} <span className="font-medium text-muted">{label}</span>
+    </span>
+  )
+}
 
 export default function Profile() {
   const { username = '' } = useParams()
   const { profile: me } = useAuth()
   const { openConversation } = useChatDock()
   const toast = useToast()
+
+  const [tab, setTab] = useState<Tab>('About')
   const [reporting, setReporting] = useState(false)
+  const [following, setFollowingState] = useState(false)
 
   const person = useAsync(() => getProfileByUsername(username), [username])
-  const isMe = me?.id === person.data?.id
+  const user = person.data
+  const isMe = me?.id === user?.id
 
-  const spaces = useAsync(
-    async () => (person.data ? listSpacesByOwner(person.data.id, isMe) : []),
-    [person.data?.id, isMe],
+  const overview = useAsync(
+    async () => (user ? getProfileOverview(user.id) : null),
+    [user?.id],
   )
-
+  const spaces = useAsync(
+    async () => (user ? listSpacesByOwner(user.id, Boolean(isMe)) : []),
+    [user?.id, isMe],
+  )
+  const badges = useAsync(
+    async () => (user ? listEarnedBadges(user.id) : []),
+    [user?.id],
+  )
+  const communities = useAsync(
+    async () => (user ? listMemberCommunities(user.id) : []),
+    [user?.id],
+  )
   const relationship = useAsync(
     async () => {
-      if (!me || !person.data || isMe) return null
+      if (!me || !user || isMe) return null
       const edges = await listFriendships(me.id)
-      return edges.find((e) => e.profile.id === person.data!.id) ?? null
+      return edges.find((e) => e.profile.id === user.id) ?? null
     },
-    [me?.id, person.data?.id, isMe],
+    [me?.id, user?.id, isMe],
   )
 
-  const addFriend = async () => {
-    if (!me || !person.data) return
+  useEffect(() => {
+    if (!me || !user || isMe) return
+    isFollowing(me.id, user.id).then(setFollowingState)
+  }, [me, user, isMe])
+
+  const toggleFollow = async () => {
+    if (!me || !user) return
+    const next = !following
+    setFollowingState(next)
     try {
-      await sendFriendRequest(me.id, person.data.id)
+      await setFollowing(me.id, user.id, next)
+      overview.reload()
+    } catch {
+      setFollowingState(!next)
+      toast('That did not save.', 'error')
+    }
+  }
+
+  const addFriend = async () => {
+    if (!me || !user) return
+    try {
+      await sendFriendRequest(me.id, user.id)
       toast('Friend request sent.', 'success')
       relationship.reload()
     } catch (err) {
@@ -58,9 +106,9 @@ export default function Profile() {
   }
 
   const message = async () => {
-    if (!person.data) return
+    if (!user) return
     try {
-      openConversation(await startConversation(person.data.id))
+      openConversation(await startConversation(user.id))
     } catch (err) {
       toast(err instanceof Error ? err.message : 'You can only message friends.', 'error')
     }
@@ -77,14 +125,14 @@ export default function Profile() {
 
   if (person.error) return <Page><ErrorState message={person.error} onRetry={person.reload} /></Page>
 
-  if (!person.data) {
+  if (!user) {
     return (
       <Page>
         <Card>
           <EmptyState
             mood="noResults"
             title="Nobody here"
-            body={`There's no @${username} on Kobbleston.`}
+            body={`There is no @${username} on Kobbleston.`}
             action={<Button to="/discover">Discover Spaces</Button>}
           />
         </Card>
@@ -92,35 +140,51 @@ export default function Profile() {
     )
   }
 
-  const user = person.data
   const edge = relationship.data
-  const visits = (spaces.data ?? []).reduce((total, s) => total + s.visit_count, 0)
+  const stats = overview.data
 
   return (
     <>
-      <div className="relative h-36 overflow-hidden bg-brand-ink sm:h-48">
-        <img src={asset(('/brand/banner3.png'))} alt="" aria-hidden="true" className="h-full w-full object-cover opacity-70" />
+      <div className="relative h-36 overflow-hidden bg-brand-ink sm:h-44">
+        <img
+          src={asset('/brand/banner3.png')}
+          alt=""
+          aria-hidden="true"
+          className="h-full w-full object-cover opacity-70"
+        />
         <div className="absolute inset-0 bg-gradient-to-t from-ink to-transparent" />
       </div>
 
-      <Page className="-mt-14 sm:-mt-16">
-        <div className="flex flex-col gap-5 sm:flex-row sm:items-end">
+      <Page className="-mt-14">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-end">
           <Avatar
             src={user.avatar_url}
             name={user.display_name}
             size="xl"
-            className="ring-4 ring-ink"
+            className="rounded-2xl ring-4 ring-ink"
           />
+
           <div className="min-w-0 flex-1">
-            <h1 className="font-display text-3xl font-extrabold sm:text-4xl">{user.display_name}</h1>
-            <div className="mt-1.5 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-muted">
+            <h1 className="flex items-center gap-2 font-display text-3xl font-extrabold">
+              {user.display_name}
+              {user.is_admin && (
+                <FontAwesomeIcon icon={faCircleCheck} className="text-xl text-[#4d68ff]" title="Verified" />
+              )}
+            </h1>
+            <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-muted">
               <span>@{user.username}</span>
               <PresenceLabel presence={presenceOf(user)} />
-              <span className="inline-flex items-center gap-1.5">
-                <FontAwesomeIcon icon={faCalendarDays} />
-                Joined {new Date(user.created_at).toLocaleDateString(undefined, { month: 'long', year: 'numeric' })}
-              </span>
+              {user.is_guest && <Badge tone="neutral">Guest</Badge>}
             </div>
+
+            {stats && (
+              <div className="mt-3 flex flex-wrap gap-2">
+                <Count label="Friends" value={stats.friend_count} />
+                <Count label="Followers" value={stats.follower_count} />
+                <Count label="Following" value={stats.following_count} />
+                <Count label="Badges" value={stats.badge_count} />
+              </div>
+            )}
           </div>
 
           <div className="flex flex-wrap gap-2">
@@ -129,15 +193,20 @@ export default function Profile() {
             ) : (
               <>
                 {edge?.friendship.status === 'accepted' ? (
-                  <Button icon={faComment} onClick={message}>Message</Button>
+                  <Button icon={faComment} onClick={message}>Chat</Button>
                 ) : edge?.friendship.status === 'pending' ? (
                   <Button variant="subtle" icon={faClock} disabled>Request pending</Button>
                 ) : (
-                  <Button icon={faUserPlus} onClick={addFriend} disabled={!me}>Add friend</Button>
+                  <Button icon={faUserPlus} onClick={addFriend} disabled={!me}>Add Friend</Button>
                 )}
-                {edge?.friendship.status === 'accepted' && (
-                  <Button variant="subtle" icon={faUserCheck} disabled>Friends</Button>
-                )}
+                <Button
+                  variant={following ? 'primary' : 'subtle'}
+                  icon={faUserCheck}
+                  onClick={toggleFollow}
+                  disabled={!me}
+                >
+                  {following ? 'Following' : 'Follow'}
+                </Button>
                 {me && (
                   <Button
                     variant="ghost"
@@ -151,53 +220,124 @@ export default function Profile() {
           </div>
         </div>
 
-        {user.bio && <p className="mt-5 max-w-2xl leading-relaxed text-white/70">{user.bio}</p>}
-
-        <div className="mt-6 flex flex-wrap gap-3">
-          {[
-            { label: 'Spaces', value: (spaces.data ?? []).filter((s) => s.is_published).length },
-            { label: 'Visits', value: visits },
-            { label: 'Likes', value: (spaces.data ?? []).reduce((t, s) => t + s.like_count, 0) },
-          ].map((stat) => (
-            <Card key={stat.label} className="px-4 py-3">
-              <p className="font-display text-xl font-extrabold tabular-nums">{formatCount(stat.value)}</p>
-              <p className="text-xs uppercase tracking-wide text-muted">{stat.label}</p>
-            </Card>
+        <div className="mt-6 flex border-b border-ink-line" role="tablist">
+          {tabs.map((name) => (
+            <button
+              key={name}
+              role="tab"
+              aria-selected={tab === name}
+              onClick={() => setTab(name)}
+              className={cn(
+                'flex-1 border-b-2 px-4 py-3 text-sm font-bold transition-colors sm:flex-none sm:px-10',
+                tab === name
+                  ? 'border-white text-white'
+                  : 'border-transparent text-white/50 hover:text-white',
+              )}
+            >
+              {name}
+            </button>
           ))}
         </div>
 
-        <section className="mt-10">
-          <h2 className="mb-4 text-xl font-extrabold">
-            {isMe ? 'Your Spaces' : `Spaces by ${user.display_name}`}
-          </h2>
+        {tab === 'About' && (
+          <div className="mt-6 space-y-8">
+            {user.bio && (
+              <p className="max-w-2xl whitespace-pre-wrap leading-relaxed text-white/70">{user.bio}</p>
+            )}
 
-          {spaces.loading && (
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-              {[0, 1, 2].map((i) => <SpaceCardSkeleton key={i} />)}
-            </div>
-          )}
+            <section>
+              <h2 className="mb-3 font-display text-xl font-extrabold">Communities</h2>
+              {communities.loading && (
+                <div className="flex gap-3">
+                  {[0, 1, 2].map((i) => <Skeleton key={i} className="h-24 w-32" />)}
+                </div>
+              )}
+              {!communities.loading && !communities.data?.length && (
+                <p className="text-sm text-muted">Not in any yet.</p>
+              )}
+              {!!communities.data?.length && (
+                <div className="-mx-4 flex gap-3 overflow-x-auto px-4 pb-2 sm:mx-0 sm:px-0 kob-scroll">
+                  {communities.data.map((community) => (
+                    <Link
+                      key={community.id}
+                      to={`/c/${community.slug}`}
+                      className="w-36 shrink-0 rounded-xl border border-ink-line bg-ink-card p-3 text-center transition-colors hover:border-brand/60"
+                    >
+                      <span className="mx-auto grid h-12 w-12 place-items-center overflow-hidden rounded-lg bg-brand-deep font-display text-lg font-extrabold">
+                        {community.icon_url
+                          ? <img src={community.icon_url} alt="" className="h-full w-full object-cover" />
+                          : community.name.slice(0, 2).toUpperCase()}
+                      </span>
+                      <p className="mt-2 truncate text-sm font-bold">{community.name}</p>
+                      <p className="text-xs text-muted">
+                        {formatCount(community.member_count)} members
+                      </p>
+                    </Link>
+                  ))}
+                </div>
+              )}
+            </section>
 
-          {!spaces.loading && !spaces.data?.length && (
-            <Card>
-              <EmptyState
-                mood="emptyBox"
-                title={isMe ? 'Nothing made yet' : 'No Spaces yet'}
-                body={
-                  isMe
-                    ? 'Your Spaces will show up here once you make one.'
-                    : `${user.display_name} hasn't published anything yet.`
-                }
-                action={isMe ? <Button to="/spaces/new">Make a Space</Button> : undefined}
-              />
-            </Card>
-          )}
+            <section>
+              <h2 className="mb-3 flex items-center gap-2 font-display text-xl font-extrabold">
+                <FontAwesomeIcon icon={faAward} className="text-base text-white/40" />
+                Badges
+              </h2>
+              {badges.loading && (
+                <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 lg:grid-cols-6">
+                  {[0, 1, 2, 3].map((i) => <Skeleton key={i} className="aspect-[4/5]" />)}
+                </div>
+              )}
+              {!badges.loading && !badges.data?.length && (
+                <p className="text-sm text-muted">
+                  {isMe ? 'Enter Spaces and earn some.' : 'None earned yet.'}
+                </p>
+              )}
+              {!!badges.data?.length && (
+                <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 lg:grid-cols-6">
+                  {badges.data.map((badge) => (
+                    <Link key={badge.id} to={`/u/${badge.space_owner}/${badge.space_slug}`}>
+                      <BadgeTile
+                        badge={{ ...badge, awarded_count: 0 }}
+                        earned
+                        className="h-full transition-colors hover:border-brand/60"
+                      />
+                    </Link>
+                  ))}
+                </div>
+              )}
+            </section>
+          </div>
+        )}
 
-          {!!spaces.data?.length && (
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-              {spaces.data.map((space) => <SpaceCard key={space.id} space={space} />)}
-            </div>
-          )}
-        </section>
+        {tab === 'Creations' && (
+          <div className="mt-6">
+            {spaces.loading && (
+              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                {[0, 1, 2].map((i) => <SpaceCardSkeleton key={i} />)}
+              </div>
+            )}
+            {!spaces.loading && !spaces.data?.length && (
+              <Card>
+                <EmptyState
+                  mood="emptyBox"
+                  title={isMe ? 'Nothing made yet' : 'No Spaces yet'}
+                  body={
+                    isMe
+                      ? 'Your Spaces will show up here once you make one.'
+                      : `${user.display_name} has not published anything yet.`
+                  }
+                  action={isMe ? <Button to="/spaces/new">Make a Space</Button> : undefined}
+                />
+              </Card>
+            )}
+            {!!spaces.data?.length && (
+              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                {spaces.data.map((space) => <SpaceCard key={space.id} space={space} />)}
+              </div>
+            )}
+          </div>
+        )}
       </Page>
 
       <ReportDialog

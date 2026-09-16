@@ -1,5 +1,8 @@
 import { useEffect, useState } from 'react'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faCubes } from '@fortawesome/free-solid-svg-icons'
 import { faRightFromBracket } from '@fortawesome/free-solid-svg-icons'
+import { Skeleton } from '@/components/ui/States'
 import { Page } from '@/components/layout/AppShell'
 import { Button } from '@/components/ui/Button'
 import { Card, SectionHeading } from '@/components/ui/Card'
@@ -7,7 +10,10 @@ import { Input, Textarea } from '@/components/ui/Input'
 import { AvatarUpload } from '@/components/auth/AvatarUpload'
 import { useToast } from '@/components/ui/Toast'
 import { useAuth } from '@/hooks/useAuth'
-import { updateProfile, uploadAvatar } from '@/lib/api'
+import { listPixelTransactions, updateProfile, uploadAvatar } from '@/lib/api'
+import { useAsync } from '@/hooks/useAsync'
+import { formatCount, timeAgo } from '@/lib/format'
+import { cn } from '@/lib/cn'
 
 export default function Settings() {
   const { profile, session, refreshProfile, signOut } = useAuth()
@@ -19,6 +25,11 @@ export default function Settings() {
   const [avatarFile, setAvatarFile] = useState<File | null>(null)
   const [pending, setPending] = useState(false)
   const [error, setError] = useState<string | null>(null)
+
+  const ledger = useAsync(
+    async () => (profile ? listPixelTransactions(profile.id) : []),
+    [profile?.id],
+  )
 
   useEffect(() => {
     if (!profile) return
@@ -132,6 +143,53 @@ export default function Settings() {
             </div>
             <Button variant="subtle" icon={faRightFromBracket} onClick={signOut}>Log out</Button>
           </div>
+        </Card>
+      </section>
+
+      <section id="pixels">
+        <SectionHeading title="Pixels" />
+        <Card className="overflow-hidden">
+          <div className="flex items-center gap-3 border-b border-ink-line px-5 py-4">
+            <FontAwesomeIcon icon={faCubes} className="text-lg text-[#9fadff]" />
+            <p className="font-display text-2xl font-extrabold tabular-nums">
+              {formatCount(profile?.pixels ?? 0)}
+            </p>
+            <p className="text-sm text-muted">Pixels</p>
+          </div>
+
+          {ledger.loading && (
+            <div className="space-y-2 p-4">
+              {[0, 1].map((i) => <Skeleton key={i} className="h-10" />)}
+            </div>
+          )}
+
+          {!ledger.loading && !ledger.data?.length && (
+            <p className="px-5 py-6 text-center text-sm text-muted">Nothing has moved yet.</p>
+          )}
+
+          {!!ledger.data?.length && (
+            <ul>
+              {ledger.data.map((entry) => (
+                <li
+                  key={entry.id}
+                  className="flex items-center gap-3 border-b border-ink-line/70 px-5 py-3 last:border-0"
+                >
+                  <span className="min-w-0 flex-1">
+                    <span className="block truncate text-sm">{entry.note ?? entry.kind}</span>
+                    <span className="block text-xs text-muted">{timeAgo(entry.created_at)}</span>
+                  </span>
+                  <span
+                    className={cn(
+                      'font-display text-sm font-extrabold tabular-nums',
+                      entry.amount > 0 ? 'text-space-bright' : 'text-white/60',
+                    )}
+                  >
+                    {entry.amount > 0 ? '+' : ''}{entry.amount}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          )}
         </Card>
       </section>
 

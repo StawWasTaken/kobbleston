@@ -1,13 +1,15 @@
 import { supabase } from './supabase'
 import type {
-  ActivityEvent, AssetKind, Friendship, MarketAsset, Message, Notification, OwnAsset,
-  PlatformStats, Profile, Space, SpaceCategory,
+  ActivityEvent, AssetKind, Community, CommunityRole, EarnedBadge, Friendship, MarketAsset,
+  MemberCommunity, Message, Notification, OwnAsset, PixelTransaction, PlatformStats, Profile,
+  ProfileOverview, Space, SpaceBadge, SpaceCategory, SpaceMessage,
 } from '@/types/db'
 
 const SPACE_FIELDS =
   'id, owner_id, slug, name, description, category, cover_url, is_published, visit_count, ' +
-  'like_count, update_count, published_at, created_at, updated_at, ' +
-  'owner:profiles!spaces_owner_id_fkey (id, username, display_name, avatar_url, is_online)'
+  'like_count, favorite_count, update_count, published_at, created_at, updated_at, ' +
+  'chat_enabled, chat_greeting, chat_slowmode_seconds, ' +
+  'owner:profiles!spaces_owner_id_fkey (id, username, display_name, avatar_url, is_online, is_admin)'
 
 function unwrap<T>(result: { data: T | null; error: { message: string } | null }): T {
   if (result.error) throw new Error(result.error.message)
@@ -354,4 +356,191 @@ export async function uploadAvatar(userId: string, file: File): Promise<string> 
   if (error) throw new Error(error.message)
 
   return supabase.storage.from('avatars').getPublicUrl(path).data.publicUrl
+}
+
+// ------------------------------------------------------------- favourites
+
+export async function isFavorite(spaceId: string, userId: string) {
+  const { data } = await supabase
+    .from('space_favorites').select('space_id')
+    .eq('space_id', spaceId).eq('user_id', userId).maybeSingle()
+  return Boolean(data)
+}
+
+export async function setFavorite(spaceId: string, userId: string, on: boolean) {
+  const result = on
+    ? await supabase.from('space_favorites').insert({ space_id: spaceId, user_id: userId })
+    : await supabase.from('space_favorites').delete().eq('space_id', spaceId).eq('user_id', userId)
+  if (result.error) throw new Error(result.error.message)
+}
+
+export async function listFavoriteSpaces(userId: string): Promise<Space[]> {
+  const { data: rows } = await supabase
+    .from('space_favorites').select('space_id').eq('user_id', userId)
+  const ids = (rows ?? []).map((r) => r.space_id)
+  if (!ids.length) return []
+  return (unwrap(await supabase.from('spaces').select(SPACE_FIELDS)
+    .in('id', ids).eq('is_published', true)) as unknown as Space[]) ?? []
+}
+
+// ----------------------------------------------------------------- follows
+
+export async function isFollowing(followerId: string, followingId: string) {
+  const { data } = await supabase
+    .from('follows').select('follower_id')
+    .eq('follower_id', followerId).eq('following_id', followingId).maybeSingle()
+  return Boolean(data)
+}
+
+export async function setFollowing(followerId: string, followingId: string, on: boolean) {
+  const result = on
+    ? await supabase.from('follows').insert({ follower_id: followerId, following_id: followingId })
+    : await supabase.from('follows').delete()
+        .eq('follower_id', followerId).eq('following_id', followingId)
+  if (result.error) throw new Error(result.error.message)
+}
+
+// ------------------------------------------------------------------ badges
+
+export async function listSpaceBadges(spaceId: string): Promise<SpaceBadge[]> {
+  return (unwrap(await supabase.from('space_badges').select('*')
+    .eq('space_id', spaceId).order('created_at')) as unknown as SpaceBadge[]) ?? []
+}
+
+export async function createSpaceBadge(input: {
+  spaceId: string
+  name: string
+  description: string
+  iconUrl: string | null
+}): Promise<SpaceBadge> {
+  return unwrap(await supabase.from('space_badges').insert({
+    space_id: input.spaceId,
+    name: input.name.trim(),
+    description: input.description.trim() || null,
+    icon_url: input.iconUrl,
+  }).select('*').single()) as unknown as SpaceBadge
+}
+
+export async function updateSpaceBadge(id: string, patch: Partial<Pick<SpaceBadge,
+  'name' | 'description' | 'is_enabled' | 'icon_url'>>) {
+  unwrap(await supabase.from('space_badges').update(patch).eq('id', id).select('id').single())
+}
+
+export async function deleteSpaceBadge(id: string) {
+  const { error } = await supabase.from('space_badges').delete().eq('id', id)
+  if (error) throw new Error(error.message)
+}
+
+/** Only the Space owner can award, enforced in the database. */
+export async function awardBadge(badgeId: string, recipientId: string): Promise<boolean> {
+  return unwrap(await supabase.rpc('award_badge', { badge: badgeId, recipient: recipientId })) as boolean
+}
+
+export async function listEarnedBadges(userId: string): Promise<EarnedBadge[]> {
+  return unwrap(await supabase.rpc('earned_badges', { target: userId })) ?? []
+}
+
+// ------------------------------------------------------------- communities
+
+export async function getProfileOverview(userId: string): Promise<ProfileOverview> {
+  const rows = unwrap(await supabase.rpc('profile_overview', { target: userId }))
+  return (Array.isArray(rows) ? rows[0] : rows) as ProfileOverview
+}
+
+export async function listMemberCommunities(userId: string): Promise<MemberCommunity[]> {
+  return unwrap(await supabase.rpc('member_communities', { target: userId })) ?? []
+}
+
+export async function listCommunities(search?: string): Promise<Community[]> {
+  let query = supabase.from('communities').select('*')
+    .eq('is_public', true).order('member_count', { ascending: false }).limit(40)
+  if (search?.trim()) query = query.ilike('name', `%${search.trim()}%`)
+  return (unwrap(await query) as unknown as Community[]) ?? []
+}
+
+export async function getCommunity(slug: string): Promise<Community | null> {
+  const { data, error } = await supabase
+    .from('communities').select('*').eq('slug', slug).maybeSingle()
+  if (error) throw new Error(error.message)
+  return (data as Community | null) ?? null
+}
+
+export async function createCommunity(input: {
+  ownerId: string
+  name: string
+  slug: string
+  description: string
+}): Promise<Community> {
+  return unwrap(await supabase.from('communities').insert({
+    owner_id: input.ownerId,
+    name: input.name.trim(),
+    slug: input.slug,
+    description: input.description.trim() || null,
+  }).select('*').single()) as unknown as Community
+}
+
+export async function isCommunityMember(communityId: string, userId: string) {
+  const { data } = await supabase.from('community_members')
+    .select('role').eq('community_id', communityId).eq('user_id', userId).maybeSingle()
+  return (data as { role: CommunityRole } | null)?.role ?? null
+}
+
+export async function setCommunityMembership(communityId: string, userId: string, join: boolean) {
+  const result = join
+    ? await supabase.from('community_members').insert({ community_id: communityId, user_id: userId })
+    : await supabase.from('community_members').delete()
+        .eq('community_id', communityId).eq('user_id', userId)
+  if (result.error) throw new Error(result.error.message)
+}
+
+export async function listCommunityMembers(communityId: string): Promise<
+  { role: CommunityRole; profile: Profile }[]
+> {
+  const rows = unwrap(await supabase.from('community_members')
+    .select('role, profiles:profiles!community_members_user_id_fkey (*)')
+    .eq('community_id', communityId).limit(60)) as unknown as
+      { role: CommunityRole; profiles: Profile }[]
+  return (rows ?? []).map((r) => ({ role: r.role, profile: r.profiles }))
+}
+
+// ------------------------------------------------------------------ pixels
+
+export async function listPixelTransactions(userId: string): Promise<PixelTransaction[]> {
+  return (unwrap(await supabase.from('pixel_transactions')
+    .select('id, amount, kind, note, created_at')
+    .eq('user_id', userId).order('created_at', { ascending: false })
+    .limit(30)) as unknown as PixelTransaction[]) ?? []
+}
+
+// -------------------------------------------------------------- space chat
+
+export async function listSpaceMessages(spaceId: string): Promise<SpaceMessage[]> {
+  const rows = unwrap(await supabase.from('space_messages')
+    .select('id, space_id, sender_id, body, created_at, ' +
+      'sender:profiles!space_messages_sender_id_fkey (username, display_name, avatar_url, is_admin)')
+    .eq('space_id', spaceId)
+    .order('created_at', { ascending: false }).limit(50)) as unknown as SpaceMessage[]
+  return (rows ?? []).reverse()
+}
+
+export async function sendSpaceMessage(spaceId: string, senderId: string, body: string) {
+  unwrap(await supabase.from('space_messages')
+    .insert({ space_id: spaceId, sender_id: senderId, body })
+    .select('id').single())
+}
+
+export async function updateSpaceChatSettings(spaceId: string, patch: {
+  chat_enabled?: boolean
+  chat_greeting?: string | null
+  chat_slowmode_seconds?: number
+}) {
+  unwrap(await supabase.from('spaces').update(patch).eq('id', spaceId).select('id').single())
+}
+
+// ------------------------------------------------------------- moderation
+
+/** Checks a username before signup bothers submitting it. */
+export async function checkUsername(candidate: string): Promise<{ ok: boolean; reason: string | null }> {
+  const rows = unwrap(await supabase.rpc('check_username', { candidate }))
+  return (Array.isArray(rows) ? rows[0] : rows) as { ok: boolean; reason: string | null }
 }

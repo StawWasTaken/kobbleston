@@ -2,9 +2,10 @@ import { useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import {
-  faGear, faShieldHalved, faRightFromBracket, faUser, faScroll,
+  faGear, faShieldHalved, faRightFromBracket, faUser, faScroll, faRightLeft,
 } from '@fortawesome/free-solid-svg-icons'
 import type { IconDefinition } from '@fortawesome/fontawesome-svg-core'
+import { SwitchAccounts } from './SwitchAccounts'
 import { useAuth } from '@/hooks/useAuth'
 
 type Item = { to?: string; label: string; icon: IconDefinition; onSelect?: () => void }
@@ -12,6 +13,7 @@ type Item = { to?: string; label: string; icon: IconDefinition; onSelect?: () =>
 export function UserMenu() {
   const { profile, signOut } = useAuth()
   const [open, setOpen] = useState(false)
+  const [switching, setSwitching] = useState(false)
   const root = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -33,7 +35,12 @@ export function UserMenu() {
     { to: '/settings', label: 'Settings', icon: faGear },
     { to: '/guidelines', label: 'Help & Safety', icon: faShieldHalved },
     { to: '/terms', label: 'Terms', icon: faScroll },
-    ...(profile ? [{ label: 'Log Out', icon: faRightFromBracket, onSelect: signOut }] : []),
+    ...(profile
+      ? [
+          { label: 'Switch Accounts', icon: faRightLeft, onSelect: () => setSwitching(true) },
+          { label: 'Log Out', icon: faRightFromBracket, onSelect: signOut },
+        ]
+      : []),
   ]
 
   return (
@@ -79,6 +86,8 @@ export function UserMenu() {
           )}
         </div>
       )}
+
+      <SwitchAccounts open={switching} onClose={() => setSwitching(false)} />
     </div>
   )
 }

@@ -12,6 +12,8 @@ export type Profile = {
   in_space_id: string | null
   is_moderator: boolean
   is_admin: boolean
+  is_guest: boolean
+  pixels: number
   birth_date: string | null
   gender: 'male' | 'female' | 'other' | null
   created_at: string
@@ -26,13 +28,17 @@ export type Space = {
   category: SpaceCategory
   cover_url: string | null
   is_published: boolean
+  chat_enabled: boolean
+  chat_greeting: string | null
+  chat_slowmode_seconds: number
   visit_count: number
   like_count: number
+  favorite_count: number
   update_count: number
   published_at: string | null
   created_at: string
   updated_at: string
-  owner?: Pick<Profile, 'id' | 'username' | 'display_name' | 'avatar_url' | 'is_online'>
+  owner?: Pick<Profile, 'id' | 'username' | 'display_name' | 'avatar_url' | 'is_online' | 'is_admin'>
 }
 
 export type PlatformStats = {
@@ -116,4 +122,72 @@ export type Notification = {
   created_at: string
   actor?: Pick<Profile, 'username' | 'display_name' | 'avatar_url'> | null
   space?: Pick<Space, 'name' | 'slug'> | null
+}
+
+export type SpaceBadge = {
+  id: string
+  space_id: string
+  name: string
+  description: string | null
+  icon_url: string | null
+  is_enabled: boolean
+  awarded_count: number
+  created_at: string
+}
+
+export type EarnedBadge = {
+  id: string
+  name: string
+  description: string | null
+  icon_url: string | null
+  awarded_at: string
+  space_name: string
+  space_slug: string
+  space_owner: string
+}
+
+export type ProfileOverview = {
+  follower_count: number
+  following_count: number
+  friend_count: number
+  badge_count: number
+}
+
+export type CommunityRole = 'owner' | 'admin' | 'member'
+
+export type Community = {
+  id: string
+  owner_id: string
+  slug: string
+  name: string
+  description: string | null
+  icon_url: string | null
+  member_count: number
+  created_at: string
+}
+
+export type MemberCommunity = {
+  id: string
+  slug: string
+  name: string
+  icon_url: string | null
+  member_count: number
+  role: CommunityRole
+}
+
+export type PixelTransaction = {
+  id: number
+  amount: number
+  kind: 'signup_grant' | 'daily' | 'purchase' | 'sale' | 'refund' | 'admin'
+  note: string | null
+  created_at: string
+}
+
+export type SpaceMessage = {
+  id: number
+  space_id: string
+  sender_id: string
+  body: string
+  created_at: string
+  sender?: Pick<Profile, 'username' | 'display_name' | 'avatar_url' | 'is_admin'> | null
 }

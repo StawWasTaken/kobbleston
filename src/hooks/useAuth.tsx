@@ -4,6 +4,7 @@ import type { Session } from '@supabase/supabase-js'
 import { supabase } from '@/lib/supabase'
 import { uploadAvatar } from '@/lib/api'
 import { randomAvatar } from '@/lib/avatars'
+import { rememberAccount } from '@/lib/accounts'
 import type { Profile } from '@/types/db'
 
 type AuthValue = {
@@ -12,6 +13,7 @@ type AuthValue = {
   loading: boolean
   signIn: (email: string, password: string) => Promise<void>
   signUp: (details: SignupDetails) => Promise<void>
+  signInAsGuest: () => Promise<void>
   signOut: () => Promise<void>
   refreshProfile: () => Promise<void>
 }
@@ -46,9 +48,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const userId = session?.user.id ?? null
   const heartbeat = useRef<number | undefined>(undefined)
 
-  const loadProfile = useCallback(async (id: string) => {
+  const loadProfile = useCallback(async (id: string, email?: string) => {
     const { data } = await supabase.from('profiles').select('*').eq('id', id).maybeSingle()
-    setProfile((data as Profile | null) ?? null)
+    const loaded = (data as Profile | null) ?? null
+    setProfile(loaded)
+
+    // Guests are throwaway, so they are not offered on the switcher.
+    if (loaded && email && !loaded.is_guest) {
+      rememberAccount({
+        id: loaded.id,
+        email,
+        username: loaded.username,
+        displayName: loaded.display_name,
+        avatarUrl: loaded.avatar_url,
+      })
+    }
   }, [])
 
   useEffect(() => {
@@ -84,7 +98,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           // Not worth blocking sign-in over; the picture can be set later.
         }
       }
-      await loadProfile(userId)
+      await loadProfile(userId, session?.user.email ?? undefined)
     }
 
     run().finally(() => {
@@ -94,6 +108,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return () => {
       cancelled = true
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userId, loadProfile])
 
   // Keep presence honest: a heartbeat while the tab is alive, and a best
@@ -158,12 +173,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           pendingAvatar = details.avatarFile
         }
       },
+      async signInAsGuest() {
+        // A guest is a real but throwaway account, so presence, entering a
+        // Space and the chat dock all behave normally. Supabase needs
+        // anonymous sign-ins turned on for this.
+        const { error } = await supabase.auth.signInAnonymously()
+        if (error) throw error
+      },
       async signOut() {
         await supabase.rpc('touch_presence', { online: false })
         await supabase.auth.signOut()
       },
       async refreshProfile() {
-        if (userId) await loadProfile(userId)
+        if (userId) await loadProfile(userId, session?.user.email ?? undefined)
       },
     }),
     [session, profile, loading, userId, loadProfile],

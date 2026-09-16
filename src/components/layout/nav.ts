@@ -1,5 +1,5 @@
 import {
-  faHouse, faCompass, faUserGroup, faBookmark, faGear, faShapes, faUser,
+  faHouse, faCompass, faUserGroup, faBookmark, faGear, faShapes, faUser, faUsers,
 } from '@fortawesome/free-solid-svg-icons'
 import type { IconDefinition } from '@fortawesome/fontawesome-svg-core'
 
@@ -16,6 +16,7 @@ export type NavItem = {
 export const topNav: { to: string; label: string }[] = [
   { to: '/discover', label: 'Discover' },
   { to: '/create', label: 'Create' },
+  { to: '/communities', label: 'Communities' },
   { to: '/library', label: 'Library' },
 ]
 
@@ -26,6 +27,7 @@ export const sideNav: NavItem[] = [
   { to: '/friends', label: 'Friends', icon: faUserGroup, badge: 'friends' },
   { to: '/discover', label: 'Discover', icon: faCompass },
   { to: '/create', label: 'Create', icon: faShapes },
+  { to: '/communities', label: 'Communities', icon: faUsers },
   { to: '/library', label: 'Library', icon: faBookmark },
   { to: '/settings', label: 'Settings', icon: faGear },
 ]

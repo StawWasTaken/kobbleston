@@ -9,6 +9,7 @@ import { GenderPicker } from './GenderPicker'
 import type { Gender } from './GenderPicker'
 import { AvatarUpload } from './AvatarUpload'
 import { useAuth } from '@/hooks/useAuth'
+import { checkUsername } from '@/lib/api'
 import { isOldEnough, MINIMUM_AGE } from '@/lib/age'
 
 type Errors = Partial<Record<'birthday' | 'username' | 'email' | 'password' | 'confirm' | 'form', string>>
@@ -27,12 +28,33 @@ export function SignupForm({ onSent }: { onSent: (email: string) => void }) {
   const [gender, setGender] = useState<Gender>('')
   const [errors, setErrors] = useState<Errors>({})
   const [pending, setPending] = useState(false)
+  const [usernameState, setUsernameState] = useState<'idle' | 'checking' | 'ok' | 'bad'>('idle')
 
   // The display name starts as a copy of the username and follows it until
   // the person edits it themselves.
   useEffect(() => {
     if (!displayNameTouched) setDisplayName(username)
   }, [username, displayNameTouched])
+
+  // Names are checked while they are typed, so a taken or blocked one is
+  // caught here rather than at the end of the form.
+  useEffect(() => {
+    if (username.length < 3) {
+      setUsernameState('idle')
+      return
+    }
+    setUsernameState('checking')
+    const timer = window.setTimeout(async () => {
+      try {
+        const verdict = await checkUsername(username)
+        setUsernameState(verdict.ok ? 'ok' : 'bad')
+        setErrors((all) => ({ ...all, username: verdict.ok ? undefined : verdict.reason ?? undefined }))
+      } catch {
+        setUsernameState('idle')
+      }
+    }, 400)
+    return () => window.clearTimeout(timer)
+  }, [username])
 
   const validate = () => {
     const found: Errors = {}
@@ -43,6 +65,8 @@ export function SignupForm({ onSent }: { onSent: (email: string) => void }) {
 
     if (!/^[a-zA-Z0-9_]{3,20}$/.test(username)) {
       found.username = 'Letters, numbers and underscores. 3 to 20 characters.'
+    } else if (usernameState === 'bad') {
+      found.username = errors.username ?? 'Pick a different username.'
     }
     if (password.length < 8) found.password = 'At least 8 characters.'
     else if (password !== confirm) found.confirm = 'Both passwords need to match.'
@@ -85,7 +109,13 @@ export function SignupForm({ onSent }: { onSent: (email: string) => void }) {
         autoComplete="username"
         maxLength={20}
         error={errors.username}
-        placeholder="3 to 20 characters, no spaces"
+        hint={
+          usernameState === 'checking'
+            ? 'Checking that name'
+            : usernameState === 'ok'
+              ? 'That one is free'
+              : '3 to 20 characters, no spaces'
+        }
       />
 
       <Reveal when={username.length > 0}>

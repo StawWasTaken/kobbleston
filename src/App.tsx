@@ -15,6 +15,8 @@ import NotFound from '@/pages/NotFound'
 const SpacePage = lazy(() => import('@/pages/SpacePage'))
 const Create = lazy(() => import('@/pages/Create'))
 const Search = lazy(() => import('@/pages/Search'))
+const Communities = lazy(() => import('@/pages/Communities'))
+const CommunityPage = lazy(() => import('@/pages/CommunityPage'))
 const NewSpace = lazy(() => import('@/pages/NewSpace'))
 const Terms = lazy(() => import('@/pages/Policies').then((m) => ({ default: m.Terms })))
 const Guidelines = lazy(() => import('@/pages/Policies').then((m) => ({ default: m.Guidelines })))
@@ -67,6 +69,8 @@ export default function App() {
                 <Route path="/discover" element={<Discover />} />
                 <Route path="/create" element={<Create />} />
                 <Route path="/search" element={<Search />} />
+                <Route path="/communities" element={<Communities />} />
+                <Route path="/c/:slug" element={<CommunityPage />} />
                 <Route path="/u/:username" element={<Profile />} />
                 <Route path="/u/:username/:slug" element={<SpacePage />} />
 

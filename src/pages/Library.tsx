@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { faHeart, faPenToSquare, faPlus } from '@fortawesome/free-solid-svg-icons'
+import { faStar, faPenToSquare, faPlus } from '@fortawesome/free-solid-svg-icons'
 import { Page } from '@/components/layout/AppShell'
 import { Button } from '@/components/ui/Button'
 import { Card, SectionHeading } from '@/components/ui/Card'
@@ -10,23 +10,8 @@ import { useToast } from '@/components/ui/Toast'
 import { SpaceCard } from '@/components/spaces/SpaceCard'
 import { useAuth } from '@/hooks/useAuth'
 import { useAsync } from '@/hooks/useAsync'
-import { listSpacesByOwner, logSpaceUpdate } from '@/lib/api'
-import { supabase } from '@/lib/supabase'
+import { listFavoriteSpaces, listSpacesByOwner, logSpaceUpdate } from '@/lib/api'
 import type { Space } from '@/types/db'
-
-/** Spaces the person liked, read back through the join table. */
-async function listLikedSpaces(userId: string): Promise<Space[]> {
-  const { data: likes } = await supabase.from('space_likes').select('space_id').eq('user_id', userId)
-  const ids = (likes ?? []).map((l) => l.space_id)
-  if (!ids.length) return []
-  const { data, error } = await supabase
-    .from('spaces')
-    .select('*, owner:profiles!spaces_owner_id_fkey (id, username, display_name, avatar_url, is_online)')
-    .in('id', ids)
-    .eq('is_published', true)
-  if (error) throw new Error(error.message)
-  return (data as Space[]) ?? []
-}
 
 function UpdateDialog({
   space, onClose, onLogged,
@@ -87,8 +72,8 @@ export default function Library() {
     async () => (profile ? listSpacesByOwner(profile.id, true) : []),
     [profile?.id],
   )
-  const liked = useAsync(
-    async () => (profile ? listLikedSpaces(profile.id) : []),
+  const saved = useAsync(
+    async () => (profile ? listFavoriteSpaces(profile.id) : []),
     [profile?.id],
   )
 
@@ -154,26 +139,26 @@ export default function Library() {
       )}
 
       <section>
-        <SectionHeading title="Liked" subtitle="Spaces you hit the heart on." />
-        {liked.loading && (
+        <SectionHeading title="Saved" subtitle="Spaces you starred." />
+        {saved.loading && (
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {[0, 1].map((i) => <SpaceCardSkeleton key={i} />)}
           </div>
         )}
-        {liked.error && <ErrorState message={liked.error} onRetry={liked.reload} />}
-        {!liked.loading && !liked.data?.length && (
+        {saved.error && <ErrorState message={saved.error} onRetry={saved.reload} />}
+        {!saved.loading && !saved.data?.length && (
           <Card>
             <EmptyState
               mood="emptyBox"
               title="Nothing saved yet"
-              body="Like a Space and it lands here so you can find it again."
-              action={<Button variant="subtle" to="/discover" icon={faHeart}>Go find some</Button>}
+              body="Star a Space and it lands here so you can find it again."
+              action={<Button variant="subtle" to="/discover" icon={faStar}>Go find some</Button>}
             />
           </Card>
         )}
-        {!!liked.data?.length && (
+        {!!saved.data?.length && (
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {liked.data.map((space) => <SpaceCard key={space.id} space={space} />)}
+            {saved.data.map((space) => <SpaceCard key={space.id} space={space} />)}
           </div>
         )}
       </section>

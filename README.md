@@ -95,14 +95,43 @@ uploader until it is approved. Uploads by the Kobbleston account carry a
 verified mark. See [`supabase/README.md`](supabase/README.md) for how review
 is wired and what still needs deploying.
 
+## What is in here
+
+- **Spaces** with badges their owner designs, favourites, likes and visits.
+- **Communities** people create and join.
+- **Kobbleston Create**, the reviewed marketplace of uploads.
+- **Pixels**, the platform currency, with a ledger behind every balance.
+- **Guest mode**, a throwaway account for looking around.
+- **Chat** as a dock in the corner, a chat inside every Space that its owner
+  can shape or switch off, and friends, follows and notifications.
+- **Automated review** of usernames, Space text, uploads and messages, which
+  decides as things are submitted rather than queueing them.
+- **Account switching** between accounts used on this device.
+
 ## Not built yet
 
 The Kobbleston editor (building the inside of a Space) is deliberately out of
 scope for now, and the UI says so where it would otherwise be a dead end
 rather than pretending it exists.
 
-The review worker that approves Create uploads is not deployed. Until it is,
-uploads stay pending rather than publishing themselves.
+Content review is a rule based filter, not a model. It catches the obvious
+cases and the common ways around them; it is not a substitute for people
+reporting things.
 
-The review worker that approves Create uploads is not deployed. Until it is,
-uploads stay pending rather than publishing themselves.
+Ads are not built. When they are, the share owed to the person whose Space
+shows one is 15 percent, and `pixel_transactions` already has the shape to
+record it.
+
+Badges are awarded by the Space owner rather than by the Space itself, because
+there is no editor yet for a Space to award them from.
+
+Content review is a rule based filter, not a model. It catches the obvious
+cases and the common ways around them; it is not a substitute for people
+reporting things.
+
+Ads are not built. When they are, the share owed to the person whose Space
+shows one is 15 percent, and `pixel_transactions` already has the shape to
+record it.
+
+Badges are awarded by the Space owner rather than by the Space itself, because
+there is no editor yet for a Space to award them from.

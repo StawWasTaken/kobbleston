@@ -69,8 +69,15 @@ export function UploadDialog({
     }
     setPending(true)
     try {
-      await uploadAsset({ userId: profile.id, file, kind, name, description })
-      toast('Uploaded. It goes live once it clears review.', 'success')
+      const created = await uploadAsset({ userId: profile.id, file, kind, name, description })
+      toast(
+        created.status === 'approved'
+          ? 'Uploaded and live.'
+          : created.status === 'rejected'
+            ? `Turned down: ${created.review_note ?? 'it did not pass review.'}`
+            : 'Uploaded. A moderator will take a look before it goes live.',
+        created.status === 'rejected' ? 'error' : 'success',
+      )
       reset()
       onUploaded()
       onClose()
@@ -157,8 +164,9 @@ export function UploadDialog({
 
       <p className="mt-4 flex items-start gap-2.5 rounded-lg border border-ink-line bg-ink-raised p-3 text-xs leading-relaxed text-white/55">
         <FontAwesomeIcon icon={faShieldHalved} className="mt-0.5 shrink-0 text-white/40" />
-        Everything uploaded to Create is reviewed before anyone else can see it. You will
-        see it in My Uploads while it waits, and you will be told if it gets turned down.
+        Uploads are checked automatically as soon as they arrive, so most go live straight
+        away. Anything the check is unsure about waits for a person, and you will be told
+        either way in My Uploads.
       </p>
     </Dialog>
   )
