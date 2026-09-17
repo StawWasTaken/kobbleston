@@ -31,9 +31,9 @@ type Tab = (typeof tabs)[number]
 
 function Stat({ label, value }: { label: string; value: string }) {
   return (
-    <div className="px-3 py-3 text-center">
-      <p className="text-[11px] font-bold uppercase tracking-wide text-muted">{label}</p>
-      <p className="mt-1 font-display text-base font-extrabold tabular-nums">{value}</p>
+    <div className="min-w-24 flex-1 px-3 py-3 text-center">
+      <p className="text-xs text-muted">{label}</p>
+      <p className="mt-1 text-sm font-semibold tabular-nums text-white/90">{value}</p>
     </div>
   )
 }
@@ -179,7 +179,7 @@ export default function SpacePage() {
               <Badge tone="neutral">SPC-{space.content_id ?? '—'}</Badge>
             </div>
 
-            <div className="pt-5">
+            <div className="mt-auto pt-8">
               <Button
                 variant="enter"
                 size="lg"
@@ -193,7 +193,7 @@ export default function SpacePage() {
                 {entering ? 'Entering' : 'Enter Space'}
               </Button>
 
-              <div className="mt-3 flex items-start gap-4">
+              <div className="mt-3 flex items-start justify-center gap-5">
                 <Tooltip label={numbers?.i_favorite ? 'Saved' : 'Save this Space'} side="top">
                   <button
                     onClick={() => flag('space_favorites', !numbers?.i_favorite)}
@@ -244,7 +244,7 @@ export default function SpacePage() {
           </div>
         </div>
 
-        <div className="mt-8 flex border-b border-ink-line" role="tablist">
+        <div className="mt-8 flex overflow-hidden rounded-lg bg-ink-raised" role="tablist">
           {tabs.map((name) => (
             <button
               key={name}
@@ -252,10 +252,10 @@ export default function SpacePage() {
               aria-selected={tab === name}
               onClick={() => setTab(name)}
               className={cn(
-                'flex-1 border-b-2 px-4 py-3 text-sm font-bold transition-colors sm:flex-none sm:px-12',
+                'flex-1 border-b-2 py-3 text-sm font-semibold transition-colors',
                 tab === name
-                  ? 'border-white text-white'
-                  : 'border-transparent text-white/50 hover:text-white',
+                  ? 'border-white bg-ink-hover text-white'
+                  : 'border-transparent text-white/55 hover:text-white',
               )}
             >
               {name}
@@ -265,28 +265,30 @@ export default function SpacePage() {
 
         {tab === 'About' && (
           <div className="mt-6">
-            <h2 className="font-display text-xl font-extrabold">Description</h2>
+            <h2 className="text-lg font-bold">Description</h2>
             <p className="mt-2 max-w-3xl whitespace-pre-wrap leading-relaxed text-white/70">
               {space.description || 'The person who made this has not described it yet.'}
             </p>
 
-            <Card className="mt-6 grid grid-cols-2 divide-ink-line sm:grid-cols-3 lg:grid-cols-6 lg:divide-x">
+            <div className="mt-6 flex flex-wrap border-y border-ink-line">
               <Stat label="Active" value={formatCount(numbers?.active_now ?? 0)} />
               <Stat label="Visits" value={formatCount(numbers?.visits ?? space.visit_count)} />
               <Stat label="Favorites" value={formatCount(numbers?.favorites ?? space.favorite_count)} />
               <Stat label="Created" value={new Date(space.created_at).toLocaleDateString()} />
               <Stat label="Updated" value={timeAgo(space.updated_at)} />
               <Stat label="Genre" value={space.genre} />
-            </Card>
+            </div>
 
             {profile && !isOwner && (
-              <button
-                onClick={() => setReporting(true)}
-                className="mt-4 inline-flex items-center gap-2 text-xs font-bold text-red-400/80 hover:text-red-400"
-              >
-                <FontAwesomeIcon icon={faFlag} />
-                Report Abuse
-              </button>
+              <div className="mt-2 text-right">
+                <button
+                  onClick={() => setReporting(true)}
+                  className="inline-flex items-center gap-1.5 text-xs font-semibold text-red-400/80 hover:text-red-400"
+                >
+                  <FontAwesomeIcon icon={faFlag} className="text-[10px]" />
+                  Report Abuse
+                </button>
+              </div>
             )}
           </div>
         )}

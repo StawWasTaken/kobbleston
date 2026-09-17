@@ -13,6 +13,7 @@ import { Tooltip } from '@/components/ui/Tooltip'
 import { NewGroupDialog } from './NewGroupDialog'
 import { MessageRow } from './MessageRow'
 import { SafetyNote } from './SafetyNote'
+import { TimeSeparator } from './TimeSeparator'
 import { ReportDialog } from '@/components/social/ReportDialog'
 import { useAuth } from '@/hooks/useAuth'
 import {
@@ -229,13 +230,18 @@ function Window({
 
       {!collapsed && !details && (
         <>
-          <div className="flex-1 space-y-1.5 overflow-y-auto px-3 py-3 kob-scroll">
-            {loading && [0, 1].map((i) => <Skeleton key={i} className="h-8 w-2/3" />)}
+          <div className="flex-1 overflow-y-auto px-3 py-3 kob-scroll">
+            {loading && (
+              <div className="space-y-2">
+                {[0, 1].map((i) => <Skeleton key={i} className="h-8 w-2/3" />)}
+              </div>
+            )}
 
             {/* Stays at the top of the history rather than only showing when
                 the conversation is empty. */}
             {!loading && solo && (
               <SafetyNote
+                className="mb-1"
                 person={solo}
                 onBlock={() => onBlock(solo.id)}
                 onReport={() => setReporting(true)}
@@ -246,35 +252,51 @@ function Window({
               <p className="py-6 text-center text-xs text-muted">Say something to the group.</p>
             )}
 
-            {messages.map((m) => (
-              <MessageRow
-                key={m.id}
-                message={m}
-                mine={m.sender_id === profile?.id}
-                sender={
-                  m.sender_id === profile?.id
-                    ? {
-                        id: profile.id,
-                        username: profile.username,
-                        display_name: profile.display_name,
-                        avatar_url: profile.avatar_url,
-                        is_online: profile.is_online,
-                        in_space_id: profile.in_space_id,
-                      }
-                    : conversation.members.find((member) => member.id === m.sender_id)
-                }
-                onEdit={async (body) => {
-                  await editMessage(m.id, body)
-                  setMessages((all) =>
-                    all.map((x) => (x.id === m.id ? { ...x, body, edited_at: new Date().toISOString() } : x)))
-                }}
-                onDelete={async () => {
-                  await deleteMessage(m.id)
-                  setMessages((all) =>
-                    all.map((x) => (x.id === m.id ? { ...x, is_removed: true } : x)))
-                }}
-              />
-            ))}
+            {messages.map((m, i) => {
+              const before = messages[i - 1]
+              const apart = before
+                ? new Date(m.created_at).getTime() - new Date(before.created_at).getTime()
+                : Infinity
+              // A quarter of an hour of silence is worth marking.
+              const gap = apart > 15 * 60_000
+              const grouped = Boolean(
+                before && before.sender_id === m.sender_id && !gap && apart < 5 * 60_000,
+              )
+
+              return (
+                <div key={m.id}>
+                  {gap && <TimeSeparator at={m.created_at} />}
+                  <MessageRow
+                    message={m}
+                    mine={m.sender_id === profile?.id}
+                    grouped={grouped}
+                    sender={
+                      m.sender_id === profile?.id
+                        ? {
+                            id: profile.id,
+                            username: profile.username,
+                            display_name: profile.display_name,
+                            avatar_url: profile.avatar_url,
+                            is_online: profile.is_online,
+                            in_space_id: profile.in_space_id,
+                          }
+                        : conversation.members.find((member) => member.id === m.sender_id)
+                    }
+                    onEdit={async (body) => {
+                      await editMessage(m.id, body)
+                      setMessages((all) =>
+                        all.map((x) =>
+                          x.id === m.id ? { ...x, body, edited_at: new Date().toISOString() } : x))
+                    }}
+                    onDelete={async () => {
+                      await deleteMessage(m.id)
+                      setMessages((all) =>
+                        all.map((x) => (x.id === m.id ? { ...x, is_removed: true } : x)))
+                    }}
+                  />
+                </div>
+              )
+            })}
             <div ref={bottom} />
           </div>
 

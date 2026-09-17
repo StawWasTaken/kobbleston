@@ -1,19 +1,21 @@
-import { cloneElement, useId, useRef, useState } from 'react'
+import { cloneElement, useCallback, useEffect, useId, useRef, useState } from 'react'
 import type { ReactElement, ReactNode } from 'react'
 import { createPortal } from 'react-dom'
 import { cn } from '@/lib/cn'
 
 type Side = 'top' | 'bottom' | 'left' | 'right'
 
-const OFFSET = 10
+const GAP = 8
+const EDGE = 8
 
 /**
- * Kobbleston's tooltip: a rounded bubble with a rounded arrow, drawn as one
- * SVG path so the arrow keeps the same corner softness as the bubble instead
- * of being a hard CSS triangle.
+ * The bubble and its nib are the same colour with no border between them, so
+ * they read as one shape rather than a box with a triangle stuck to it. The
+ * nib is a rotated square with a rounded corner, which is what gives the tip
+ * the same softness as the bubble.
  *
- * It renders into the body so it is never clipped by a card or a scrolling
- * rail, and it answers hover and keyboard focus alike.
+ * It renders into the body so nothing can clip it, and it is kept inside the
+ * viewport rather than running off the edge.
  */
 export function Tooltip({
   label,
@@ -30,91 +32,122 @@ export function Tooltip({
     'aria-describedby'?: string
   }>
 }) {
-  const [box, setBox] = useState<DOMRect | null>(null)
+  const [anchor, setAnchor] = useState<DOMRect | null>(null)
+  const [placed, setPlaced] = useState<{ left: number; top: number; nib: number } | null>(null)
+  const bubble = useRef<HTMLDivElement>(null)
   const timer = useRef<number | undefined>(undefined)
   const id = useId()
 
   const show = (e: React.MouseEvent | React.FocusEvent) => {
     const target = e.currentTarget as HTMLElement
     window.clearTimeout(timer.current)
-    timer.current = window.setTimeout(() => setBox(target.getBoundingClientRect()), 120)
+    timer.current = window.setTimeout(() => setAnchor(target.getBoundingClientRect()), 120)
   }
 
   const hide = () => {
     window.clearTimeout(timer.current)
-    setBox(null)
+    setAnchor(null)
+    setPlaced(null)
   }
+
+  useEffect(() => () => window.clearTimeout(timer.current), [])
+
+  // Measured after the bubble exists, so its real size decides where it goes.
+  const place = useCallback(() => {
+    if (!anchor || !bubble.current) return
+    const box = bubble.current.getBoundingClientRect()
+    const centreX = anchor.left + anchor.width / 2
+    const centreY = anchor.top + anchor.height / 2
+
+    let left = centreX - box.width / 2
+    let top = anchor.top - box.height - GAP
+
+    if (side === 'bottom') top = anchor.bottom + GAP
+    if (side === 'left') { left = anchor.left - box.width - GAP; top = centreY - box.height / 2 }
+    if (side === 'right') { left = anchor.right + GAP; top = centreY - box.height / 2 }
+
+    // Nudged back inside the window, with the nib following the trigger so it
+    // keeps pointing at the right thing.
+    const clampedLeft = Math.min(Math.max(left, EDGE), window.innerWidth - box.width - EDGE)
+    const clampedTop = Math.min(Math.max(top, EDGE), window.innerHeight - box.height - EDGE)
+
+    const nib = side === 'top' || side === 'bottom'
+      ? Math.min(Math.max(centreX - clampedLeft, 14), box.width - 14)
+      : Math.min(Math.max(centreY - clampedTop, 14), box.height - 14)
+
+    setPlaced({ left: clampedLeft, top: clampedTop, nib })
+  }, [anchor, side])
+
+  useEffect(() => {
+    if (!anchor) return
+    place()
+    window.addEventListener('scroll', hide, true)
+    window.addEventListener('resize', hide)
+    return () => {
+      window.removeEventListener('scroll', hide, true)
+      window.removeEventListener('resize', hide)
+    }
+  }, [anchor, place])
 
   const trigger = cloneElement(children, {
     onMouseEnter: show,
     onMouseLeave: hide,
     onFocus: show,
     onBlur: hide,
-    'aria-describedby': box ? id : undefined,
+    'aria-describedby': anchor ? id : undefined,
   })
 
-  const position = () => {
-    if (!box) return {}
-    if (side === 'top') return { left: box.left + box.width / 2, top: box.top - OFFSET }
-    if (side === 'bottom') return { left: box.left + box.width / 2, top: box.bottom + OFFSET }
-    if (side === 'left') return { left: box.left - OFFSET, top: box.top + box.height / 2 }
-    return { left: box.right + OFFSET, top: box.top + box.height / 2 }
-  }
-
-  const translate: Record<Side, string> = {
-    top: 'translate(-50%, -100%)',
-    bottom: 'translate(-50%, 0)',
-    left: 'translate(-100%, -50%)',
-    right: 'translate(0, -50%)',
+  /**
+   * The nib sits half inside the bubble. The half that overlaps disappears
+   * into it, because they are the same colour with nothing drawn between
+   * them, and the half that sticks out is the point.
+   */
+  const nibStyle = (): React.CSSProperties => {
+    if (!placed) return {}
+    const rotate = 'rotate(45deg)'
+    if (side === 'top') {
+      return { left: placed.nib, bottom: 0, transform: `translate(-50%, 50%) ${rotate}` }
+    }
+    if (side === 'bottom') {
+      return { left: placed.nib, top: 0, transform: `translate(-50%, -50%) ${rotate}` }
+    }
+    if (side === 'left') {
+      return { top: placed.nib, right: 0, transform: `translate(50%, -50%) ${rotate}` }
+    }
+    return { top: placed.nib, left: 0, transform: `translate(-50%, -50%) ${rotate}` }
   }
 
   return (
     <>
       {trigger}
-      {box &&
+      {anchor &&
         createPortal(
           <div
+            ref={bubble}
             role="tooltip"
             id={id}
-            className="pointer-events-none fixed z-[80] animate-pop-in"
-            style={{ ...position(), transform: translate[side] }}
+            className={cn(
+              'pointer-events-none fixed z-[80] max-w-[15rem] rounded-xl bg-[#26262f] px-3 py-1.5',
+              'text-center text-xs font-semibold leading-snug text-white',
+              'shadow-[0_8px_24px_-8px_rgba(0,0,0,0.9)] transition-opacity duration-100',
+              placed ? 'opacity-100' : 'opacity-0',
+            )}
+            style={{
+              left: placed?.left ?? 0,
+              top: placed?.top ?? 0,
+              // Measured off screen first, so it never flashes in the wrong spot.
+              visibility: placed ? 'visible' : 'hidden',
+            }}
           >
-            <div className="relative">
-              <div className="max-w-[16rem] rounded-xl border border-ink-line bg-ink-card px-3 py-1.5 text-center text-xs font-semibold leading-snug text-white shadow-pop">
-                {label}
-              </div>
-              <Arrow side={side} />
-            </div>
+            {label}
+            <span
+              aria-hidden="true"
+              className="absolute h-3 w-3 rounded-[3px] bg-[#26262f]"
+              style={nibStyle()}
+            />
           </div>,
           document.body,
         )}
     </>
-  )
-}
-
-/** The rounded nub. Its tip is a curve, not a point. */
-function Arrow({ side }: { side: Side }) {
-  const placement: Record<Side, string> = {
-    top: 'left-1/2 top-full -translate-x-1/2 -translate-y-px',
-    bottom: 'left-1/2 bottom-full -translate-x-1/2 translate-y-px rotate-180',
-    left: 'top-1/2 left-full -translate-y-1/2 -translate-x-px -rotate-90',
-    right: 'top-1/2 right-full -translate-y-1/2 translate-x-px rotate-90',
-  }
-
-  return (
-    <svg
-      viewBox="0 0 16 8"
-      width="16"
-      height="8"
-      aria-hidden="true"
-      className={cn('absolute', placement[side])}
-    >
-      <path
-        d="M0 0 H16 C12.5 0 11 1.2 9.4 4.6 C8.8 5.9 7.2 5.9 6.6 4.6 C5 1.2 3.5 0 0 0 Z"
-        className="fill-ink-card stroke-ink-line"
-        strokeWidth="1"
-        strokeLinejoin="round"
-      />
-    </svg>
   )
 }

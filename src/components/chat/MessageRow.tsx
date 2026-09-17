@@ -12,11 +12,13 @@ import type { ConversationMember, Message } from '@/types/db'
  * or taken back from the buttons that appear on hover.
  */
 export function MessageRow({
-  message, sender, mine, onEdit, onDelete,
+  message, sender, mine, grouped, onEdit, onDelete,
 }: {
   message: Message
   sender?: ConversationMember
   mine: boolean
+  /** Follows another message from the same person, so it needs no picture. */
+  grouped?: boolean
   onEdit: (body: string) => Promise<void>
   onDelete: () => Promise<void>
 }) {
@@ -26,7 +28,7 @@ export function MessageRow({
 
   if (message.is_removed) {
     return (
-      <div className="flex gap-2 px-1 py-0.5">
+      <div className={cn('flex gap-2 px-1', mine && 'flex-row-reverse')}>
         <span className="w-6 shrink-0" />
         <p className="text-xs italic text-white/30">Message deleted</p>
       </div>
@@ -48,14 +50,25 @@ export function MessageRow({
   }
 
   return (
-    <div className={cn('group flex items-end gap-2', mine ? 'flex-row-reverse' : 'flex-row')}>
-      <Link
-        to={`/u/${sender?.username ?? ''}`}
-        className="shrink-0"
-        aria-label={sender?.display_name ?? 'Profile'}
-      >
-        <Avatar src={sender?.avatar_url} name={sender?.display_name ?? 'K'} size="xs" />
-      </Link>
+    <div
+      className={cn(
+        'group flex items-end gap-2',
+        mine ? 'flex-row-reverse' : 'flex-row',
+        grouped ? 'mt-0.5' : 'mt-2',
+      )}
+    >
+      {/* One picture per run of messages; the rest line up under it. */}
+      {grouped ? (
+        <span className="w-6 shrink-0" aria-hidden="true" />
+      ) : (
+        <Link
+          to={`/u/${sender?.username ?? ''}`}
+          className="shrink-0"
+          aria-label={sender?.display_name ?? 'Profile'}
+        >
+          <Avatar src={sender?.avatar_url} name={sender?.display_name ?? 'K'} size="xs" />
+        </Link>
+      )}
 
       <div className={cn('flex min-w-0 max-w-[75%] flex-col', mine && 'items-end')}>
         {editing ? (

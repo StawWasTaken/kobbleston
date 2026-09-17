@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faBan, faFlag } from '@fortawesome/free-solid-svg-icons'
 import { Avatar } from '@/components/ui/Avatar'
+import { cn } from '@/lib/cn'
 import type { ConversationMember } from '@/types/db'
 
 /**
@@ -9,14 +10,15 @@ import type { ConversationMember } from '@/types/db'
  * reminder is there the tenth time as well as the first.
  */
 export function SafetyNote({
-  person, onBlock, onReport,
+  person, onBlock, onReport, className,
 }: {
   person: ConversationMember
   onBlock: () => void
   onReport: () => void
+  className?: string
 }) {
   return (
-    <div className="rounded-xl border border-ink-line bg-ink-raised p-3">
+    <div className={cn('rounded-xl border border-ink-line bg-ink-raised p-3', className)}>
       <Link to={`/u/${person.username}`} className="flex items-center gap-2">
         <Avatar src={person.avatar_url} name={person.display_name} size="sm" />
         <span className="min-w-0">
