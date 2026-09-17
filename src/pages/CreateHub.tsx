@@ -364,8 +364,8 @@ export function CreateMarketplace() {
         <div>
           <h1 className="font-display text-2xl font-extrabold sm:text-3xl">Marketplace</h1>
           <p className="mt-1 text-sm text-muted">
-            Content is used by its ID, never downloaded. Kobbleston&rsquo;s own work is open to
-            everyone; anything else you ask the creator for.
+            Take what you need, free or for Kubes. It lands in your inventory and you paste its
+            id into a Space. The file itself never changes hands.
           </p>
         </div>
         <GuestGate action="upload">
