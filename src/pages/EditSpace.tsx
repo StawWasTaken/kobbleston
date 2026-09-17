@@ -1,19 +1,19 @@
 import { useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
-import { faTrash } from '@fortawesome/free-solid-svg-icons'
+import { faPlus, faTrash } from '@fortawesome/free-solid-svg-icons'
 import { Page } from '@/components/layout/AppShell'
 import { Button } from '@/components/ui/Button'
 import { Card, SectionHeading } from '@/components/ui/Card'
 import { Input, Textarea } from '@/components/ui/Input'
 import { ErrorState, Skeleton } from '@/components/ui/States'
 import { useToast } from '@/components/ui/Toast'
-import { AssetRefPicker } from '@/components/create/AssetRefPicker'
+import { ImageDrop } from '@/components/community/ImageDrop'
 import { ChatSettings } from '@/components/spaces/ChatSettings'
 import { Collaborators } from '@/components/spaces/Collaborators'
 import { categoryLabels } from '@/components/spaces/SpaceCard'
 import { useAuth } from '@/hooks/useAuth'
 import { useAsync } from '@/hooks/useAsync'
-import { getSpaceById, updateSpace } from '@/lib/api'
+import { getSpaceById, updateSpace, uploadSpaceImage } from '@/lib/api'
 import { cn } from '@/lib/cn'
 import type { SpaceCategory } from '@/types/db'
 
@@ -33,10 +33,10 @@ export default function EditSpace() {
   const [category, setCategory] = useState<SpaceCategory>('personal')
   const [genre, setGenre] = useState('other')
   const [published, setPublished] = useState(false)
-  const [emblem, setEmblem] = useState<string | null>(null)
-  const [cover, setCover] = useState<string | null>(null)
+  const [emblem, setEmblem] = useState<File | null>(null)
+  const [cover, setCover] = useState<File | null>(null)
   const [thumbnails, setThumbnails] = useState<string[]>([])
-  const [newShot, setNewShot] = useState<string | null>(null)
+  const [newShot, setNewShot] = useState<File | null>(null)
   const [pending, setPending] = useState(false)
 
   useEffect(() => {
@@ -48,8 +48,6 @@ export default function EditSpace() {
     setGenre(it.genre)
     setPublished(it.is_published)
     setThumbnails(it.thumbnail_urls ?? [])
-    setEmblem(it.emblem_url)
-    setCover(it.cover_url)
   }, [space.data])
 
   const save = async (e: React.FormEvent) => {
@@ -58,8 +56,8 @@ export default function EditSpace() {
     setPending(true)
     try {
       const [emblemUrl, coverUrl] = await Promise.all([
-        Promise.resolve(emblem),
-        Promise.resolve(cover),
+        emblem ? uploadSpaceImage(profile.id, emblem, 'emblem') : Promise.resolve(space.data.emblem_url),
+        cover ? uploadSpaceImage(profile.id, cover, 'cover') : Promise.resolve(space.data.cover_url),
       ])
 
       await updateSpace(space.data.id, {
@@ -78,6 +76,18 @@ export default function EditSpace() {
       setCover(null)
     } catch (err) {
       toast(err instanceof Error ? err.message : 'That did not save.', 'error')
+    } finally {
+      setPending(false)
+    }
+  }
+
+  const addShot = async () => {
+    if (!newShot || !profile) return
+    setPending(true)
+    try {
+      const url = await uploadSpaceImage(profile.id, newShot, 'cover')
+      setThumbnails((all) => [...all, url])
+      setNewShot(null)
     } finally {
       setPending(false)
     }
@@ -116,16 +126,19 @@ export default function EditSpace() {
             hint={`${description.length}/400`}
           />
 
-          <AssetRefPicker
+          <ImageDrop
             label="Emblem"
-            value={emblem}
+            file={emblem}
+            existing={space.data.emblem_url}
             onChange={setEmblem}
             note="The square icon people see in lists and inside the Space."
           />
 
-          <AssetRefPicker
+          <ImageDrop
             label="Cover"
-            value={cover}
+            aspect="wide"
+            file={cover}
+            existing={space.data.cover_url}
             onChange={setCover}
             note="The wide picture at the top of the page."
           />
@@ -149,16 +162,14 @@ export default function EditSpace() {
                 ))}
               </div>
             )}
-            <AssetRefPicker
-              label="Add one"
-              value={newShot}
-              onChange={(next) => {
-                if (!next) { setNewShot(null); return }
-                setThumbnails((all) => (all.includes(next) ? all : [...all, next]))
-                setNewShot(null)
-              }}
-              note="Paste an ID, pick from what you can use, or upload a new picture."
-            />
+            <div className="flex items-end gap-3">
+              <ImageDrop label="Add one" aspect="wide" file={newShot} onChange={setNewShot} />
+            </div>
+            {newShot && (
+              <Button type="button" size="sm" icon={faPlus} className="mt-2" loading={pending} onClick={addShot}>
+                Add thumbnail
+              </Button>
+            )}
           </div>
 
           <fieldset>

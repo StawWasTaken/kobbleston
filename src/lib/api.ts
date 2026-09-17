@@ -6,7 +6,7 @@ import type {
   CommunityMember, CommunityOverview, CommunityPost, CommunityRank, CommunityRequest,
   CommunityRelation, CommunityBan, CommunityAuditEntry,
   AssetPageItem, AssetDay, CreatorAssetRow, Collaborator, UsernameRecord,
-  AssetRequest, UsableAsset,
+  AssetRequest, UsableAsset, AssetReview,
 } from '@/types/db'
 
 const SPACE_FIELDS =
@@ -367,6 +367,45 @@ export function resolveAssetRef(value: string): Promise<string | null> {
 
   refCache.set(value, work)
   return work
+}
+
+export async function rateAsset(assetId: string, up: boolean | null) {
+  const { data: session } = await supabase.auth.getUser()
+  const me = session.user?.id
+  if (!me) throw new Error('Sign in first.')
+
+  if (up === null) {
+    unwrap(await supabase.from('asset_ratings').delete()
+      .eq('asset_id', assetId).eq('user_id', me).select('asset_id'))
+    return
+  }
+  unwrap(await supabase.from('asset_ratings')
+    .upsert({ asset_id: assetId, user_id: me, up }, { onConflict: 'asset_id,user_id' })
+    .select('asset_id').single())
+}
+
+export async function listAssetReviews(assetId: string): Promise<AssetReview[]> {
+  return (unwrap(await supabase.rpc('asset_reviews_of', { target: assetId })) as AssetReview[]) ?? []
+}
+
+export async function writeAssetReview(assetId: string, body: string) {
+  const { data: session } = await supabase.auth.getUser()
+  const me = session.user?.id
+  if (!me) throw new Error('Sign in first.')
+  unwrap(await supabase.from('asset_reviews')
+    .upsert({ asset_id: assetId, user_id: me, body: body.trim() }, { onConflict: 'asset_id,user_id' })
+    .select('id').single())
+}
+
+export async function removeAssetReview(id: string) {
+  unwrap(await supabase.from('asset_reviews').delete().eq('id', id).select('id'))
+}
+
+/** Other things the same person has made, for the row under an item. */
+export async function listAssetsByCreator(creatorId: string, exceptId?: string): Promise<MarketAsset[]> {
+  return (unwrap(await supabase.rpc('assets_by_creator', {
+    target: creatorId, except_id: exceptId ?? null, limit_count: 12,
+  })) as MarketAsset[]) ?? []
 }
 
 export async function requestAssetUse(assetId: string, note: string) {
@@ -867,7 +906,12 @@ export async function linkSpaceToCommunity(communityId: string, spaceId: string,
   if (result.error) throw new Error(result.error.message)
 }
 
-/** Emblems and covers live in the same bucket as profile pictures. */
+/**
+ * Pictures the platform itself shows: avatars, Community emblems and banners,
+ * Space emblems, covers and thumbnails. These are ordinary uploads from your
+ * machine, not Create content, and they carry no id: an id is for what goes
+ * inside a Space.
+ */
 export async function uploadCommunityImage(userId: string, file: File, kind: 'emblem' | 'cover') {
   const extension = file.name.split('.').pop()?.toLowerCase() ?? 'png'
   const path = `${userId}/community-${kind}-${Date.now()}.${extension}`
@@ -876,6 +920,8 @@ export async function uploadCommunityImage(userId: string, file: File, kind: 'em
   if (error) throw new Error(error.message)
   return supabase.storage.from('avatars').getPublicUrl(path).data.publicUrl
 }
+
+export const uploadSpaceImage = uploadCommunityImage
 
 export async function blockPerson(targetId: string) {
   unwrap(await supabase.rpc('block_person', { target: targetId }))

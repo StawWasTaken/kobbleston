@@ -89,6 +89,10 @@ export type MarketAsset = {
 export type AssetPageItem = MarketAsset & {
   i_can_use: boolean
   i_asked: boolean
+  votes: number
+  score: number | null
+  review_count: number
+  my_vote: boolean | null
   byte_size: number
   status: ModerationStatus
   is_public: boolean
@@ -110,6 +114,18 @@ export type AssetRequest = {
   avatar_url: string | null
   note: string | null
   requested_at: string
+}
+
+export type AssetReview = {
+  id: string
+  body: string
+  created_at: string
+  user_id: string
+  username: string
+  display_name: string
+  avatar_url: string | null
+  is_guest: boolean
+  up: boolean | null
 }
 
 export type UsableAsset = {

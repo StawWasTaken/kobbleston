@@ -4,6 +4,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import {
   faCopy, faCircleCheck, faLock, faLockOpen, faPen, faTrash, faShieldHalved,
   faTriangleExclamation, faClock, faHandPointUp, faCheck, faXmark, faEllipsis,
+  faThumbsUp, faThumbsDown, faComment, faChevronRight,
 } from '@fortawesome/free-solid-svg-icons'
 import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
@@ -15,18 +16,22 @@ import { Tooltip } from '@/components/ui/Tooltip'
 import { useToast } from '@/components/ui/Toast'
 import { contentTag, kindIcons, kindLabels } from '@/components/create/AssetTile'
 import { MediaPlayer } from '@/components/create/MediaPlayer'
+import { FontPreview } from '@/components/create/FontPreview'
+import { AssetTile } from '@/components/create/AssetTile'
 import { Menu } from '@/components/ui/Menu'
 import { useAuth } from '@/hooks/useAuth'
 import { useAsync } from '@/hooks/useAsync'
 import {
   answerAssetRequest, assetAnalytics, deleteAsset, getAsset, listAssetRequests,
-  recordAssetEvent, requestAssetUse, updateAsset, withdrawAssetRequest,
+  listAssetReviews, listAssetsByCreator, rateAsset, recordAssetEvent, removeAssetReview,
+  requestAssetUse, updateAsset, withdrawAssetRequest, writeAssetReview,
 } from '@/lib/api'
 import { useSignedUrl } from '@/hooks/useSignedUrl'
 import { avatarOf } from '@/lib/avatars'
 import { formatCount } from '@/lib/format'
 import { cn } from '@/lib/cn'
 import type { AssetDay, AssetPageItem } from '@/types/db'
+import { timeAgo } from '@/lib/format'
 import { profileLink } from '@/lib/links'
 
 const prefixes: Record<string, string> = {
@@ -93,14 +98,19 @@ function UsePanel({ asset, onChanged }: { asset: AssetPageItem; onChanged: () =>
   if (asset.i_can_use) {
     return (
       <div className="space-y-2">
-        <Button block icon={faCopy} onClick={copy}>Use {tag}</Button>
-        <p className="flex items-center gap-2 text-xs text-muted">
-          <FontAwesomeIcon icon={asset.creator_is_admin ? faCircleCheck : faShieldHalved} />
-          {mine
-            ? 'Yours, so you can use it anywhere.'
-            : asset.creator_is_admin
-              ? 'Verified Kobbleston content. Anyone may use this ID.'
-              : 'The creator let you use this.'}
+        <Button block icon={faCopy} onClick={copy}>Copy ID</Button>
+        <p className="flex items-start gap-2 text-xs leading-relaxed text-muted">
+          <FontAwesomeIcon
+            icon={asset.creator_is_admin ? faCircleCheck : faShieldHalved}
+            className="mt-0.5 shrink-0"
+          />
+          <span>
+            {mine
+              ? 'Yours, so you can use it anywhere.'
+              : asset.creator_is_admin
+                ? 'Verified, so anyone may use it.'
+                : 'The creator let you use this.'}
+          </span>
         </p>
       </div>
     )
@@ -187,7 +197,7 @@ export default function AssetPage() {
   const [name, setName] = useState('')
   const [description, setDescription] = useState('')
   const [pending, setPending] = useState(false)
-  const [panel, setPanel] = useState<'Description' | 'Requests' | 'Numbers'>('Description')
+  const [panel, setPanel] = useState<'Description' | 'Reviews' | 'Requests' | 'Numbers'>('Description')
 
   const [prefix, number] = useMemo(() => {
     const match = tag.toUpperCase().match(/^([A-Z]{3})-(\d+)$/)
@@ -210,13 +220,24 @@ export default function AssetPage() {
     [mine, asset?.id],
   )
 
+  const reviews = useAsync(
+    async () => (asset ? listAssetReviews(asset.id) : []),
+    [asset?.id],
+  )
+  const more = useAsync(
+    async () => (asset ? listAssetsByCreator(asset.creator_id, asset.id) : []),
+    [asset?.creator_id, asset?.id],
+  )
+
   const preview = useSignedUrl(
     asset ? asset.thumbnail_path ?? (asset.kind === 'image' ? asset.file_path : null) : null,
   )
   // Sound and video play from a signed URL that expires; there is no link to
   // keep, and the player is told not to offer a download.
   const file = useSignedUrl(
-    asset && (asset.kind === 'audio' || asset.kind === 'video') ? asset.file_path : null,
+    asset && (asset.kind === 'audio' || asset.kind === 'video' || asset.kind === 'font')
+      ? asset.file_path
+      : null,
   )
 
   // A view is recorded once the page has actually opened the item.
@@ -306,6 +327,20 @@ export default function AssetPage() {
                 <FontAwesomeIcon icon={faCircleCheck} className="text-xs text-[#4d68ff]" />
               )}
             </Link>
+            <span className="h-3.5 w-px bg-ink-line" aria-hidden="true" />
+            {asset.score === null ? (
+              <span className="italic">Not enough ratings</span>
+            ) : (
+              <span className="inline-flex items-center gap-1.5">
+                <FontAwesomeIcon icon={faThumbsUp} className="text-space-bright" />
+                <span className="font-bold text-white">{asset.score}%</span>
+                <span>({formatCount(asset.votes)} {asset.votes === 1 ? 'vote' : 'votes'})</span>
+              </span>
+            )}
+            <span className="inline-flex items-center gap-1.5">
+              <FontAwesomeIcon icon={faComment} />
+              {formatCount(asset.review_count)} {asset.review_count === 1 ? 'review' : 'reviews'}
+            </span>
             <span className="font-mono text-link">{contentTag(asset.kind, asset.content_id)}</span>
             <span>{formatCount(asset.download_count)} uses</span>
           </div>
@@ -397,6 +432,8 @@ export default function AssetPage() {
             <MediaPlayer src={fileUrl} kind={asset.kind} poster={previewUrl} />
           )}
 
+          {asset.kind === 'font' && <FontPreview src={fileUrl} name={asset.name} />}
+
           <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
             {[
               { label: 'Type', value: kindLabels[asset.kind] },
@@ -413,7 +450,7 @@ export default function AssetPage() {
 
           <div>
             <div className="flex border-b border-ink-line" role="tablist">
-              {(['Description', ...(mine ? ['Requests', 'Numbers'] as const : [])] as const).map((name) => (
+              {(['Description', 'Reviews', ...(mine ? ['Requests', 'Numbers'] as const : [])] as const).map((name) => (
                 <button
                   key={name}
                   role="tab"
@@ -429,6 +466,9 @@ export default function AssetPage() {
                   {name}
                   {name === 'Requests' && !!requests.data?.length && (
                     <span className="ml-1.5 text-link">({requests.data.length})</span>
+                  )}
+                  {name === 'Reviews' && !!asset.review_count && (
+                    <span className="ml-1.5 text-muted">({asset.review_count})</span>
                   )}
                 </button>
               ))}
@@ -457,6 +497,64 @@ export default function AssetPage() {
                     {asset.description || 'No description.'}
                   </p>
                 )}
+              </div>
+            )}
+
+
+            {panel === 'Reviews' && (
+              <div className="space-y-5 pt-4">
+                {!mine && (
+                  <ReviewBox
+                    asset={asset}
+                    onDone={() => { item.reload(); reviews.reload() }}
+                  />
+                )}
+
+                {reviews.loading && <Skeleton className="h-20" />}
+
+                {!reviews.loading && !reviews.data?.length && (
+                  <p className="text-sm text-muted">
+                    No reviews yet.{mine ? '' : ' Say what you made with it.'}
+                  </p>
+                )}
+
+                <ul className="space-y-4">
+                  {reviews.data?.map((review) => (
+                    <li key={review.id} className="flex gap-3">
+                      <Avatar src={avatarOf(review)} name={review.display_name} size="sm" />
+                      <div className="min-w-0 flex-1">
+                        <p className="flex flex-wrap items-center gap-2 text-sm">
+                          <Link to={`/u/${review.username}`} className="font-bold hover:underline">
+                            {review.display_name}
+                          </Link>
+                          {review.up !== null && (
+                            <FontAwesomeIcon
+                              icon={review.up ? faThumbsUp : faThumbsDown}
+                              className={cn('text-xs', review.up ? 'text-space-bright' : 'text-white/40')}
+                            />
+                          )}
+                          <span className="text-xs text-muted">{timeAgo(review.created_at)}</span>
+                        </p>
+                        <p className="mt-1 whitespace-pre-wrap text-sm leading-relaxed text-white/75">
+                          {review.body}
+                        </p>
+                      </div>
+                      {(mine || review.user_id === profile?.id) && (
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          icon={faTrash}
+                          aria-label={`Remove the review by ${review.display_name}`}
+                          onClick={async () => {
+                            await removeAssetReview(review.id)
+                            item.reload()
+                            reviews.reload()
+                          }}
+                        />
+                      )}
+                    </li>
+                  ))}
+                </ul>
               </div>
             )}
 
@@ -511,6 +609,101 @@ export default function AssetPage() {
             )}
           </div>
         </div>
+      </div>
+
+      {!!more.data?.length && (
+        <section>
+          <h2 className="mb-3 flex items-center gap-2 font-display text-xl font-extrabold">
+            More from {asset.creator_display_name}
+            <Link
+              to={`/u/${asset.creator_username}`}
+              aria-label={`Everything by ${asset.creator_display_name}`}
+              className="text-sm text-white/40 transition-colors hover:text-white"
+            >
+              <FontAwesomeIcon icon={faChevronRight} />
+            </Link>
+          </h2>
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 xl:grid-cols-6">
+            {more.data.map((other) => <AssetTile key={other.id} item={other} />)}
+          </div>
+        </section>
+      )}
+    </div>
+  )
+}
+
+/** Your thumb and your words about somebody else's work. */
+function ReviewBox({ asset, onDone }: { asset: AssetPageItem; onDone: () => void }) {
+  const { profile } = useAuth()
+  const toast = useToast()
+  const [body, setBody] = useState('')
+  const [pending, setPending] = useState(false)
+
+  const vote = async (up: boolean) => {
+    try {
+      await rateAsset(asset.id, asset.my_vote === up ? null : up)
+      onDone()
+    } catch (err) {
+      toast(err instanceof Error ? err.message : 'That did not save.', 'error')
+    }
+  }
+
+  if (!profile || profile.is_guest) {
+    return <p className="text-sm text-muted">Sign in to rate this or leave a review.</p>
+  }
+
+  return (
+    <div className="space-y-3 rounded-xl border border-ink-line bg-ink-raised p-4">
+      <div className="flex items-center gap-2">
+        {[true, false].map((up) => (
+          <button
+            key={String(up)}
+            onClick={() => vote(up)}
+            aria-pressed={asset.my_vote === up}
+            aria-label={up ? 'Rate this up' : 'Rate this down'}
+            className={cn(
+              'inline-flex h-9 items-center gap-2 rounded-lg px-3.5 text-sm font-bold transition-colors',
+              asset.my_vote === up
+                ? up ? 'bg-space text-white' : 'bg-ink-hover text-white'
+                : 'bg-ink-card text-white/60 hover:bg-ink-hover hover:text-white',
+            )}
+          >
+            <FontAwesomeIcon icon={up ? faThumbsUp : faThumbsDown} />
+            {up ? 'Good' : 'Not for me'}
+          </button>
+        ))}
+      </div>
+
+      <Textarea
+        label="Review"
+        labelNote="optional"
+        value={body}
+        onChange={(e) => setBody(e.target.value)}
+        maxLength={600}
+        placeholder="What did you build with it?"
+      />
+
+      <div className="flex justify-end">
+        <Button
+          size="sm"
+          loading={pending}
+          disabled={!body.trim()}
+          onClick={async () => {
+            setPending(true)
+            try {
+              await writeAssetReview(asset.id, body)
+              setBody('')
+              toast('Posted.', 'success')
+              onDone()
+            } catch (err) {
+              toast(err instanceof Error ? err.message : 'That did not post.', 'error')
+            } finally {
+              setPending(false)
+            }
+          }}
+        >
+          Post review
+        </Button>
       </div>
     </div>
   )

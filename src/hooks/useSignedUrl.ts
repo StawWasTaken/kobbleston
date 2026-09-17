@@ -20,9 +20,11 @@ export function useSignedUrl(path?: string | null) {
 }
 
 /**
- * Takes whatever a Space stored for a picture: a plain URL, or a reference
- * to a piece of Create content by its ID. Either way you get something you
- * can put in a src.
+ * Takes whatever was stored for a picture. Emblems, covers, avatars and
+ * thumbnails are ordinary uploads and come back untouched. A "kob://IMG-1042"
+ * reference is Create content used inside a Space, and is resolved to a
+ * short-lived link. Both forms go through here so a picture never has to
+ * know which it is.
  */
 export function useAssetRef(value?: string | null) {
   const [url, setUrl] = useState<string | null>(isAssetRef(value) ? null : value ?? null)

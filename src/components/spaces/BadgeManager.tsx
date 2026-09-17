@@ -1,12 +1,13 @@
 import { useState } from 'react'
+import { useAuth } from '@/hooks/useAuth'
 import { faPlus, faTrash, faEye, faEyeSlash } from '@fortawesome/free-solid-svg-icons'
 import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
 import { Dialog } from '@/components/ui/Dialog'
 import { Input, Textarea } from '@/components/ui/Input'
 import { useToast } from '@/components/ui/Toast'
-import { AssetRefPicker } from '@/components/create/AssetRefPicker'
-import { createSpaceBadge, deleteSpaceBadge, updateSpaceBadge } from '@/lib/api'
+import { ImageDrop } from '@/components/community/ImageDrop'
+import { createSpaceBadge, deleteSpaceBadge, updateSpaceBadge, uploadCommunityImage } from '@/lib/api'
 import { formatCount } from '@/lib/format'
 import type { SpaceBadge } from '@/types/db'
 
@@ -19,10 +20,11 @@ export function BadgeManager({
   onChanged: () => void
 }) {
   const toast = useToast()
+  const { profile } = useAuth()
   const [adding, setAdding] = useState(false)
   const [name, setName] = useState('')
   const [description, setDescription] = useState('')
-  const [icon, setIcon] = useState<string | null>(null)
+  const [icon, setIcon] = useState<File | null>(null)
   const [pending, setPending] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -37,7 +39,8 @@ export function BadgeManager({
     }
     setPending(true)
     try {
-      await createSpaceBadge({ spaceId, name, description, iconUrl: icon })
+      const iconUrl = profile ? await uploadCommunityImage(profile.id, icon, 'emblem') : null
+      await createSpaceBadge({ spaceId, name, description, iconUrl })
       setName('')
       setDescription('')
       setIcon(null)
@@ -127,9 +130,10 @@ export function BadgeManager({
         }
       >
         <div className="space-y-4">
-          <AssetRefPicker
+          <ImageDrop
             label="Picture"
-            value={icon}
+            required
+            file={icon}
             onChange={setIcon}
             note="Shown as a circle on profiles, so something simple reads best."
           />
