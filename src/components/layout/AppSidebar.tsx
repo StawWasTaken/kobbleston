@@ -8,6 +8,7 @@ import { supabase } from '@/lib/supabase'
 import { cn } from '@/lib/cn'
 import { sideNav } from './nav'
 import { avatarOf } from '@/lib/avatars'
+import { profileLink } from '@/lib/links'
 
 /** Pending friend requests waiting on an answer from this person. */
 function useFriendRequestCount() {
@@ -54,7 +55,7 @@ export function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
         {sideNav.map((item) => {
           // Profile only makes sense once we know whose it is.
           const to = item.to === '/profile'
-            ? (profile ? `/u/${profile.username}` : '/login')
+            ? (profile ? profileLink(profile) : '/login')
             : item.to
           const badge = item.badge === 'friends' ? requests : 0
 
@@ -87,7 +88,7 @@ export function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
 
       {profile && (
         <NavLink
-          to={`/u/${profile.username}`}
+          to={profileLink(profile)}
           onClick={onNavigate}
           className="flex items-center gap-3 border-t border-onbrand/10 p-3 transition-colors hover:bg-onbrand/10"
         >

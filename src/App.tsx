@@ -92,9 +92,14 @@ export default function App() {
                 <Route path="/search" element={<Search />} />
                 <Route element={<CommunityShell />}>
                   <Route path="/communities" element={<Communities />} />
+                  <Route path="/c/:id/:name" element={<CommunityPage />} />
                   <Route path="/c/:slug" element={<CommunityPage />} />
                 </Route>
+                {/* The numbered addresses are the real ones; the older
+                    name-only forms still answer and redirect. */}
+                <Route path="/u/:id/:name" element={<Profile />} />
                 <Route path="/u/:username" element={<Profile />} />
+                <Route path="/s/:id/:name" element={<SpacePage />} />
                 <Route path="/u/:username/:slug" element={<SpacePage />} />
 
                 <Route element={<RequireAuth />}>

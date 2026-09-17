@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Link, useParams } from 'react-router-dom'
+import { Link, useNavigate, useParams } from 'react-router-dom'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faPlay, faBell, faStar, faCircleCheck, faFlag, faPenToSquare } from '@fortawesome/free-solid-svg-icons'
 import { Page } from '@/components/layout/AppShell'
@@ -19,10 +19,11 @@ import { Carousel } from '@/components/spaces/Carousel'
 import { SpaceViewer } from '@/components/spaces/SpaceViewer'
 import { categoryLabels, coverFor } from '@/components/spaces/SpaceCard'
 import { RefImage } from '@/components/create/RefImage'
+import { profileLink, spaceLink } from '@/lib/links'
 import { useAuth } from '@/hooks/useAuth'
 import { useAsync } from '@/hooks/useAsync'
 import {
-  enterSpace, getSpace, getSpaceStats, leaveSpace, listSpaceBadges, toggleSpaceFlag,
+  enterSpace, getSpace, getSpaceStats, leaveSpace, listSpaceBadges, spaceById, toggleSpaceFlag,
 } from '@/lib/api'
 import { formatCount, timeAgo } from '@/lib/format'
 import { cn } from '@/lib/cn'
@@ -41,11 +42,24 @@ function Stat({ label, value }: { label: string; value: string }) {
 }
 
 export default function SpacePage() {
-  const { username = '', slug = '' } = useParams()
+  const { username: nameParam = '', slug: slugParam = '', id } = useParams()
+  const navigate = useNavigate()
+
+  const byId = useAsync(async () => (id ? spaceById(Number(id)) : null), [id])
+  const username = id ? byId.data?.owner_username ?? '' : nameParam
+  const slug = id ? byId.data?.slug ?? '' : slugParam
   const { profile } = useAuth()
   const toast = useToast()
 
-  const { data: space, error, loading, reload } = useAsync(() => getSpace(username, slug), [username, slug])
+  const { data: space, error, loading, reload } = useAsync(
+    async () => (username && slug ? getSpace(username, slug) : null),
+    [username, slug],
+  )
+
+  // The old owner/slug address still works, and hands you the numbered one.
+  useEffect(() => {
+    if (!id && space?.content_id) navigate(spaceLink(space), { replace: true })
+  }, [id, space?.content_id, navigate])
   const stats = useAsync(
     async () => (space ? getSpaceStats(space.id) : null),
     [space?.id, profile?.id],
@@ -157,7 +171,7 @@ export default function SpacePage() {
                 </h1>
                 {owner && (
                   <Link
-                    to={`/u/${owner.username}`}
+                    to={profileLink(owner)}
                     className="mt-1 inline-flex items-center gap-2 text-sm text-white/70 transition-colors hover:text-white"
                   >
                     <span className="relative">

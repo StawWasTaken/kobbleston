@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react'
-import { Link, useParams } from 'react-router-dom'
+import { Link, useNavigate, useParams } from 'react-router-dom'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import {
-  faComment, faFlag, faGear, faUserPlus, faClock, faUserCheck, faCircleCheck, faAward,
-  faEllipsis, faLink, faUserGroup, faCubes, faEye,
+  faComment, faFlag, faGear, faUserPlus, faClock, faUserCheck, faCircleCheck,
+  faEllipsis, faLink, faUserGroup, faCubes, faEye, faAward,
 } from '@fortawesome/free-solid-svg-icons'
 import { Page } from '@/components/layout/AppShell'
 import { Button } from '@/components/ui/Button'
@@ -24,26 +24,38 @@ import { useAsync } from '@/hooks/useAsync'
 import {
   getProfileByUsername, getProfileOverview, isFollowing, listEarnedBadges, listFriendships,
   listMemberCommunities, listSpacesByOwner, sendFriendRequest, setFollowing, startConversation,
-  usernameHistory,
+  usernameHistory, usernameById, listFollows,
 } from '@/lib/api'
 import { formatCount } from '@/lib/format'
 import { asset } from '@/lib/asset'
 import { cn } from '@/lib/cn'
+import { communityLink, profileLink } from '@/lib/links'
 import { avatarOf } from '@/lib/avatars'
 
-const tabs = ['About', 'Creations'] as const
+const tabs = ['About', 'Creations', 'People', 'Badges'] as const
 type Tab = (typeof tabs)[number]
 
-function Count({ label, value, to }: { label: string; value: number; to?: string }) {
+function Count({ label, value, onClick }: {
+  label: string
+  value: number
+  onClick?: () => void
+}) {
   const body = (
     <>
       <span className="font-display text-lg font-extrabold tabular-nums">{formatCount(value)}</span>
       <span className="block text-xs text-muted">{label}</span>
     </>
   )
-  return to
-    ? <Link to={to} className="rounded-lg px-3 py-1 text-center transition-colors hover:bg-ink-hover">{body}</Link>
-    : <span className="px-3 py-1 text-center">{body}</span>
+  return onClick
+    ? (
+      <button
+        onClick={onClick}
+        className="rounded-lg px-4 py-1 text-center transition-colors hover:bg-ink-hover"
+      >
+        {body}
+      </button>
+    )
+    : <span className="px-4 py-1 text-center">{body}</span>
 }
 
 /** A short line of real numbers about an account, nothing invented. */
@@ -58,7 +70,16 @@ function Fact({ icon, label, value }: { icon: typeof faEye; label: string; value
 }
 
 export default function Profile() {
-  const { username = '' } = useParams()
+  // Either form of address lands here: the numbered one, or the old
+  // name-only one, which is answered and then swapped for the number.
+  const { username: nameParam = '', id } = useParams()
+  const navigate = useNavigate()
+
+  const byId = useAsync(
+    async () => (id ? usernameById(Number(id)) : null),
+    [id],
+  )
+  const username = id ? byId.data ?? '' : nameParam
   const { profile: me } = useAuth()
   const { openConversation } = useChatDock()
   const toast = useToast()
@@ -67,8 +88,12 @@ export default function Profile() {
   const [reporting, setReporting] = useState(false)
   const [following, setFollowingState] = useState(false)
   const [bioOpen, setBioOpen] = useState(false)
+  const [side, setSide] = useState<'Friends' | 'Followers' | 'Following'>('Friends')
 
-  const person = useAsync(() => getProfileByUsername(username), [username])
+  const person = useAsync(
+    async () => (username ? getProfileByUsername(username) : null),
+    [username],
+  )
   const user = person.data
   const isMe = me?.id === user?.id
 
@@ -100,6 +125,13 @@ export default function Profile() {
     },
     [user?.id],
   )
+  const follows = useAsync(
+    async () => {
+      if (!user || tab !== 'People' || side === 'Friends') return []
+      return listFollows(user.id, side === 'Followers' ? 'followers' : 'following')
+    },
+    [user?.id, tab, side],
+  )
   const relationship = useAsync(
     async () => {
       if (!me || !user || isMe) return null
@@ -113,6 +145,13 @@ export default function Profile() {
     if (!me || !user || isMe) return
     isFollowing(me.id, user.id).then(setFollowingState)
   }, [me, user, isMe])
+
+  // Arriving by name sends you on to the address with the number in it.
+  useEffect(() => {
+    if (!id && user?.content_id) {
+      navigate(profileLink(user), { replace: true })
+    }
+  }, [id, user?.content_id, navigate])
 
   const toggleFollow = async () => {
     if (!me || !user) return
@@ -178,23 +217,25 @@ export default function Profile() {
 
   return (
     <>
-      <div className="relative h-36 overflow-hidden bg-brand-ink sm:h-44">
+      <div className="relative h-32 overflow-hidden bg-brand-ink sm:h-40">
         <img
           src={asset('/brand/banner3.png')}
           alt=""
           aria-hidden="true"
-          className="h-full w-full object-cover opacity-70"
+          className="h-full w-full object-cover opacity-60"
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-ink to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-t from-ink via-ink/60 to-ink/10" />
       </div>
 
-      <Page className="-mt-14">
+      {/* The avatar sits on the seam rather than under the banner: a quarter
+          of it overlaps, the rest is on the page, and it is drawn on top. */}
+      <Page className="relative z-10 -mt-8">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-end">
           <Avatar
             src={avatarOf(user)}
             name={user.display_name}
             size="xl"
-            className="rounded-2xl ring-4 ring-ink"
+            className="h-28 w-28 rounded-2xl ring-4 ring-ink"
           />
 
           <div className="min-w-0 flex-1">
@@ -277,10 +318,22 @@ export default function Profile() {
             borrows from, rather than as loose chips. */}
         {stats && (
           <div className="mt-5 flex flex-wrap items-center divide-x divide-ink-line rounded-xl border border-ink-line bg-ink-card py-2">
-            <Count label="Friends" value={stats.friend_count} />
-            <Count label="Followers" value={stats.follower_count} />
-            <Count label="Following" value={stats.following_count} />
-            <Count label="Badges" value={stats.badge_count} />
+            <Count
+              label="Friends"
+              value={stats.friend_count}
+              onClick={() => { setTab('People'); setSide('Friends') }}
+            />
+            <Count
+              label="Followers"
+              value={stats.follower_count}
+              onClick={() => { setTab('People'); setSide('Followers') }}
+            />
+            <Count
+              label="Following"
+              value={stats.following_count}
+              onClick={() => { setTab('People'); setSide('Following') }}
+            />
+            <Count label="Badges" value={stats.badge_count} onClick={() => setTab('Badges')} />
           </div>
         )}
 
@@ -356,7 +409,7 @@ export default function Profile() {
                   {friends.data.slice(0, 12).map((friend) => (
                     <Link
                       key={friend.id}
-                      to={`/u/${friend.username}`}
+                      to={profileLink(friend)}
                       className="w-24 shrink-0 rounded-xl p-2 text-center transition-colors hover:bg-ink-hover"
                     >
                       <Avatar
@@ -387,7 +440,7 @@ export default function Profile() {
                   {communities.data.map((community) => (
                     <Link
                       key={community.id}
-                      to={`/c/${community.slug}`}
+                      to={communityLink(community)}
                       className="w-36 shrink-0 rounded-xl border border-ink-line bg-ink-card p-3 text-center transition-colors hover:border-brand/60"
                     >
                       <span className="mx-auto grid h-12 w-12 place-items-center overflow-hidden rounded-lg bg-brand-deep font-display text-lg font-extrabold">
@@ -405,35 +458,6 @@ export default function Profile() {
               )}
             </section>
 
-            <section>
-              <h2 className="mb-3 flex items-center gap-2 font-display text-xl font-extrabold">
-                <FontAwesomeIcon icon={faAward} className="text-base text-white/40" />
-                Badges
-              </h2>
-              {badges.loading && (
-                <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 lg:grid-cols-6">
-                  {[0, 1, 2, 3].map((i) => <Skeleton key={i} className="aspect-[4/5]" />)}
-                </div>
-              )}
-              {!badges.loading && !badges.data?.length && (
-                <p className="text-sm text-muted">
-                  {isMe ? 'Enter Spaces and earn some.' : 'None earned yet.'}
-                </p>
-              )}
-              {!!badges.data?.length && (
-                <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 lg:grid-cols-6">
-                  {badges.data.map((badge) => (
-                    <Link key={badge.id} to={`/u/${badge.space_owner}/${badge.space_slug}`}>
-                      <BadgeTile
-                        badge={{ ...badge, awarded_count: 0 }}
-                        earned
-                        className="h-full transition-colors hover:border-brand/60"
-                      />
-                    </Link>
-                  ))}
-                </div>
-              )}
-            </section>
             </div>
 
             {/* The facts sit beside everything else rather than floating on
@@ -460,6 +484,104 @@ export default function Profile() {
                 value={formatCount(communities.data?.length ?? 0)}
               />
             </Card>
+          </div>
+        )}
+
+
+        {tab === 'People' && (
+          <div className="mt-6 space-y-5">
+            <div className="flex gap-1.5">
+              {(['Friends', 'Followers', 'Following'] as const).map((name) => (
+                <button
+                  key={name}
+                  onClick={() => setSide(name)}
+                  aria-pressed={side === name}
+                  className={cn(
+                    'h-9 rounded-lg px-4 text-sm font-bold transition-colors',
+                    side === name
+                      ? 'bg-brand text-onbrand'
+                      : 'bg-ink-card text-white/65 hover:bg-ink-hover hover:text-white',
+                  )}
+                >
+                  {name}
+                </button>
+              ))}
+            </div>
+
+            {(side === 'Friends' ? friends.loading : follows.loading) && (
+              <div className="grid grid-cols-3 gap-3 sm:grid-cols-5 lg:grid-cols-8">
+                {[0, 1, 2, 3, 4].map((i) => <Skeleton key={i} className="h-28 rounded-xl" />)}
+              </div>
+            )}
+
+            {(() => {
+              const people = side === 'Friends' ? friends.data ?? [] : follows.data ?? []
+              const busy = side === 'Friends' ? friends.loading : follows.loading
+              if (busy) return null
+              if (!people.length) {
+                return (
+                  <p className="text-sm text-muted">
+                    {side === 'Friends'
+                      ? 'No friends yet.'
+                      : side === 'Followers'
+                        ? 'Nobody is following them yet.'
+                        : 'Not following anybody yet.'}
+                  </p>
+                )
+              }
+              return (
+                <div className="grid grid-cols-3 gap-3 sm:grid-cols-5 lg:grid-cols-8">
+                  {people.map((person) => (
+                    <Link
+                      key={person.id}
+                      to={profileLink(person)}
+                      className="rounded-xl p-2 text-center transition-colors hover:bg-ink-hover"
+                    >
+                      <Avatar
+                        src={avatarOf(person)}
+                        name={person.display_name}
+                        size="lg"
+                        className="mx-auto rounded-xl"
+                      />
+                      <p className="mt-1.5 truncate text-xs font-bold">{person.display_name}</p>
+                      <p className="truncate text-[11px] text-muted">@{person.username}</p>
+                    </Link>
+                  ))}
+                </div>
+              )
+            })()}
+          </div>
+        )}
+
+        {tab === 'Badges' && (
+          <div className="mt-6">
+            <h2 className="mb-3 flex items-center gap-2 font-display text-xl font-extrabold">
+              <FontAwesomeIcon icon={faAward} className="text-base text-white/40" />
+              Badges
+            </h2>
+            {badges.loading && (
+              <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 lg:grid-cols-6">
+                {[0, 1, 2, 3].map((i) => <Skeleton key={i} className="aspect-[4/5]" />)}
+              </div>
+            )}
+            {!badges.loading && !badges.data?.length && (
+              <p className="text-sm text-muted">
+                {isMe ? 'Enter Spaces and earn some.' : 'None earned yet.'}
+              </p>
+            )}
+            {!!badges.data?.length && (
+              <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 lg:grid-cols-6">
+                {badges.data.map((badge) => (
+                  <Link key={badge.id} to={`/u/${badge.space_owner}/${badge.space_slug}`}>
+                    <BadgeTile
+                    badge={{ ...badge, awarded_count: 0 }}
+                    earned
+                    className="h-full transition-colors hover:border-brand/60"
+                    />
+                  </Link>
+                ))}
+              </div>
+            )}
           </div>
         )}
 

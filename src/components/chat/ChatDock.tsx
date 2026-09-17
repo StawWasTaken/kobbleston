@@ -26,6 +26,7 @@ import { timeAgo } from '@/lib/format'
 import { cn } from '@/lib/cn'
 import type { Conversation, Message } from '@/types/db'
 import { avatarOf } from '@/lib/avatars'
+import { profileLink } from '@/lib/links'
 
 type ChatValue = { openConversation: (id: string) => void }
 const ChatContext = createContext<ChatValue>({ openConversation: () => {} })
@@ -214,7 +215,7 @@ function Window({
             {conversation.members.map((member) => (
               <li key={member.id}>
                 <Link
-                  to={`/u/${member.username}`}
+                  to={profileLink(member)}
                   className="flex items-center gap-2.5 rounded-lg p-2 transition-colors hover:bg-ink-hover"
                 >
                   <Avatar src={avatarOf(member)} name={member.display_name} size="sm" />

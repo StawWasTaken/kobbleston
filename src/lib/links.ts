@@ -1,0 +1,30 @@
+/**
+ * Every link carries the number of the thing it points at, with the name
+ * after it for people to read: /u/1042/stawrer. Names change, numbers do not,
+ * so an old link still lands in the right place.
+ *
+ * Where the number has not been loaded, the name-only form is used instead.
+ * Those addresses still work and send you on to the numbered one.
+ */
+const slugPart = (value: string) => encodeURIComponent(value)
+
+export function profileLink(person: { username: string; content_id?: number | null }) {
+  return person.content_id
+    ? `/u/${person.content_id}/${slugPart(person.username)}`
+    : `/u/${slugPart(person.username)}`
+}
+
+export function spaceLink(space: {
+  slug: string
+  content_id?: number | null
+  owner?: { username: string } | null
+}) {
+  if (space.content_id) return `/s/${space.content_id}/${slugPart(space.slug)}`
+  return space.owner ? `/u/${slugPart(space.owner.username)}/${slugPart(space.slug)}` : '/discover'
+}
+
+export function communityLink(community: { slug: string; content_id?: number | null }) {
+  return community.content_id
+    ? `/c/${community.content_id}/${slugPart(community.slug)}`
+    : `/c/${slugPart(community.slug)}`
+}

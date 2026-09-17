@@ -17,6 +17,7 @@ import {
 import { timeAgo } from '@/lib/format'
 import type { CommunityOverview } from '@/types/db'
 import { avatarOf } from '@/lib/avatars'
+import { profileLink } from '@/lib/links'
 
 export function CommunityMembers({
   communityId, ownerId, rights, onChanged,
@@ -61,7 +62,7 @@ export function CommunityMembers({
                 >
                   <Avatar src={avatarOf(person)} name={person.display_name} size="md" />
                   <div className="min-w-0 flex-1">
-                    <Link to={`/u/${person.username}`} className="block truncate font-bold hover:underline">
+                    <Link to={profileLink(person)} className="block truncate font-bold hover:underline">
                       {person.display_name}
                     </Link>
                     <p className="text-xs text-muted">asked {timeAgo(person.created_at)}</p>
@@ -104,12 +105,12 @@ export function CommunityMembers({
                   key={member.id}
                   className="flex flex-wrap items-center gap-3 border-b border-ink-line/70 px-4 py-3 last:border-0"
                 >
-                  <Link to={`/u/${member.username}`} className="shrink-0">
+                  <Link to={profileLink(member)} className="shrink-0">
                     <Avatar src={avatarOf(member)} name={member.display_name} size="md" />
                   </Link>
                   <div className="min-w-0 flex-1">
                     <Link
-                      to={`/u/${member.username}`}
+                      to={profileLink(member)}
                       className="block truncate font-bold hover:underline"
                     >
                       {member.display_name}

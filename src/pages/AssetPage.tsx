@@ -27,6 +27,7 @@ import { avatarOf } from '@/lib/avatars'
 import { formatCount } from '@/lib/format'
 import { cn } from '@/lib/cn'
 import type { AssetDay, AssetPageItem } from '@/types/db'
+import { profileLink } from '@/lib/links'
 
 const prefixes: Record<string, string> = {
   IMG: 'image', SND: 'audio', VID: 'video', FNT: 'font', MDL: 'model',
@@ -468,7 +469,7 @@ export default function AssetPage() {
                   <div key={request.user_id} className="flex items-start gap-2.5">
                     <Avatar src={avatarOf(request)} name={request.display_name} size="sm" />
                     <div className="min-w-0 flex-1">
-                      <Link to={`/u/${request.username}`} className="block truncate text-sm font-bold hover:underline">
+                      <Link to={profileLink(request)} className="block truncate text-sm font-bold hover:underline">
                         {request.display_name}
                       </Link>
                       {request.note && (

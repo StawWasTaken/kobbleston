@@ -23,6 +23,7 @@ import {
 import { avatarOf } from '@/lib/avatars'
 import { cn } from '@/lib/cn'
 import type { Profile } from '@/types/db'
+import { profileLink } from '@/lib/links'
 
 const tabs = ['Friends', 'Requests', 'Following', 'Followers'] as const
 type Tab = (typeof tabs)[number]
@@ -36,7 +37,7 @@ function PersonTile({ person, actions }: { person: Profile; actions?: React.Reac
 
   return (
     <article className="flex flex-col items-center rounded-2xl border border-ink-line bg-ink-card p-3 text-center transition-colors hover:border-brand/60">
-      <Link to={`/u/${person.username}`} className="relative">
+      <Link to={profileLink(person)} className="relative">
         <Avatar src={avatarOf(person)} name={person.display_name} size="xl" className="rounded-2xl" />
         <span className="absolute bottom-0 right-0">
           <StatusDot presence={presence} ring />
@@ -44,7 +45,7 @@ function PersonTile({ person, actions }: { person: Profile; actions?: React.Reac
       </Link>
 
       <Link
-        to={`/u/${person.username}`}
+        to={profileLink(person)}
         className="mt-2.5 w-full truncate text-sm font-bold hover:text-link"
       >
         {person.display_name}

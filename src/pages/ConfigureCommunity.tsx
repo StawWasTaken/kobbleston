@@ -27,6 +27,7 @@ import {
 import { formatCount, timeAgo } from '@/lib/format'
 import { cn } from '@/lib/cn'
 import { avatarOf } from '@/lib/avatars'
+import { profileLink } from '@/lib/links'
 
 type Section = 'Information' | 'Settings' | 'Members' | 'Roles' | 'Affiliates' | 'Audit Log'
 
@@ -347,7 +348,7 @@ function MembersSection({
               >
                 <Avatar src={avatarOf(person)} name={person.display_name} size="md" />
                 <div className="min-w-0 flex-1">
-                  <Link to={`/u/${person.username}`} className="block truncate font-bold hover:underline">
+                  <Link to={profileLink(person)} className="block truncate font-bold hover:underline">
                     {person.display_name}
                   </Link>
                   <p className="truncate text-xs text-muted">

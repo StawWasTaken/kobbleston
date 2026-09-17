@@ -7,6 +7,7 @@ import {
 import type { IconDefinition } from '@fortawesome/fontawesome-svg-core'
 import { SwitchAccounts } from './SwitchAccounts'
 import { useAuth } from '@/hooks/useAuth'
+import { profileLink } from '@/lib/links'
 
 type Item = { to?: string; label: string; icon: IconDefinition; onSelect?: () => void }
 
@@ -31,7 +32,7 @@ export function UserMenu() {
   }, [open])
 
   const items: Item[] = [
-    ...(profile ? [{ to: `/u/${profile.username}`, label: 'My Profile', icon: faUser }] : []),
+    ...(profile ? [{ to: profileLink(profile), label: 'My Profile', icon: faUser }] : []),
     { to: '/settings', label: 'Settings', icon: faGear },
     { to: '/guidelines', label: 'Help & Safety', icon: faShieldHalved },
     { to: '/terms', label: 'Terms', icon: faScroll },

@@ -1,5 +1,5 @@
-import { useState } from 'react'
-import { useParams } from 'react-router-dom'
+import { useEffect, useState } from 'react'
+import { useNavigate, useParams } from 'react-router-dom'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faBullhorn } from '@fortawesome/free-solid-svg-icons'
 import { Page } from '@/components/layout/AppShell'
@@ -16,24 +16,29 @@ import { AffiliateGrid } from '@/components/community/AffiliateGrid'
 import { useAuth } from '@/hooks/useAuth'
 import { useAsync } from '@/hooks/useAsync'
 import {
-  getCommunity, getCommunityOverview, joinCommunity, leaveCommunity,
+  communitySlugById, getCommunity, getCommunityOverview, joinCommunity, leaveCommunity,
   listCommunityPosts, listCommunitySpaces, listRelations,
 } from '@/lib/api'
 import { supabase } from '@/lib/supabase'
 import { cn } from '@/lib/cn'
+import { communityLink } from '@/lib/links'
 
 const tabs = ['About', 'Members', 'Affiliates'] as const
 type Tab = (typeof tabs)[number]
 
 export default function CommunityPage() {
-  const { slug = '' } = useParams()
+  const { slug: slugParam = '', id } = useParams()
+  const navigate = useNavigate()
+
+  const byId = useAsync(async () => (id ? communitySlugById(Number(id)) : null), [id])
+  const slug = id ? byId.data ?? '' : slugParam
   const { profile } = useAuth()
   const toast = useToast()
   const [tab, setTab] = useState<Tab>('About')
   const [pending, setPending] = useState(false)
   const [reporting, setReporting] = useState(false)
 
-  const community = useAsync(() => getCommunity(slug), [slug])
+  const community = useAsync(async () => (slug ? getCommunity(slug) : null), [slug])
   const group = community.data
 
   const rights = useAsync(
@@ -56,6 +61,11 @@ export default function CommunityPage() {
   )
   const allies = useAsync(async () => (group ? listRelations(group.id, 'ally') : []), [group?.id])
   const enemies = useAsync(async () => (group ? listRelations(group.id, 'enemy') : []), [group?.id])
+
+  // A name-only community link answers, then swaps itself for the numbered one.
+  useEffect(() => {
+    if (!id && group?.content_id) navigate(communityLink(group), { replace: true })
+  }, [id, group?.content_id, navigate])
 
   const join = async () => {
     if (!group) return

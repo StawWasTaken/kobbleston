@@ -5,6 +5,7 @@ import { Menu } from '@/components/ui/Menu'
 import { Skeleton } from '@/components/ui/States'
 import { formatCount } from '@/lib/format'
 import type { CommunityRelation } from '@/types/db'
+import { communityLink } from '@/lib/links'
 
 export function AffiliateGrid({
   title, relations, loading, empty, onRemove, onAnswer,
@@ -49,7 +50,7 @@ export function AffiliateGrid({
                 </span>
               )}
 
-              <Link to={`/c/${other.slug}`} className="block">
+              <Link to={communityLink(other)} className="block">
                 <span className="mx-auto grid h-14 w-14 place-items-center overflow-hidden rounded-xl bg-brand-deep font-display text-base font-extrabold">
                   {other.icon_url
                     ? <img src={other.icon_url} alt="" className="h-full w-full object-cover" />

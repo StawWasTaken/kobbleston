@@ -1,6 +1,7 @@
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faAward, faLock } from '@fortawesome/free-solid-svg-icons'
 import { formatCount } from '@/lib/format'
+import { RefImage } from '@/components/create/RefImage'
 import { cn } from '@/lib/cn'
 import type { SpaceBadge } from '@/types/db'
 
@@ -21,12 +22,16 @@ export function BadgeTile({
     >
       <span
         className={cn(
-          'grid h-16 w-16 place-items-center overflow-hidden rounded-xl',
-          earned ? 'bg-brand text-white' : 'bg-ink-hover text-white/35',
+          'grid h-16 w-16 place-items-center overflow-hidden rounded-full ring-2',
+          earned ? 'bg-brand text-white ring-brand-bright/60' : 'bg-ink-hover text-white/35 ring-ink-line',
         )}
       >
         {badge.icon_url ? (
-          <img src={badge.icon_url} alt="" className="h-full w-full object-cover" loading="lazy" />
+          <RefImage
+            value={badge.icon_url}
+            alt=""
+            className={cn('h-full w-full object-cover', !earned && 'grayscale')}
+          />
         ) : (
           <FontAwesomeIcon icon={earned ? faAward : faLock} className="text-xl" />
         )}

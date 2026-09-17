@@ -16,6 +16,7 @@ export type Profile = {
   pixels: number
   birth_date: string | null
   gender: 'male' | 'female' | 'other' | null
+  content_id: number | null
   created_at: string
 }
 
@@ -237,6 +238,7 @@ export type Community = {
   is_verified: boolean
   member_count: number
   funds: number
+  content_id: number | null
   created_at: string
 }
 
@@ -306,6 +308,7 @@ export type MemberCommunity = {
   name: string
   icon_url: string | null
   member_count: number
+  content_id: number | null
   role: CommunityRole
 }
 

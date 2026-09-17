@@ -8,6 +8,7 @@ import { useAuth } from '@/hooks/useAuth'
 import { useAsync } from '@/hooks/useAsync'
 import { listFriendships } from '@/lib/api'
 import { avatarOf } from '@/lib/avatars'
+import { profileLink } from '@/lib/links'
 
 /** Friends across the top of the home page, online ones first. */
 export function FriendsRail() {
@@ -50,7 +51,7 @@ export function FriendsRail() {
         {friends.map((friend) => (
           <Link
             key={friend.id}
-            to={`/u/${friend.username}`}
+            to={profileLink(friend)}
             className="flex w-20 shrink-0 flex-col items-center gap-2 text-center"
           >
             <span className="relative">

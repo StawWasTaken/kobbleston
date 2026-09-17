@@ -11,6 +11,7 @@ import { useToast } from '@/components/ui/Toast'
 import { useAsync } from '@/hooks/useAsync'
 import { addCollaborator, listCollaborators, removeCollaborator, searchProfiles } from '@/lib/api'
 import { avatarOf } from '@/lib/avatars'
+import { profileLink } from '@/lib/links'
 
 /**
  * People the owner lets work on a Space. They can change it; they cannot
@@ -112,11 +113,11 @@ export function Collaborators({ spaceId, ownerId, viewerId }: {
       <ul className="divide-y divide-ink-line">
         {team.data?.map((member) => (
           <li key={member.user_id} className="flex items-center gap-3 py-2.5">
-            <Link to={`/u/${member.username}`} className="shrink-0">
+            <Link to={profileLink(member)} className="shrink-0">
               <Avatar src={avatarOf(member)} name={member.display_name} size="sm" />
             </Link>
             <span className="min-w-0 flex-1">
-              <Link to={`/u/${member.username}`} className="block truncate text-sm font-bold hover:underline">
+              <Link to={profileLink(member)} className="block truncate text-sm font-bold hover:underline">
                 {member.display_name}
               </Link>
               <span className="block truncate text-xs text-muted">@{member.username}</span>

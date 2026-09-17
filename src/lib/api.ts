@@ -120,6 +120,21 @@ export async function setLiked(spaceId: string, userId: string, liked: boolean) 
 
 // ---------------------------------------------------------------- profiles
 
+/** The name behind a number, for a link like /u/1042/stawrer. */
+export async function usernameById(contentId: number): Promise<string | null> {
+  return (unwrap(await supabase.rpc('username_by_id', { target: contentId })) as string | null) ?? null
+}
+
+export async function spaceById(contentId: number): Promise<{ owner_username: string; slug: string } | null> {
+  const rows = unwrap(await supabase.rpc('space_by_id', { target: contentId })) as
+    { owner_username: string; slug: string }[]
+  return rows?.[0] ?? null
+}
+
+export async function communitySlugById(contentId: number): Promise<string | null> {
+  return (unwrap(await supabase.rpc('community_by_id', { target: contentId })) as string | null) ?? null
+}
+
 export async function getProfileByUsername(username: string): Promise<Profile | null> {
   const { data, error } = await supabase
     .from('profiles').select('*').ilike('username', username).maybeSingle()

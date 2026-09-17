@@ -10,6 +10,7 @@ import { useAsync } from '@/hooks/useAsync'
 import { listMemberCommunities, listSpaces, listSpacesByOwner } from '@/lib/api'
 import { Link } from 'react-router-dom'
 import { formatCount } from '@/lib/format'
+import { communityLink } from '@/lib/links'
 
 export default function Home() {
   const { profile } = useAuth()
@@ -80,7 +81,7 @@ export default function Home() {
             {communities.data.map((community) => (
               <Link
                 key={community.id}
-                to={`/c/${community.slug}`}
+                to={communityLink(community)}
                 className="flex w-44 shrink-0 items-center gap-3 rounded-xl border border-ink-line bg-ink-card p-3 transition-colors hover:border-brand/60"
               >
                 <span className="grid h-10 w-10 shrink-0 place-items-center overflow-hidden rounded-lg bg-brand-deep text-xs font-extrabold">

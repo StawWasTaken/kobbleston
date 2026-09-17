@@ -15,6 +15,7 @@ import { supabase } from '@/lib/supabase'
 import { asset } from '@/lib/asset'
 import { cn } from '@/lib/cn'
 import { avatarOf } from '@/lib/avatars'
+import { profileLink } from '@/lib/links'
 
 export function AppTopbar({ onOpenNav }: { onOpenNav: () => void }) {
   const { profile } = useAuth()
@@ -96,7 +97,7 @@ export function AppTopbar({ onOpenNav }: { onOpenNav: () => void }) {
               {!profile.is_guest && <PixelBalance amount={profile.pixels} />}
 
               <Link
-                to={`/u/${profile.username}`}
+                to={profileLink(profile)}
                 className="hidden items-center gap-2 rounded-lg px-2 py-1 transition-colors hover:bg-onbrand/15 sm:flex"
               >
                 <Avatar src={avatarOf(profile)} name={profile.display_name} size="xs" />

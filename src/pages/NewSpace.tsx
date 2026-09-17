@@ -14,6 +14,7 @@ import { createSpace } from '@/lib/api'
 import { slugify } from '@/lib/format'
 import { cn } from '@/lib/cn'
 import type { SpaceCategory } from '@/types/db'
+import { spaceLink } from '@/lib/links'
 
 const categories = Object.keys(categoryLabels) as SpaceCategory[]
 
@@ -52,7 +53,7 @@ export default function CreateSpace() {
         publish,
       })
       toast(publish ? 'Space published.' : 'Draft saved.', 'success')
-      navigate(`/u/${profile.username}/${space.slug}`)
+      navigate(spaceLink(space))
     } catch (err) {
       const message = err instanceof Error ? err.message : 'That did not save.'
       setError(message.includes('duplicate') ? 'You already have a Space at that address.' : message)

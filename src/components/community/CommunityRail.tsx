@@ -10,12 +10,13 @@ import { useAsync } from '@/hooks/useAsync'
 import { listMemberCommunities } from '@/lib/api'
 import { formatCount } from '@/lib/format'
 import { cn } from '@/lib/cn'
+import { communityLink } from '@/lib/links'
 
 /** A row in the rail: emblem, name, how many are in it. */
 function RailRow({
-  slug, name, icon, members, note, active,
+  community, name, icon, members, note, active,
 }: {
-  slug: string
+  community: { slug: string; content_id?: number | null }
   name: string
   icon: string | null
   members: number
@@ -24,7 +25,7 @@ function RailRow({
 }) {
   return (
     <Link
-      to={`/c/${slug}`}
+      to={communityLink(community)}
       aria-current={active ? 'page' : undefined}
       className={cn(
         'flex items-center gap-3 rounded-lg px-2 py-2 transition-colors',
@@ -50,7 +51,10 @@ function RailRow({
  */
 export function CommunityRail() {
   const { profile } = useAuth()
-  const active = useLocation().pathname.match(/^\/c\/([^/]+)/)?.[1] ?? ''
+  // Either address form points at the same Community, so both are matched.
+  const path = useLocation().pathname
+  const activeId = Number(path.match(/^\/c\/(\d+)(\/|$)/)?.[1] ?? NaN)
+  const activeSlug = path.match(/^\/c\/(?!\d+(?:\/|$))([^/]+)/)?.[1] ?? ''
   const [term, setTerm] = useState('')
 
   const mine = useAsync(
@@ -95,12 +99,12 @@ export function CommunityRail() {
         {shown.map((community) => (
           <RailRow
             key={community.id}
-            slug={community.slug}
+            community={community}
             name={community.name}
             icon={community.icon_url}
             members={community.member_count}
             note={community.role === 'member' ? undefined : community.role}
-            active={community.slug === active}
+            active={community.content_id === activeId || community.slug === activeSlug}
           />
         ))}
       </div>

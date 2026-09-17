@@ -5,6 +5,7 @@ import { Card } from '@/components/ui/Card'
 import { Dialog } from '@/components/ui/Dialog'
 import { Input, Textarea } from '@/components/ui/Input'
 import { useToast } from '@/components/ui/Toast'
+import { AssetRefPicker } from '@/components/create/AssetRefPicker'
 import { createSpaceBadge, deleteSpaceBadge, updateSpaceBadge } from '@/lib/api'
 import { formatCount } from '@/lib/format'
 import type { SpaceBadge } from '@/types/db'
@@ -21,6 +22,7 @@ export function BadgeManager({
   const [adding, setAdding] = useState(false)
   const [name, setName] = useState('')
   const [description, setDescription] = useState('')
+  const [icon, setIcon] = useState<string | null>(null)
   const [pending, setPending] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -29,11 +31,16 @@ export function BadgeManager({
       setError('Give the badge a name.')
       return
     }
+    if (!icon) {
+      setError('A badge needs a picture. That is what people see on a profile.')
+      return
+    }
     setPending(true)
     try {
-      await createSpaceBadge({ spaceId, name, description, iconUrl: null })
+      await createSpaceBadge({ spaceId, name, description, iconUrl: icon })
       setName('')
       setDescription('')
+      setIcon(null)
       setAdding(false)
       onChanged()
     } catch (err) {
@@ -120,6 +127,12 @@ export function BadgeManager({
         }
       >
         <div className="space-y-4">
+          <AssetRefPicker
+            label="Picture"
+            value={icon}
+            onChange={setIcon}
+            note="Shown as a circle on profiles, so something simple reads best."
+          />
           <Input
             label="Name"
             value={name}

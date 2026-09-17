@@ -15,6 +15,7 @@ import { useAsync } from '@/hooks/useAsync'
 import { listAssets, listCommunities, listSpaces, searchProfiles } from '@/lib/api'
 import { cn } from '@/lib/cn'
 import { avatarOf } from '@/lib/avatars'
+import { profileLink } from '@/lib/links'
 
 export default function Search() {
   const [params, setParams] = useSearchParams()
@@ -116,12 +117,12 @@ export default function Search() {
                     key={person.id}
                     className="flex items-center gap-3 border-b border-ink-line/70 px-4 py-3 last:border-0"
                   >
-                    <Link to={`/u/${person.username}`} className="shrink-0">
+                    <Link to={profileLink(person)} className="shrink-0">
                       <Avatar src={avatarOf(person)} name={person.display_name} size="md" />
                     </Link>
                     <div className="min-w-0 flex-1">
                       <Link
-                        to={`/u/${person.username}`}
+                        to={profileLink(person)}
                         className="block truncate font-bold hover:underline"
                       >
                         {person.display_name}
@@ -134,7 +135,7 @@ export default function Search() {
                     <Button
                       size="sm"
                       variant="subtle"
-                      to={`/u/${person.username}`}
+                      to={profileLink(person)}
                       icon={faUserPlus}
                     >
                       View

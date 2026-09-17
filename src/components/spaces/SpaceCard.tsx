@@ -7,6 +7,7 @@ import { cn } from '@/lib/cn'
 import type { Space, SpaceCategory } from '@/types/db'
 import { asset } from '@/lib/asset'
 import { useAssetRef } from '@/hooks/useSignedUrl'
+import { spaceLink } from '@/lib/links'
 
 export const categoryLabels: Record<SpaceCategory, string> = {
   personal: 'Personal',
@@ -45,7 +46,7 @@ function ratio(space: Space) {
  */
 export function SpaceCard({ space, className }: { space: Space; className?: string }) {
   const owner = space.owner
-  const href = owner ? `/u/${owner.username}/${space.slug}` : '#'
+  const href = owner ? spaceLink(space) : '#'
   const score = ratio(space)
   // A picture may be stored as a reference to Create content rather than a
   // link, so it is resolved before it can be shown.

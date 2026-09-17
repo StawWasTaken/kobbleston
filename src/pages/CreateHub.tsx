@@ -26,6 +26,7 @@ import { avatarOf } from '@/lib/avatars'
 import { formatCount, timeAgo } from '@/lib/format'
 import { cn } from '@/lib/cn'
 import type { AssetKind, OwnAsset } from '@/types/db'
+import { profileLink } from '@/lib/links'
 
 type HubContext = { openUpload: () => void; requests: ReturnType<typeof useAsync<Awaited<ReturnType<typeof listAssetRequests>>>> }
 
@@ -463,7 +464,7 @@ export function CreateRequests() {
                 <Avatar src={avatarOf(request)} name={request.display_name} size="md" />
                 <div className="min-w-0 flex-1">
                   <p className="text-sm">
-                    <Link to={`/u/${request.username}`} className="font-bold hover:underline">
+                    <Link to={profileLink(request)} className="font-bold hover:underline">
                       {request.display_name}
                     </Link>
                     <span className="text-muted"> wants to use </span>
