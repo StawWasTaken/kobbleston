@@ -30,7 +30,6 @@ const Communities = lazy(() => import('@/pages/Communities'))
 const CommunityPage = lazy(() => import('@/pages/CommunityPage'))
 const NewSpace = lazy(() => import('@/pages/NewSpace'))
 const EditSpace = lazy(() => import('@/pages/EditSpace'))
-const CreateCommunity = lazy(() => import('@/pages/CreateCommunity'))
 const ConfigureCommunity = lazy(() => import('@/pages/ConfigureCommunity'))
 const Terms = lazy(() => import('@/pages/Policies').then((m) => ({ default: m.Terms })))
 const Guidelines = lazy(() => import('@/pages/Policies').then((m) => ({ default: m.Guidelines })))
@@ -95,6 +94,10 @@ export default function App() {
                 <Route path="/people" element={<People />} />
                 <Route element={<CommunityShell />}>
                   <Route path="/communities" element={<Communities />} />
+                  <Route
+                    path="/communities/new"
+                    element={<Navigate to="/communities?new=1" replace />}
+                  />
                   <Route path="/c/:id/:name" element={<CommunityPage />} />
                   <Route path="/c/:slug" element={<CommunityPage />} />
                 </Route>
@@ -112,7 +115,6 @@ export default function App() {
                   <Route path="/spaces/new" element={<NewSpace />} />
                   <Route path="/spaces/:spaceId/edit" element={<EditSpace />} />
                   <Route element={<CommunityShell />}>
-                    <Route path="/communities/new" element={<CreateCommunity />} />
                     <Route path="/c/:slug/configure" element={<ConfigureCommunity />} />
                   </Route>
                   <Route path="/friends" element={<Friends />} />

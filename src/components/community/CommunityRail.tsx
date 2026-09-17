@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import { Skeleton } from '@/components/ui/States'
 import { GuestGate } from '@/components/ui/GuestGate'
+import { NewCommunityProvider, useNewCommunity } from '@/components/community/NewCommunityDialog'
 import { useAuth } from '@/hooks/useAuth'
 import { useAsync } from '@/hooks/useAsync'
 import { listMemberCommunities } from '@/lib/api'
@@ -50,6 +51,7 @@ function RailRow({
  * between them without going back to the browse page first.
  */
 export function CommunityRail() {
+  const openNew = useNewCommunity()
   const { profile } = useAuth()
   // Either address form points at the same Community, so both are matched.
   const path = useLocation().pathname
@@ -113,7 +115,7 @@ export function CommunityRail() {
           rather than pinned to the bottom of the window. */}
       <div className="mt-3 px-1">
         <GuestGate action="make a Community">
-          <Button variant="subtle" block to="/communities/new" disabled={!profile}>
+          <Button variant="subtle" block onClick={openNew} disabled={!profile}>
             Create Community
           </Button>
         </GuestGate>
@@ -125,11 +127,13 @@ export function CommunityRail() {
 /** Rail on the left, the page itself beside it. Wraps every Community route. */
 export function CommunityShell() {
   return (
-    <div className="flex items-start">
-      <CommunityRail />
-      <div className="min-w-0 flex-1">
-        <Outlet />
+    <NewCommunityProvider>
+      <div className="flex items-start">
+        <CommunityRail />
+        <div className="min-w-0 flex-1">
+          <Outlet />
+        </div>
       </div>
-    </div>
+    </NewCommunityProvider>
   )
 }

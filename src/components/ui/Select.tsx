@@ -6,6 +6,13 @@ import { cn } from '@/lib/cn'
 
 export type SelectOption = { value: string; label: string; note?: string }
 
+/*
+ * What floats above what: a popup card sits at 50, a menu at 85, a tooltip
+ * and the calendar at 80, and a list of options at 90. A select is always
+ * opened from inside something else, the calendar included, so it has to be
+ * above everything or its options come out behind the thing that opened it.
+ */
+
 /**
  * Our own dropdown rather than a native select, so it looks the same on every
  * machine. Keyboard behaviour matches what people expect from a listbox:
@@ -129,7 +136,7 @@ export function Select({
           role="listbox"
           aria-label={label}
           style={box ? { left: box.left, top: box.top, width: box.width } : { opacity: 0 }}
-          className="fixed z-[70] max-h-64 overflow-y-auto rounded-xl border border-ink-line bg-ink-card py-1 shadow-pop animate-pop-in kob-scroll"
+          className="fixed z-[90] max-h-64 overflow-y-auto rounded-xl border border-ink-line bg-ink-card py-1 shadow-pop animate-pop-in kob-scroll"
         >
           {options.map((option, index) => (
             <button

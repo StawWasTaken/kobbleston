@@ -15,9 +15,11 @@ import { formatCount } from '@/lib/format'
 import { communityLink } from '@/lib/links'
 import type { Community } from '@/types/db'
 import { useTitle } from '@/hooks/useTitle'
+import { useNewCommunity } from '@/components/community/NewCommunityDialog'
 
 export default function Communities() {
   useTitle('Communities')
+  const openNew = useNewCommunity()
   const [params, setParams] = useSearchParams()
   const [term, setTerm] = useState(params.get('q') ?? '')
   const [debounced, setDebounced] = useState(term)
@@ -32,6 +34,18 @@ export default function Communities() {
     }, 250)
     return () => window.clearTimeout(timer)
   }, [term, setParams])
+
+  // /communities/new used to be a page of its own; it now lands here and
+  // opens the popup, so a link somebody kept still does what they expect.
+  useEffect(() => {
+    if (params.get('new') === null) return
+    openNew()
+    setParams((now) => {
+      const next = new URLSearchParams(now)
+      next.delete('new')
+      return next
+    }, { replace: true })
+  }, [params, openNew, setParams])
 
   const all = useAsync(() => listCommunities(debounced), [debounced])
 
@@ -113,7 +127,7 @@ export default function Communities() {
               action={
                 debounced
                   ? <Button variant="subtle" onClick={() => setTerm('')}>Clear the search</Button>
-                  : <Button to="/communities/new">Make one</Button>
+                  : <Button onClick={openNew}>Make one</Button>
               }
             />
           </Card>
