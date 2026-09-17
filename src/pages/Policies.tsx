@@ -1,40 +1,65 @@
-import { Page } from '@/components/layout/AppShell'
-import { Card } from '@/components/ui/Card'
+import { StoryPage } from '@/components/layout/StoryPage'
+import type { StorySection } from '@/components/layout/StoryPage'
+import { useTitle } from '@/hooks/useTitle'
 
-type Section = { heading: string; body: string[] }
-
-const terms: Section[] = [
+const terms: StorySection[] = [
   {
+    id: 'who',
     heading: 'Who can use Kobbleston',
     body: [
       'You need to be 15 or over. We ask for your birthday when you sign up and we act on the answer.',
       'One account per person. Do not share it, sell it, or hand it to someone under 15.',
+      'A guest account is a real account that we treat as temporary. Guests can look around and enter Spaces. Guests that have not been seen for a day are cleared out, so if you want to keep anything, turn yours into a proper account first.',
     ],
   },
   {
+    id: 'yours',
     heading: 'What you make stays yours',
     body: [
       'Your Spaces and your uploads belong to you. By putting them on Kobbleston you let us store them, show them to other people, and let others use what you publish to Create.',
       'Take something down whenever you want. Copies other people already built with may stay in their Spaces.',
+      'Content on the Creator Marketplace is used by its number rather than copied, so whoever made a thing stays attached to it wherever it turns up.',
     ],
   },
   {
+    id: 'kubes',
+    heading: 'Kubes and buying things',
+    body: [
+      'Kubes are a number on your account for use inside Kobbleston. They are not money, they cannot be cashed out, and they have no value off the platform.',
+      'Getting something from the Creator Marketplace puts it in your inventory and lets you use its number in your Spaces. It does not give you the file to keep, and it is not a resale right.',
+      'An account removed for breaking the rules loses whatever is on it. We do not refund Kubes spent before that.',
+    ],
+  },
+  {
+    id: 'ours',
     heading: 'What we can do',
     body: [
       'We can remove anything that breaks the Community Guidelines, and suspend accounts that keep doing it.',
+      'Uploads are screened automatically when they arrive, and a person looks at anything the check is unsure about. We can hold something back while that happens.',
       'We can change how Kobbleston works. If something big changes, we will say so rather than hoping nobody notices.',
     ],
   },
   {
+    id: 'limits',
     heading: 'What we cannot promise',
     body: [
       'Kobbleston is free and small. Things will break sometimes and data can be lost. Keep your own copy of anything you would be upset to lose.',
+      'Nothing here is a promise that a feature will keep existing, that your Space will be visited, or that a number on the site will only go up.',
+    ],
+  },
+  {
+    id: 'leaving',
+    heading: 'Leaving',
+    body: [
+      'You can stop using Kobbleston whenever you like. Ask us and your account goes with everything on it.',
+      'Some things survive on purpose: a Space somebody else built with your published upload keeps working, and moderation records of a removed account are kept so the same behaviour is not simply restarted.',
     ],
   },
 ]
 
-const guidelines: Section[] = [
+const guidelines: StorySection[] = [
   {
+    id: 'person',
     heading: 'Be a person, not a problem',
     body: [
       'Disagreeing is fine. Arguing is fine. Being weird is encouraged. Following someone around to make them miserable is not.',
@@ -42,20 +67,41 @@ const guidelines: Section[] = [
     ],
   },
   {
+    id: 'limits',
     heading: 'Hard limits',
     body: [
       'No sexual content involving minors, ever, in any form. This gets reported, not just removed.',
       'No real violence, no doxxing, no selling illegal things, no malware, and no pretending to be someone you are not.',
+      'Nothing here is a grey area, and nothing here gets a warning first.',
     ],
   },
   {
+    id: 'spaces',
+    heading: 'Spaces and what goes in them',
+    body: [
+      'A Space is yours to build, and it is still on Kobbleston. Everything in this page applies inside one.',
+      'A Space cannot be used to collect passwords, pretend to be a login page, or push people somewhere that does. Every Space runs shut off from the rest of the site, and trying to get around that is a reason to lose the account rather than a clever trick.',
+    ],
+  },
+  {
+    id: 'uploads',
     heading: 'Uploads to Create',
     body: [
       'Upload what you made or what you have the right to share. Do not upload other people’s work and put your name on it.',
       'Everything is reviewed before anyone else sees it. Trying to sneak something past review is its own reason to lose the account.',
+      'Pricing what you sell is up to you, inside the ceiling for that kind of content. Do not use listings as a way to advertise something else.',
     ],
   },
   {
+    id: 'communities',
+    heading: 'Communities',
+    body: [
+      'A Community can set its own tone, its own ranks and its own rules on top of these. It cannot set rules that undo these.',
+      'Running a Community means being answerable for what goes up on its wall and in its announcements. Ignoring that is how a Community loses its owner.',
+    ],
+  },
+  {
+    id: 'reporting',
     heading: 'Reporting',
     body: [
       'Use the flag on any profile, Space or message. Reports are private and the person you report is not told who sent it.',
@@ -64,42 +110,28 @@ const guidelines: Section[] = [
   },
 ]
 
-function Policy({ title, intro, sections }: { title: string; intro: string; sections: Section[] }) {
-  return (
-    <Page className="max-w-2xl">
-      <h1 className="font-display text-3xl font-extrabold sm:text-4xl">{title}</h1>
-      <p className="mt-2 text-muted">{intro}</p>
-
-      <div className="mt-8 space-y-4">
-        {sections.map((section) => (
-          <Card key={section.heading} className="p-5 sm:p-6">
-            <h2 className="font-display text-xl font-extrabold">{section.heading}</h2>
-            {section.body.map((paragraph) => (
-              <p key={paragraph} className="mt-2.5 leading-relaxed text-white/65">{paragraph}</p>
-            ))}
-          </Card>
-        ))}
-      </div>
-    </Page>
-  )
-}
-
 export function Terms() {
+  useTitle('Terms of Service')
   return (
-    <Policy
+    <StoryPage
+      eyebrow="The deal"
       title="Terms of Service"
-      intro="The short version of the deal between you and Kobbleston."
+      intro="The short version of the deal between you and Kobbleston, written so it can actually be read."
       sections={terms}
+      footnote="If something here and something a page on the site says disagree, this page is the one that counts."
     />
   )
 }
 
 export function Guidelines() {
+  useTitle('Community Guidelines')
   return (
-    <Policy
+    <StoryPage
+      eyebrow="House rules"
       title="Community Guidelines"
-      intro="What is fine here, and what will get your stuff taken down."
+      intro="What is fine here, and what will get your things taken down. Short, because the rules that matter are short."
       sections={guidelines}
+      footnote="Breaking these does not always mean losing the account. Doing it on purpose, repeatedly, usually does."
     />
   )
 }

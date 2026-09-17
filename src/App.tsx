@@ -33,6 +33,7 @@ const EditSpace = lazy(() => import('@/pages/EditSpace'))
 const ConfigureCommunity = lazy(() => import('@/pages/ConfigureCommunity'))
 const Terms = lazy(() => import('@/pages/Policies').then((m) => ({ default: m.Terms })))
 const Guidelines = lazy(() => import('@/pages/Policies').then((m) => ({ default: m.Guidelines })))
+const Roadmap = lazy(() => import('@/pages/Roadmap'))
 const Friends = lazy(() => import('@/pages/Friends'))
 const Library = lazy(() => import('@/pages/Library'))
 const Profile = lazy(() => import('@/pages/Profile'))
@@ -68,14 +69,16 @@ export default function App() {
         <ToastProvider>
           <Suspense fallback={<Booting />}>
             <Routes>
+              <Route path="/terms" element={<Terms />} />
+              <Route path="/guidelines" element={<Guidelines />} />
+              <Route path="/roadmap" element={<Roadmap />} />
+
               <Route path="/login" element={<Auth mode="login" />} />
               <Route path="/signup" element={<Auth mode="signup" />} />
 
               {/* the side of the site anyone can read without an account */}
               <Route element={<PublicLayout />}>
                 <Route path="/" element={<RootRoute />} />
-                <Route path="/terms" element={<Terms />} />
-                <Route path="/guidelines" element={<Guidelines />} />
               </Route>
 
               <Route element={<AppShell />}>

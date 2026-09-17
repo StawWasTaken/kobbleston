@@ -66,3 +66,17 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
 }
 
 export const useTheme = () => useContext(ThemeContext)
+
+/**
+ * Some pages are written for one look and one look only: the way in, and the
+ * pages that say what this place is. They hold dark while they are open and
+ * hand the theme back on the way out, without touching what the person chose.
+ */
+export function useForceDark() {
+  useEffect(() => {
+    const root = document.documentElement
+    const previous = root.dataset.theme
+    root.dataset.theme = 'dark'
+    return () => { root.dataset.theme = previous ?? 'dark' }
+  }, [])
+}

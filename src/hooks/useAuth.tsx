@@ -2,7 +2,7 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useRef, use
 import type { ReactNode } from 'react'
 import type { Session } from '@supabase/supabase-js'
 import { supabase } from '@/lib/supabase'
-import { signInWithUsername, uploadAvatar } from '@/lib/api'
+import { claimGuestAccount, signInWithUsername, uploadAvatar } from '@/lib/api'
 import { randomAvatar } from '@/lib/avatars'
 import { clearAccountSession, rememberAccount, updateAccountSession } from '@/lib/accounts'
 import type { Profile } from '@/types/db'
@@ -13,6 +13,8 @@ type AuthValue = {
   loading: boolean
   signIn: (email: string, password: string) => Promise<void>
   signUp: (details: SignupDetails) => Promise<void>
+  /** A guest keeping what they made, rather than starting again. */
+  claimAccount: (details: SignupDetails) => Promise<void>
   signInWithName: (username: string, password: string) => Promise<void>
   signInAsGuest: () => Promise<void>
   switchTo: (account: { id: string; session?: { access_token: string; refresh_token: string } }) => Promise<boolean>
@@ -213,6 +215,49 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         } else if (details.avatarFile) {
           pendingAvatar = details.avatarFile
         }
+      },
+      async claimAccount(details) {
+        /*
+         * The guest is already signed in, so the account stays and the email
+         * and password are linked to it. Their Spaces, their friends and
+         * anything they collected come with them.
+         */
+        const user = session?.user
+        if (!user) throw new Error('You are not signed in as a guest.')
+
+        const avatarUrl = details.avatarFile
+          ? await uploadAvatar(user.id, details.avatarFile)
+          : randomAvatar()
+
+        await claimGuestAccount({
+          username: details.username,
+          displayName: details.displayName || details.username,
+          birthDate: details.birthDate,
+          gender: details.gender,
+          avatarUrl,
+        })
+
+        const { error } = await supabase.auth.updateUser({
+          email: details.email,
+          password: details.password,
+          data: {
+            username: details.username,
+            display_name: details.displayName || details.username,
+            birth_date: details.birthDate,
+            gender: details.gender,
+          },
+        })
+        if (error) throw error
+
+        rememberAccount({
+          id: user.id,
+          email: details.email,
+          username: details.username,
+          displayName: details.displayName || details.username,
+          avatarUrl,
+        })
+
+        await loadProfile(user.id, details.email)
       },
       async signInWithName(username, password) {
         await signInWithUsername(username, password)

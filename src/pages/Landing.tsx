@@ -393,6 +393,9 @@ export default function Landing() {
           <p className="mx-auto mt-3 max-w-sm text-white/75">
             Free, takes five minutes, and nobody is going to build it for you.
           </p>
+          <p className="mt-5 font-display text-sm font-extrabold uppercase tracking-[0.18em] text-white/70">
+            Make Something Nobody Else Has
+          </p>
           <div className="mt-7 flex flex-wrap justify-center gap-3">
             <Button size="lg" to="/signup">Sign Up</Button>
             <Button size="lg" variant="subtle" to="/login">Log In</Button>

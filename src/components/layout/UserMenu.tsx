@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import {
-  faGear, faShieldHalved, faRightFromBracket, faUser, faScroll, faRightLeft,
+  faGear, faShieldHalved, faRightFromBracket, faUser, faScroll, faRightLeft, faUserPlus, faRoad,
 } from '@fortawesome/free-solid-svg-icons'
 import type { IconDefinition } from '@fortawesome/fontawesome-svg-core'
 import { SwitchAccounts } from './SwitchAccounts'
@@ -32,10 +32,16 @@ export function UserMenu() {
   }, [open])
 
   const items: Item[] = [
+    // A guest is one form away from keeping everything they have done, so the
+    // way to do it sits at the top rather than buried on the front page.
+    ...(profile?.is_guest
+      ? [{ to: '/signup', label: 'Keep this account', icon: faUserPlus }]
+      : []),
     ...(profile ? [{ to: profileLink(profile), label: 'My Profile', icon: faUser }] : []),
     { to: '/settings', label: 'Settings', icon: faGear },
     { to: '/guidelines', label: 'Help & Safety', icon: faShieldHalved },
     { to: '/terms', label: 'Terms', icon: faScroll },
+    { to: '/roadmap', label: 'Roadmap', icon: faRoad },
     ...(profile
       ? [
           { label: 'Switch Accounts', icon: faRightLeft, onSelect: () => setSwitching(true) },

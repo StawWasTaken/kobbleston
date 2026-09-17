@@ -112,11 +112,32 @@ export async function hasLiked(spaceId: string, userId: string) {
   return Boolean(data)
 }
 
+/*
+ * Guests are kept out of anything that leaves a mark, by the database rather
+ * than by hiding buttons. That refusal arrives as a policy error, which is
+ * nobody's idea of an explanation, so it is turned into a sentence here
+ * rather than at every button that could hit it.
+ */
+const guestWords: Record<string, string> = {
+  space_likes: 'Guests cannot like Spaces. Make an account and you can.',
+  space_dislikes: 'Guests cannot rate Spaces. Make an account and you can.',
+  space_favorites: 'Guests cannot keep Spaces. Make an account and you can.',
+  space_watchers: 'Guests cannot follow a Space. Make an account and you can.',
+}
+
+function markError(table: string, message: string) {
+  return new Error(
+    message.includes('row-level security')
+      ? guestWords[table] ?? 'Guests cannot do that. Make an account and you can.'
+      : message,
+  )
+}
+
 export async function setLiked(spaceId: string, userId: string, liked: boolean) {
   const result = liked
     ? await supabase.from('space_likes').insert({ space_id: spaceId, user_id: userId })
     : await supabase.from('space_likes').delete().eq('space_id', spaceId).eq('user_id', userId)
-  if (result.error) throw new Error(result.error.message)
+  if (result.error) throw markError('space_likes', result.error.message)
 }
 
 // ---------------------------------------------------------------- profiles
@@ -163,15 +184,15 @@ export type PeopleSort = 'active' | 'new' | 'name'
 
 /**
  * Everybody, for the People page. Unlike searchProfiles this leaves nobody
- * out: you are shown your own account too, because we show everybody the
- * same list. Guests are left out, since those accounts are not people you
- * can go and look at.
+ * out: your own account is in the list, and so are guests, because they are
+ * here the same as anybody else and hiding them would be a lie about who is
+ * on the platform.
  */
 export async function listPeople(
   { search = '', sort = 'active', limit = 48 }:
   { search?: string; sort?: PeopleSort; limit?: number } = {},
 ): Promise<Profile[]> {
-  let query = supabase.from('profiles').select('*').eq('is_guest', false).limit(limit)
+  let query = supabase.from('profiles').select('*').limit(limit)
 
   const term = search.trim()
   if (term) query = query.or(`username.ilike.%${term}%,display_name.ilike.%${term}%,bio.ilike.%${term}%`)
@@ -183,6 +204,26 @@ export async function listPeople(
       : query.order('is_online', { ascending: false }).order('last_seen_at', { ascending: false })
 
   return (unwrap(await query) as Profile[]) ?? []
+}
+
+/**
+ * A guest deciding to stay. The email and password are linked to the same
+ * account by Supabase before this runs, so nothing they did is lost.
+ */
+export async function claimGuestAccount(details: {
+  username: string
+  displayName: string
+  birthDate: string
+  gender: string
+  avatarUrl: string | null
+}) {
+  unwrap(await supabase.rpc('claim_guest_account', {
+    new_username: details.username,
+    new_display_name: details.displayName,
+    new_birth_date: details.birthDate,
+    new_gender: details.gender || null,
+    new_avatar_url: details.avatarUrl,
+  }))
 }
 
 /** What a name change costs. The database charges it; this is for the copy. */
@@ -1190,7 +1231,7 @@ export async function toggleSpaceFlag(
   const result = on
     ? await supabase.from(table).insert({ space_id: spaceId, user_id: userId })
     : await supabase.from(table).delete().eq('space_id', spaceId).eq('user_id', userId)
-  if (result.error) throw new Error(result.error.message)
+  if (result.error) throw markError(table, result.error.message)
 }
 
 export async function updateSpace(id: string, patch: Partial<Pick<Space,

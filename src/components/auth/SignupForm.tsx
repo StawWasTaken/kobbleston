@@ -14,8 +14,19 @@ import { isOldEnough, MINIMUM_AGE } from '@/lib/age'
 
 type Errors = Partial<Record<'birthday' | 'username' | 'email' | 'password' | 'confirm' | 'form', string>>
 
-export function SignupForm({ onSent }: { onSent: (email: string) => void }) {
-  const { signUp } = useAuth()
+/**
+ * The same form does both jobs. A guest keeps the account they are already
+ * signed in with, so nothing they made is thrown away when they decide to
+ * stay; anybody else gets a new one.
+ */
+export function SignupForm({
+  onSent, claiming, onClaimed,
+}: {
+  onSent: (email: string) => void
+  claiming?: boolean
+  onClaimed?: () => void
+}) {
+  const { signUp, claimAccount } = useAuth()
 
   const [birthday, setBirthday] = useState<Birthday>(emptyBirthday)
   const [username, setUsername] = useState('')
@@ -81,7 +92,7 @@ export function SignupForm({ onSent }: { onSent: (email: string) => void }) {
 
     setPending(true)
     try {
-      await signUp({
+      const details = {
         email,
         password,
         username,
@@ -89,8 +100,15 @@ export function SignupForm({ onSent }: { onSent: (email: string) => void }) {
         avatarFile: avatar,
         birthDate: birthdayToDate(birthday),
         gender,
-      })
-      onSent(email)
+      }
+
+      if (claiming) {
+        await claimAccount(details)
+        onClaimed?.()
+      } else {
+        await signUp(details)
+        onSent(email)
+      }
     } catch (err) {
       setErrors({ form: err instanceof Error ? err.message : 'That did not go through. Try again.' })
     } finally {
@@ -172,10 +190,12 @@ export function SignupForm({ onSent }: { onSent: (email: string) => void }) {
         </p>
       )}
 
-      <Button type="submit" size="lg" block loading={pending}>Sign Up</Button>
+      <Button type="submit" size="lg" block loading={pending}>
+        {claiming ? 'Keep this account' : 'Sign Up'}
+      </Button>
 
       <p className="text-center text-[11px] leading-relaxed text-muted">
-        By clicking Sign Up you agree to our{' '}
+        By carrying on you agree to our{' '}
         <Link to="/terms" className="font-semibold text-link hover:underline">Terms of Service</Link>
         {' '}and{' '}
         <Link to="/guidelines" className="font-semibold text-link hover:underline">Community Guidelines</Link>.
