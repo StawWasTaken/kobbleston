@@ -214,7 +214,7 @@ function AccountInfo() {
           placeholder={profile.username}
           hint="3 to 16 letters, numbers or underscores."
         />
-        <p className={cn('mt-3 text-sm', affordable ? 'text-muted' : 'text-red-300')}>
+        <p className={cn('mt-3 text-sm', affordable ? 'text-muted' : 'text-danger')}>
           You have {formatCount(profile.pixels)} Kubes.
           {!affordable && ` You need ${USERNAME_CHANGE_COST}.`}
         </p>

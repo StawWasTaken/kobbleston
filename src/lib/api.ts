@@ -7,7 +7,7 @@ import type {
   CommunityRelation, CommunityBan, CommunityAuditEntry,
   AssetPageItem, AssetDay, CreatorAssetRow, Collaborator, UsernameRecord,
   AssetRequest, OwnedAsset, AssetReview, CreatorPage,
-  CommunityEvent, EventPage, EventAttendee, BuildTarget,
+  CommunityEvent, EventPage, EventAttendee, BuildTarget, CommunityMoneyRow,
 } from '@/types/db'
 
 const SPACE_FIELDS =
@@ -1051,6 +1051,37 @@ export async function saveAnnouncement(input: {
     author_id: input.authorId,
     is_announcement: true,
   }).select('id').single())
+}
+
+export async function setPostPinned(id: number, pinned: boolean) {
+  unwrap(await supabase.rpc('set_post_pinned', { target: id, pinned }))
+}
+
+export async function likePost(id: number, liked: boolean) {
+  const { data: session } = await supabase.auth.getUser()
+  const me = session.user?.id
+  if (!me) throw new Error('Sign in first.')
+  if (liked) {
+    unwrap(await supabase.from('post_likes').insert({ post_id: id, user_id: me })
+      .select('post_id').single())
+    return
+  }
+  unwrap(await supabase.from('post_likes').delete()
+    .eq('post_id', id).eq('user_id', me).select('post_id'))
+}
+
+export async function listCommunityMoney(communityId: string): Promise<CommunityMoneyRow[]> {
+  return (unwrap(await supabase.rpc('community_money', {
+    community: communityId, limit_count: 60,
+  })) as CommunityMoneyRow[]) ?? []
+}
+
+export async function grantCommunityKubes(
+  communityId: string, userId: string, amount: number, note: string,
+) {
+  unwrap(await supabase.rpc('grant_community_kubes', {
+    community: communityId, target: userId, amount, note: note.trim() || null,
+  }))
 }
 
 export async function editPost(id: number, body: string) {

@@ -12,7 +12,7 @@ import type { CommunityRelation } from '@/types/db'
 import { communityLink } from '@/lib/links'
 import { cn } from '@/lib/cn'
 
-const PER_PAGE = 16
+const PER_PAGE = 12
 
 /**
  * Allies and enemies as a shelf of emblems, a page at a time. The emblem is
@@ -67,7 +67,7 @@ export function AffiliateGrid({
       </div>
 
       {loading && (
-        <div className="grid grid-cols-4 gap-3 sm:grid-cols-6 lg:grid-cols-8">
+        <div className="grid grid-cols-3 gap-3 sm:grid-cols-5 lg:grid-cols-6">
           {[0, 1, 2, 3, 4, 5].map((i) => <Skeleton key={i} className="aspect-square rounded-xl" />)}
         </div>
       )}
@@ -75,7 +75,7 @@ export function AffiliateGrid({
       {!loading && !all.length && <p className="text-sm text-muted">{empty}</p>}
 
       {!!shown.length && (
-        <div className="grid grid-cols-4 gap-3 sm:grid-cols-6 lg:grid-cols-8">
+        <div className="grid grid-cols-3 gap-3 sm:grid-cols-5 lg:grid-cols-6">
           {shown.map((other) => (
             <article key={other.id} className="group relative min-w-0">
               {onRemove && (
@@ -92,37 +92,39 @@ export function AffiliateGrid({
                 </span>
               )}
 
+              {/* One link over the whole tile: the picture, the name and the
+                  count all go to the same place. */}
               <Tooltip label={`${other.name} · ${formatCount(other.member_count)} members`} side="top">
-                <Link
-                  to={communityLink(other)}
-                  className={cn(
-                    'block aspect-square overflow-hidden rounded-xl bg-media ring-1 ring-ink-line',
-                    'transition-[transform,box-shadow] duration-200 group-hover:-translate-y-0.5 group-hover:ring-brand/70',
-                  )}
-                >
-                  {other.icon_url ? (
-                    <img
-                      src={other.icon_url}
-                      alt=""
-                      loading="lazy"
-                      draggable={false}
-                      className="h-full w-full select-none object-cover"
-                    />
-                  ) : (
-                    <span className="grid h-full w-full place-items-center font-display text-2xl font-extrabold text-white/70">
-                      {other.name.slice(0, 2).toUpperCase()}
-                    </span>
-                  )}
+                <Link to={communityLink(other)} className="block">
+                  <span
+                    className={cn(
+                      'block aspect-square overflow-hidden rounded-xl bg-media ring-1 ring-ink-line',
+                      'transition-[transform,box-shadow] duration-200 group-hover:-translate-y-0.5 group-hover:ring-brand/70',
+                    )}
+                  >
+                    {other.icon_url ? (
+                      <img
+                        src={other.icon_url}
+                        alt=""
+                        loading="lazy"
+                        draggable={false}
+                        className="h-full w-full select-none object-cover"
+                      />
+                    ) : (
+                      <span className="grid h-full w-full place-items-center font-display text-2xl font-extrabold text-white/70">
+                        {other.name.slice(0, 2).toUpperCase()}
+                      </span>
+                    )}
+                  </span>
+
+                  <span className="mt-1.5 block truncate text-[13px] font-bold group-hover:text-link">
+                    {other.name}
+                  </span>
+                  <span className="block text-[11px] text-muted">
+                    {formatCount(other.member_count)} Members
+                  </span>
                 </Link>
               </Tooltip>
-
-              <Link
-                to={communityLink(other)}
-                className="mt-1.5 block truncate text-[13px] font-bold hover:text-link"
-              >
-                {other.name}
-              </Link>
-              <p className="text-[11px] text-muted">{formatCount(other.member_count)} Members</p>
 
               {onAnswer && other.incoming && (
                 <div className="mt-2 flex gap-1.5">

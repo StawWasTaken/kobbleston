@@ -122,7 +122,7 @@ export function BirthdayPicker({
         aria-label="Birthday"
         className={cn(
           'flex h-11 w-full items-center gap-3 rounded-xl border px-3.5 text-sm font-semibold transition-colors',
-          error ? 'border-red-500/60' : 'border-ink-line',
+          error ? 'border-danger/60' : 'border-ink-line',
           open ? 'border-brand-bright bg-ink-hover' : 'bg-ink-raised hover:bg-ink-hover',
         )}
       >
@@ -171,7 +171,7 @@ export function BirthdayPicker({
         </div>
       )}
 
-      {error && <p className="mt-1.5 text-xs text-red-400">{error}</p>}
+      {error && <p className="mt-1.5 text-xs text-danger">{error}</p>}
     </div>
   )
 }

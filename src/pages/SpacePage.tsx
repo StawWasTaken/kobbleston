@@ -303,7 +303,7 @@ export default function SpacePage() {
               <div className="mt-2 text-right">
                 <button
                   onClick={() => setReporting(true)}
-                  className="inline-flex items-center gap-1.5 text-xs font-semibold text-red-400/80 hover:text-red-400"
+                  className="inline-flex items-center gap-1.5 text-xs font-semibold text-danger/80 hover:text-danger"
                 >
                   <FontAwesomeIcon icon={faFlag} className="text-[10px]" />
                   Report Abuse

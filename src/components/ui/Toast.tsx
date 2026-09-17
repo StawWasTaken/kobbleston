@@ -15,7 +15,7 @@ const icons = {
 
 const tones: Record<ToastTone, string> = {
   success: 'border-space/40 text-space-bright',
-  error: 'border-red-500/40 text-red-300',
+  error: 'border-danger/40 text-danger',
   info: 'border-brand/50 text-link',
 }
 

@@ -421,7 +421,7 @@ export default function AssetPage() {
           'flex items-start gap-2 rounded-xl px-4 py-3 text-sm',
           asset.status === 'pending'
             ? 'bg-amber-400/10 text-amber-200'
-            : 'bg-red-500/10 text-red-200',
+            : 'bg-danger/10 text-danger',
         )}>
           <FontAwesomeIcon
             icon={asset.status === 'pending' ? faClock : faTriangleExclamation}

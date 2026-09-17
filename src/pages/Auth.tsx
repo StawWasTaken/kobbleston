@@ -163,7 +163,7 @@ export default function Auth({ mode }: { mode: 'login' | 'signup' }) {
                   Play as Guest
                 </Button>
                 {guestError && (
-                  <p className="mt-2 text-center text-xs text-red-400">{guestError}</p>
+                  <p className="mt-2 text-center text-xs text-danger">{guestError}</p>
                 )}
                 <p className="mt-2 text-center text-[11px] text-white/35">
                   Guests can look around. Making things needs an account.

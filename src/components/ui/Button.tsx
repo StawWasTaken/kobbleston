@@ -19,7 +19,7 @@ const variants: Record<Variant, string> = {
   subtle:
     'bg-ink-hover text-white hover:bg-[#2c2c36] border border-ink-line',
   danger:
-    'bg-red-500/15 text-red-300 hover:bg-red-500/25 border border-red-500/30',
+    'bg-danger/15 text-danger hover:bg-danger/25 border border-danger/40 font-bold',
 }
 
 const sizes: Record<Size, string> = {

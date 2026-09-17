@@ -65,7 +65,7 @@ export function ImageDrop({
     <div>
       <p className="mb-1.5 text-xs font-bold uppercase tracking-wide text-muted">
         {label}
-        {required && <span className="ml-1 text-red-400">*</span>}
+        {required && <span className="ml-1 text-danger">*</span>}
       </p>
       {note && <p className="mb-2 text-xs text-muted">{note}</p>}
 
@@ -107,7 +107,7 @@ export function ImageDrop({
           >
             Select an image from your computer
           </button>
-          {error && <p className="mt-2 text-xs text-red-400">{error}</p>}
+          {error && <p className="mt-2 text-xs text-danger">{error}</p>}
           {file && (
             <button
               type="button"

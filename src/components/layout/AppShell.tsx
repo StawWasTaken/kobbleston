@@ -87,7 +87,7 @@ export function AppShell() {
  */
 export const PAGE_WIDTH = {
   wide: 'max-w-[86rem]',
-  narrow: 'max-w-5xl',
+  narrow: 'max-w-[68rem]',
 } as const
 
 export function Page({

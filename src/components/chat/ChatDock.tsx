@@ -304,7 +304,7 @@ function Window({
           </div>
 
           <form onSubmit={submit} className="shrink-0 border-t border-ink-line p-2">
-            {error && <p className="px-1 pb-1.5 text-xs text-red-400">{error}</p>}
+            {error && <p className="px-1 pb-1.5 text-xs text-danger">{error}</p>}
             <div className="flex items-center gap-1.5">
               <label className="sr-only" htmlFor={`draft-${conversation.id}`}>Message</label>
               <input

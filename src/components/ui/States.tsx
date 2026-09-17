@@ -32,7 +32,7 @@ export function EmptyState({
 export function ErrorState({ message, onRetry }: { message: string; onRetry?: () => void }) {
   return (
     <div className="flex flex-col items-center px-6 py-10 text-center">
-      <span className="grid h-12 w-12 place-items-center rounded-xl bg-red-500/15 text-red-300">
+      <span className="grid h-12 w-12 place-items-center rounded-xl bg-danger/15 text-danger">
         <FontAwesomeIcon icon={faTriangleExclamation} className="text-lg" />
       </span>
       <h3 className="mt-4 text-base font-bold">That didn&apos;t load</h3>

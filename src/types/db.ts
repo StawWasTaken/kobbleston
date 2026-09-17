@@ -323,6 +323,17 @@ export type CommunityRequest = {
   created_at: string
 }
 
+export type CommunityMoneyRow = {
+  id: number
+  amount: number
+  kind: 'sale' | 'grant' | 'adjustment'
+  note: string | null
+  created_at: string
+  actor_username: string | null
+  target_username: string | null
+  target_display_name: string | null
+}
+
 export type CommunityPost = {
   id: number
   community_id: string
@@ -332,6 +343,9 @@ export type CommunityPost = {
   media_url: string | null
   media_kind: 'image' | 'video' | null
   is_announcement: boolean
+  is_pinned: boolean
+  like_count: number
+  i_like: boolean
   created_at: string
   edited_at: string | null
   author_username: string
@@ -342,6 +356,7 @@ export type CommunityPost = {
   author_content_id: number | null
   author_rank: string | null
   i_can_remove: boolean
+  i_can_pin: boolean
 }
 
 export type MemberCommunity = {
@@ -450,6 +465,7 @@ export type CommunityRelation = {
   name: string
   icon_url: string | null
   member_count: number
+  content_id: number | null
   accepted: boolean
   /** True when the other Community asked us, so there is something to answer. */
   incoming: boolean

@@ -56,7 +56,7 @@ function PublicTopbar() {
           <Button type="submit" size="sm" variant="subtle" className="hidden md:inline-flex">Log In</Button>
           <Button size="sm" to="/login" className="md:hidden">Log In</Button>
           {failed && (
-            <p role="alert" className="hidden text-xs text-red-300 lg:block">Wrong email or password</p>
+            <p role="alert" className="hidden text-xs text-danger lg:block">Wrong email or password</p>
           )}
         </form>
       </div>

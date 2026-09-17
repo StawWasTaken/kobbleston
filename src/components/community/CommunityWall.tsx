@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faBullhorn, faTrash, faEllipsis } from '@fortawesome/free-solid-svg-icons'
+import { faThumbtack, faThumbsUp, faTrash, faEllipsis } from '@fortawesome/free-solid-svg-icons'
 import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
 import { Avatar } from '@/components/ui/Avatar'
@@ -11,9 +11,13 @@ import { Skeleton } from '@/components/ui/States'
 import { useToast } from '@/components/ui/Toast'
 import { useAuth } from '@/hooks/useAuth'
 import { useAsync } from '@/hooks/useAsync'
-import { listCommunityPosts, postToCommunity, removeCommunityPost } from '@/lib/api'
+import {
+  likePost, listCommunityPosts, postToCommunity, removeCommunityPost, setPostPinned,
+} from '@/lib/api'
 import type { CommunityOverview, CommunityPost } from '@/types/db'
 import { avatarOf } from '@/lib/avatars'
+import { formatCount } from '@/lib/format'
+import { cn } from '@/lib/cn'
 import { profileLink } from '@/lib/links'
 import { Verified } from '@/components/brand/Verified'
 
@@ -41,19 +45,36 @@ export function CommunityWall({
   const { profile } = useAuth()
   const toast = useToast()
   const [body, setBody] = useState('')
-  const [announce, setAnnounce] = useState(false)
   const [pending, setPending] = useState(false)
 
   const posts = useAsync(() => listCommunityPosts(communityId), [communityId])
+
+  const like = async (post: CommunityPost) => {
+    try {
+      await likePost(post.id, !post.i_like)
+      posts.reload()
+    } catch (err) {
+      toast(err instanceof Error ? err.message : 'That did not work.', 'error')
+    }
+  }
+
+  const pin = async (post: CommunityPost) => {
+    try {
+      await setPostPinned(post.id, !post.is_pinned)
+      toast(post.is_pinned ? 'Unpinned.' : 'Pinned to the top.', 'success')
+      posts.reload()
+    } catch (err) {
+      toast(err instanceof Error ? err.message : 'That did not work.', 'error')
+    }
+  }
 
   const send = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!profile || !body.trim()) return
     setPending(true)
     try {
-      await postToCommunity({ communityId, authorId: profile.id, body, isAnnouncement: announce })
+      await postToCommunity({ communityId, authorId: profile.id, body, isAnnouncement: false })
       setBody('')
-      setAnnounce(false)
       posts.reload()
     } catch (err) {
       toast(err instanceof Error ? err.message : 'That did not post.', 'error')
@@ -97,18 +118,6 @@ export function CommunityWall({
               >
                 Post
               </Button>
-              {rights.can_manage_community && (
-                <label className="inline-flex cursor-pointer items-center gap-2 text-xs font-semibold text-white/65">
-                  <input
-                    type="checkbox"
-                    checked={announce}
-                    onChange={(e) => setAnnounce(e.target.checked)}
-                    className="h-4 w-4 accent-[#1B34E8]"
-                  />
-                  <FontAwesomeIcon icon={faBullhorn} />
-                  Pin
-                </label>
-              )}
             </div>
           </form>
         </Card>
@@ -139,6 +148,9 @@ export function CommunityWall({
 
               <div className="min-w-0 flex-1">
                 <div className="flex flex-wrap items-center gap-2">
+                  {post.is_pinned && (
+                    <Badge tone="brand" icon={faThumbtack}>Pinned</Badge>
+                  )}
                   <Link
                     to={profileLink(authorOf(post))}
                     className="inline-flex items-center gap-1.5 font-bold hover:underline"
@@ -155,10 +167,26 @@ export function CommunityWall({
                   {post.body}
                 </p>
 
-                <p className="mt-2 text-xs text-muted">
-                  {stamp(post.created_at)}
-                  {post.edited_at && ' · edited'}
-                </p>
+                <div className="mt-2 flex items-center gap-3">
+                  <button
+                    onClick={() => like(post)}
+                    aria-pressed={post.i_like}
+                    className={cn(
+                      'inline-flex items-center gap-1.5 rounded-lg px-2 py-1 text-xs font-bold transition-colors',
+                      post.i_like
+                        ? 'bg-brand/15 text-link'
+                        : 'text-muted hover:bg-ink-hover hover:text-white',
+                    )}
+                  >
+                    <FontAwesomeIcon icon={faThumbsUp} />
+                    {post.like_count > 0 ? formatCount(post.like_count) : 'Like'}
+                  </button>
+
+                  <p className="text-xs text-muted">
+                    {stamp(post.created_at)}
+                    {post.edited_at && ' · edited'}
+                  </p>
+                </div>
               </div>
 
               {post.i_can_remove && (
@@ -170,6 +198,13 @@ export function CommunityWall({
                     </span>
                   }
                   items={[
+                    ...(post.i_can_pin
+                      ? [{
+                          label: post.is_pinned ? 'Unpin from the top' : 'Pin to the top',
+                          icon: faThumbtack,
+                          onSelect: () => pin(post),
+                        }]
+                      : []),
                     { label: 'Delete post', icon: faTrash, onSelect: () => remove(post.id), danger: true },
                   ]}
                 />

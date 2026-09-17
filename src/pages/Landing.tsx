@@ -83,7 +83,7 @@ export default function Landing() {
                 Play as Guest
               </Button>
             </div>
-            {guestError && <p className="mt-2 text-sm text-red-300">{guestError}</p>}
+            {guestError && <p className="mt-2 text-sm text-danger">{guestError}</p>}
           </div>
 
           <div className="rounded-xl border border-ink-line bg-ink-card p-5">

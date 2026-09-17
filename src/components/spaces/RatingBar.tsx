@@ -41,7 +41,7 @@ export function RatingBar({
         <div
           className={cn(
             'h-1.5 overflow-hidden rounded-full',
-            total ? 'bg-red-500/70' : 'bg-white/10',
+            total ? 'bg-danger/70' : 'bg-white/10',
           )}
           role="img"
           aria-label={total ? `${Math.round(share)} percent liked` : 'No ratings yet'}
@@ -60,7 +60,7 @@ export function RatingBar({
         aria-label="Dislike this Space"
         className={cn(
           'flex shrink-0 flex-col items-center gap-1 text-[11px] font-bold transition-colors disabled:opacity-40',
-          iDislike ? 'text-red-400' : 'text-white/60 hover:text-white',
+          iDislike ? 'text-danger' : 'text-white/60 hover:text-white',
         )}
       >
         <FontAwesomeIcon icon={faThumbsDown} className="text-base" />

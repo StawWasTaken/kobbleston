@@ -37,7 +37,7 @@ export const useHub = () => useOutletContext<HubContext>()
 const statusLook: Record<string, { icon: IconDefinition; tone: string; label: string }> = {
   pending: { icon: faClock, tone: 'text-amber-300', label: 'In review' },
   approved: { icon: faCircleCheck, tone: 'text-space-bright', label: 'Live' },
-  rejected: { icon: faCircleXmark, tone: 'text-red-400', label: 'Turned down' },
+  rejected: { icon: faCircleXmark, tone: 'text-danger', label: 'Turned down' },
 }
 
 /* ------------------------------------------------------------------ shell */

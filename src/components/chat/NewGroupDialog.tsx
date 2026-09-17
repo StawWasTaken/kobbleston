@@ -140,7 +140,7 @@ export function NewGroupDialog({
         })}
       </div>
 
-      {error && <p className="px-3 pb-1 text-xs text-red-400">{error}</p>}
+      {error && <p className="px-3 pb-1 text-xs text-danger">{error}</p>}
 
       <div className="flex shrink-0 gap-2 border-t border-ink-line p-2">
         <Button size="sm" variant="ghost" className="flex-1" onClick={onClose}>Cancel</Button>

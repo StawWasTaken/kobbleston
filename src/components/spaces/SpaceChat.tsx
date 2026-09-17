@@ -127,7 +127,7 @@ export function SpaceChat({ space }: { space: Space }) {
       </div>
 
       <form onSubmit={submit} className="border-t border-ink-line p-2">
-        {error && <p className="px-1 pb-2 text-xs text-red-400">{error}</p>}
+        {error && <p className="px-1 pb-2 text-xs text-danger">{error}</p>}
         <div className="flex items-center gap-2">
           <label className="sr-only" htmlFor="space-chat-draft">Message this Space</label>
           <input

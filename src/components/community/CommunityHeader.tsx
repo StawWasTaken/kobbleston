@@ -59,8 +59,8 @@ export function CommunityHeader({
         <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-ink to-transparent" />
       </div>
 
-      <div className="relative px-4 pt-40 sm:px-6 sm:pt-52">
-        <div className={cn('mx-auto w-full', PAGE_WIDTH.narrow)}>
+      <div className="relative pt-40 sm:pt-52">
+        <div className={cn('mx-auto w-full px-4 sm:px-6', PAGE_WIDTH.narrow)}>
           <div className="flex items-start gap-4">
             <span className="grid h-20 w-20 shrink-0 place-items-center overflow-hidden rounded-2xl bg-brand-deep font-display text-xl font-extrabold shadow-pop sm:h-24 sm:w-24">
               {group.icon_url

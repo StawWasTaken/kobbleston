@@ -41,6 +41,11 @@ export default {
           deep: '#14855a',
         },
         muted: 'rgb(var(--muted) / <alpha-value>)',
+        /* The one red on Kobbleston: danger, and nothing else. */
+        danger: {
+          DEFAULT: '#ff0033',
+          soft: 'rgb(255 0 51 / 0.14)',
+        },
       },
       fontFamily: {
         display: ['bd-gravel-vf', 'system-ui', 'sans-serif'],

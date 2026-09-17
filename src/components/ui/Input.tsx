@@ -42,12 +42,12 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(function Input(
           id={inputId}
           aria-invalid={error ? true : undefined}
           aria-describedby={error || hint ? `${inputId}-desc` : undefined}
-          className={cn(field, icon && 'pl-10', error && 'border-red-500/60', className)}
+          className={cn(field, icon && 'pl-10', error && 'border-danger/60', className)}
           {...props}
         />
       </div>
       {(error || hint) && (
-        <p id={`${inputId}-desc`} className={cn('mt-1.5 text-xs', error ? 'text-red-400' : 'text-muted')}>
+        <p id={`${inputId}-desc`} className={cn('mt-1.5 text-xs', error ? 'text-danger' : 'text-muted')}>
           {error ?? hint}
         </p>
       )}
@@ -80,11 +80,11 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(function 
         ref={ref}
         id={inputId}
         aria-invalid={error ? true : undefined}
-        className={cn(field, 'min-h-[92px] resize-y', error && 'border-red-500/60', className)}
+        className={cn(field, 'min-h-[92px] resize-y', error && 'border-danger/60', className)}
         {...props}
       />
       {(error || hint) && (
-        <p className={cn('mt-1.5 text-xs', error ? 'text-red-400' : 'text-muted')}>{error ?? hint}</p>
+        <p className={cn('mt-1.5 text-xs', error ? 'text-danger' : 'text-muted')}>{error ?? hint}</p>
       )}
     </div>
   )

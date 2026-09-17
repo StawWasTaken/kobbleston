@@ -20,6 +20,7 @@ import { CommunityMembers } from '@/components/community/CommunityMembers'
 import { RolesEditor } from '@/components/community/RolesEditor'
 import { AffiliateGrid } from '@/components/community/AffiliateGrid'
 import { EventsEditor } from '@/components/community/EventsEditor'
+import { FundsPanel } from '@/components/community/FundsPanel'
 import { useAuth } from '@/hooks/useAuth'
 import { useAsync } from '@/hooks/useAsync'
 import {
@@ -184,7 +185,7 @@ export default function ConfigureCommunity() {
           {section === 'Settings' && (
             <div className="space-y-4">
               <SettingsSection group={group} onSaved={community.reload} />
-              <FundsCard group={group} />
+              <FundsPanel group={group} onChanged={community.reload} />
               <DangerCard
                 group={group}
                 isOwner={group.owner_id === profile?.id}
@@ -297,19 +298,19 @@ function Information({ group, onSaved }: { group: NonNullable<Awaited<ReturnType
           <div className="absolute inset-0 bg-gradient-to-t from-ink-card via-ink-card/50 to-transparent" />
         </div>
 
-        <div className="-mt-8 flex items-end gap-3 px-4 pb-4">
-          <span className="grid h-16 w-16 shrink-0 place-items-center overflow-hidden rounded-2xl bg-brand-deep font-display text-lg font-extrabold ring-4 ring-ink-card">
+        <div className="flex items-start gap-3 px-4 pb-4">
+          <span className="-mt-8 grid h-16 w-16 shrink-0 place-items-center overflow-hidden rounded-2xl bg-brand-deep font-display text-lg font-extrabold ring-4 ring-ink-card">
             {(emblemPreview ?? group.icon_url)
               ? <img src={emblemPreview ?? group.icon_url ?? ''} alt="" className="h-full w-full object-cover" />
               : (name || group.name).slice(0, 2).toUpperCase()}
           </span>
-          <div className="min-w-0 flex-1 pb-1">
+          <div className="min-w-0 flex-1">
             <p className="truncate font-display text-lg font-extrabold">{name || group.name}</p>
             <p className="line-clamp-1 text-xs text-muted">
               {description || 'No description yet.'}
             </p>
           </div>
-          <span className="pb-1 text-[11px] font-bold uppercase tracking-wide text-muted">
+          <span className="shrink-0 text-[11px] font-bold uppercase tracking-wide text-muted">
             Preview
           </span>
         </div>
@@ -427,27 +428,6 @@ function SettingsSection({ group, onSaved }: { group: NonNullable<Awaited<Return
   )
 }
 
-/** The money a Community has, and where it came from. */
-function FundsCard({ group }: { group: NonNullable<Awaited<ReturnType<typeof getCommunity>>> }) {
-  return (
-    <Card className="p-5 sm:p-6">
-      <h3 className="font-display text-lg font-extrabold">Funds</h3>
-      <p className="mt-0.5 text-sm text-muted">
-        Everything this Community sells in the marketplace goes in here.
-      </p>
-
-      <p className="mt-4 flex items-center gap-2 font-display text-3xl font-extrabold tabular-nums">
-        <Kube className="text-link" />
-        {formatCount(group.funds ?? 0)}
-      </p>
-
-      <p className="mt-2 text-xs text-muted">
-        Paying out to members is not built yet, so nothing can leave this balance.
-      </p>
-    </Card>
-  )
-}
-
 /** The two things only an owner can do, kept apart from everything else. */
 function DangerCard({
   group, isOwner, onChanged,
@@ -465,8 +445,8 @@ function DangerCard({
   const closed = group.is_removed
 
   return (
-    <Card className="border-red-500/30 p-5 sm:p-6">
-      <h3 className="flex items-center gap-2 font-display text-lg font-extrabold text-red-300">
+    <Card className="border-danger/30 p-5 sm:p-6">
+      <h3 className="flex items-center gap-2 font-display text-lg font-extrabold text-danger">
         <FontAwesomeIcon icon={faTriangleExclamation} className="text-base" />
         {closed ? 'This Community is closed' : 'Closing it down'}
       </h3>

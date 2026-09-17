@@ -74,7 +74,7 @@ export function Menu({
                 key={item.label}
                 role="menuitem"
                 onClick={() => { setOpen(false); item.onSelect?.() }}
-                className={`${itemClass} ${item.danger ? 'text-red-300' : 'text-white/80 hover:text-white'}`}
+                className={`${itemClass} ${item.danger ? 'text-danger' : 'text-white/80 hover:text-white'}`}
               >
                 {item.icon && <FontAwesomeIcon icon={item.icon} className="w-4 text-white/45" />}
                 {item.label}

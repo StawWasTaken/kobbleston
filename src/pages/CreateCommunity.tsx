@@ -151,7 +151,7 @@ export default function CreateCommunity() {
 
         <div className="flex flex-wrap items-center justify-end gap-3">
           {!affordable && (
-            <p className="mr-auto text-sm text-red-400">
+            <p className="mr-auto text-sm text-danger">
               You need <Kube className="text-link" /> {COST}. You have {profile?.pixels ?? 0}.
             </p>
           )}
