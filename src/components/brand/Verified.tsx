@@ -5,10 +5,17 @@ import { cn } from '@/lib/cn'
  * The verified mark: an account Kobbleston vouches for, and the content it
  * publishes.
  *
- * Drawn here rather than taken from an icon set, so the tick has the same
- * flat geometry and blunt ends as the rest of the brand. Every verified tick
- * on the site comes from this one component.
+ * Kobbleston's own shape, traced from the artwork into two paths: the badge,
+ * and the tick cut out of it. The stepped edge is the artwork's, not a
+ * tracing artefact, and it is kept because it matches the logo.
+ *
+ * Drawn in currentColor, so it takes the colour of whatever it sits in at any
+ * size with no bitmap involved. The source picture lives at
+ * public/brand/verified.png if it ever needs tracing again.
  */
+const BADGE = 'M10.4 0L13.5 0L13.7 1.8L16.9 1.8L16.9 3.3L17.1 3.5L20.4 3.5L20.4 6.9L22.2 7L22.1 10.2L22.3 10.4L23.9 10.4L23.9 13.5L22.3 13.5L22.1 13.7L22.2 16.9L20.4 17L20.5 20.4L17.1 20.4L16.9 20.6L16.9 22.2L13.7 22.1L13.5 22.3L13.5 23.9L10.4 23.9L10.4 22.2L10.2 22.1L7 22.2L6.9 20.4L3.5 20.4L3.5 17L1.7 16.9L1.8 13.8L1.6 13.5L0.1 13.6L0 13.4L0.1 10.3L1.6 10.4L1.8 10.1L1.8 6.9L3.5 6.9L3.5 3.5L6.9 3.5L7 1.8L10.2 1.8L10.4 1.6L10.4 0.1Z'
+const TICK = 'M17.3 7.5L18.9 7.6L18.9 11.1L17.2 11.1L17.1 12.8L15.5 12.8L15.4 14.5L13.7 14.6L13.7 16.3L12.1 16.3L11.9 18L10.2 18L10.2 16.4L8.5 16.3L8.5 14.7L6.7 14.5L6.8 12.9L5 12.8L5 11.1L8.5 11.1L8.6 12.6L10.2 12.8L10.2 14.5L11.8 14.5L12 12.7L13.7 12.7L13.6 11.1L15.3 11.1L15.4 9.3L17.1 9.3L17.1 7.6L17.3 7.6Z'
+
 export function VerifiedMark({ className }: { className?: string }) {
   return (
     <svg
@@ -17,15 +24,8 @@ export function VerifiedMark({ className }: { className?: string }) {
       focusable="false"
       className={cn('inline-block h-[1em] w-[1em] align-[-0.125em]', className)}
     >
-      <circle cx="12" cy="12" r="11" fill="currentColor" />
-      <path
-        d="M6.9 12.3 L10.4 15.8 L17.1 8.7"
-        fill="none"
-        stroke="#fff"
-        strokeWidth="2.8"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
+      <path d={BADGE} fill="currentColor" />
+      <path d={TICK} fill="#fff" />
     </svg>
   )
 }
