@@ -2,8 +2,8 @@ import { useEffect, useMemo, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import {
-  faDownload, faEye, faCircleCheck, faLock, faLockOpen, faPen, faTrash,
-  faTriangleExclamation, faClock,
+  faCopy, faEye, faCircleCheck, faLock, faLockOpen, faPen, faTrash, faShieldHalved,
+  faTriangleExclamation, faClock, faHandPointUp, faCheck, faXmark,
 } from '@fortawesome/free-solid-svg-icons'
 import { Page } from '@/components/layout/AppShell'
 import { Button } from '@/components/ui/Button'
@@ -11,6 +11,7 @@ import { Card } from '@/components/ui/Card'
 import { Badge } from '@/components/ui/Badge'
 import { Avatar } from '@/components/ui/Avatar'
 import { Input, Textarea } from '@/components/ui/Input'
+import { Dialog } from '@/components/ui/Dialog'
 import { EmptyState, ErrorState, Skeleton } from '@/components/ui/States'
 import { Tooltip } from '@/components/ui/Tooltip'
 import { useToast } from '@/components/ui/Toast'
@@ -18,12 +19,14 @@ import { contentTag, kindIcons, kindLabels } from '@/components/create/AssetTile
 import { useAuth } from '@/hooks/useAuth'
 import { useAsync } from '@/hooks/useAsync'
 import {
-  assetAnalytics, assetUrl, deleteAsset, getAsset, recordAssetEvent, updateAsset,
+  answerAssetRequest, assetAnalytics, deleteAsset, getAsset, listAssetRequests,
+  recordAssetEvent, requestAssetUse, updateAsset, withdrawAssetRequest,
 } from '@/lib/api'
+import { useSignedUrl } from '@/hooks/useSignedUrl'
 import { avatarOf } from '@/lib/avatars'
 import { formatCount, timeAgo } from '@/lib/format'
 import { cn } from '@/lib/cn'
-import type { AssetDay } from '@/types/db'
+import type { AssetDay, AssetPageItem } from '@/types/db'
 
 const prefixes: Record<string, string> = {
   IMG: 'image', SND: 'audio', VID: 'video', FNT: 'font', MDL: 'model',
@@ -34,8 +37,8 @@ const sizeLabel = (bytes: number) =>
 
 /** Thirty days of use, drawn from the numbers themselves rather than invented. */
 function UseChart({ days }: { days: AssetDay[] }) {
-  const peak = Math.max(1, ...days.map((d) => d.views + d.downloads))
-  const total = days.reduce((sum, d) => sum + d.views + d.downloads, 0)
+  const peak = Math.max(1, ...days.map((d) => d.views + d.uses))
+  const total = days.reduce((sum, d) => sum + d.views + d.uses, 0)
 
   if (!total) {
     return <p className="py-6 text-center text-sm text-muted">Nothing yet in the last 30 days.</p>
@@ -44,12 +47,12 @@ function UseChart({ days }: { days: AssetDay[] }) {
   return (
     <div className="flex h-32 items-end gap-[3px]" role="img" aria-label="Use over the last 30 days">
       {days.map((day) => {
-        const height = ((day.views + day.downloads) / peak) * 100
+        const height = ((day.views + day.uses) / peak) * 100
         return (
           <Tooltip
             key={day.day}
             side="top"
-            label={`${new Date(day.day).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}: ${day.views} views, ${day.downloads} downloads`}
+            label={`${new Date(day.day).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}: ${day.views} views, ${day.uses} uses`}
           >
             <div className="flex h-32 flex-1 items-end">
               <div
@@ -60,6 +63,117 @@ function UseChart({ days }: { days: AssetDay[] }) {
           </Tooltip>
         )
       })}
+    </div>
+  )
+}
+
+
+/**
+ * Content is used by its ID, never downloaded. The Kobbleston account's work
+ * is verified and open to everybody; anything else needs its creator to agree.
+ */
+function UsePanel({ asset, onChanged }: { asset: AssetPageItem; onChanged: () => void }) {
+  const { profile } = useAuth()
+  const toast = useToast()
+  const [asking, setAsking] = useState(false)
+  const [note, setNote] = useState('')
+  const [pending, setPending] = useState(false)
+
+  const tag = contentTag(asset.kind, asset.content_id)
+  const mine = profile?.id === asset.creator_id
+
+  const copy = () => {
+    void navigator.clipboard?.writeText(tag)
+    void recordAssetEvent(asset.id, 'use')
+    toast(`${tag} copied. Paste it into your Space.`, 'success')
+    onChanged()
+  }
+
+  if (asset.i_can_use) {
+    return (
+      <div className="space-y-2">
+        <Button block icon={faCopy} onClick={copy}>Use {tag}</Button>
+        <p className="flex items-center gap-2 text-xs text-muted">
+          <FontAwesomeIcon icon={asset.creator_is_admin ? faCircleCheck : faShieldHalved} />
+          {mine
+            ? 'Yours, so you can use it anywhere.'
+            : asset.creator_is_admin
+              ? 'Verified Kobbleston content. Anyone may use this ID.'
+              : 'The creator let you use this.'}
+        </p>
+      </div>
+    )
+  }
+
+  if (asset.i_asked) {
+    return (
+      <div className="space-y-2">
+        <Button block variant="subtle" icon={faClock} disabled>Waiting on the creator</Button>
+        <button
+          onClick={async () => {
+            await withdrawAssetRequest(asset.id)
+            toast('Request withdrawn.', 'info')
+            onChanged()
+          }}
+          className="text-xs text-muted hover:text-white"
+        >
+          Withdraw the request
+        </button>
+      </div>
+    )
+  }
+
+  return (
+    <div className="space-y-2">
+      <Button
+        block
+        icon={faHandPointUp}
+        disabled={!profile || profile.is_guest}
+        onClick={() => setAsking(true)}
+      >
+        Ask to use this
+      </Button>
+      <p className="text-xs text-muted">
+        You cannot take the file. {asset.creator_display_name} decides who may use {tag}.
+      </p>
+
+      <Dialog
+        open={asking}
+        onClose={() => setAsking(false)}
+        title={`Ask to use ${asset.name}`}
+        description={`${asset.creator_display_name} will see your name and what you say here.`}
+        footer={
+          <>
+            <Button variant="ghost" onClick={() => setAsking(false)}>Cancel</Button>
+            <Button
+              loading={pending}
+              onClick={async () => {
+                setPending(true)
+                try {
+                  await requestAssetUse(asset.id, note)
+                  toast('Asked.', 'success')
+                  setAsking(false)
+                  onChanged()
+                } catch (err) {
+                  toast(err instanceof Error ? err.message : 'That did not send.', 'error')
+                } finally {
+                  setPending(false)
+                }
+              }}
+            >
+              Send
+            </Button>
+          </>
+        }
+      >
+        <Textarea
+          label="What is it for?"
+          value={note}
+          onChange={(e) => setNote(e.target.value)}
+          maxLength={300}
+          placeholder="I am building a Space about..."
+        />
+      </Dialog>
     </div>
   )
 }
@@ -88,6 +202,19 @@ export default function AssetPage() {
   const stats = useAsync(
     async () => (mine && asset ? assetAnalytics(asset.id) : []),
     [mine, asset?.id],
+  )
+  const requests = useAsync(
+    async () => (mine ? (await listAssetRequests()).filter((r) => r.asset_id === asset?.id) : []),
+    [mine, asset?.id],
+  )
+
+  const preview = useSignedUrl(
+    asset ? asset.thumbnail_path ?? (asset.kind === 'image' ? asset.file_path : null) : null,
+  )
+  // Sound and video play from a signed URL that expires; there is no link to
+  // keep, and the player is told not to offer a download.
+  const file = useSignedUrl(
+    asset && (asset.kind === 'audio' || asset.kind === 'video') ? asset.file_path : null,
   )
 
   // A view is recorded once the page has actually opened the item.
@@ -121,8 +248,8 @@ export default function AssetPage() {
     )
   }
 
-  const preview = asset.thumbnail_path ?? (asset.kind === 'image' ? asset.file_path : null)
-  const fileUrl = assetUrl(asset.file_path)
+  const previewUrl = preview
+  const fileUrl = file
 
   const save = async () => {
     if (!name.trim()) { toast('It needs a name.', 'error'); return }
@@ -154,12 +281,25 @@ export default function AssetPage() {
       <div className="min-w-0 space-y-6">
         <Card className="overflow-hidden">
           <div className="grid aspect-[16/10] place-items-center bg-brand-ink">
-            {preview ? (
-              <img src={assetUrl(preview)} alt={asset.name} className="h-full w-full object-contain" />
-            ) : asset.kind === 'audio' ? (
-              <audio controls src={fileUrl} className="w-3/4" />
-            ) : asset.kind === 'video' ? (
-              <video controls src={fileUrl} className="h-full w-full" />
+            {previewUrl ? (
+              <img
+                src={previewUrl}
+                alt={asset.name}
+                draggable={false}
+                onContextMenu={(e) => e.preventDefault()}
+                className="h-full w-full select-none object-contain"
+              />
+            ) : asset.kind === 'audio' && fileUrl ? (
+              <audio controls controlsList="nodownload" src={fileUrl} className="w-3/4" />
+            ) : asset.kind === 'video' && fileUrl ? (
+              <video
+                controls
+                controlsList="nodownload"
+                disablePictureInPicture
+                onContextMenu={(e) => e.preventDefault()}
+                src={fileUrl}
+                className="h-full w-full"
+              />
             ) : (
               <FontAwesomeIcon icon={kindIcons[asset.kind]} className="text-6xl text-white/25" />
             )}
@@ -229,7 +369,7 @@ export default function AssetPage() {
         <Card className="divide-y divide-ink-line">
           {[
             { label: 'Content ID', value: contentTag(asset.kind, asset.content_id), mono: true },
-            { label: 'Downloads', value: formatCount(asset.download_count) },
+            { label: 'Used', value: `${formatCount(asset.download_count)} times` },
             { label: 'Size', value: sizeLabel(asset.byte_size) },
             { label: 'Uploaded', value: timeAgo(asset.created_at) },
           ].map((row) => (
@@ -240,16 +380,7 @@ export default function AssetPage() {
           ))}
         </Card>
 
-        <Button
-          block
-          icon={faDownload}
-          onClick={() => {
-            void recordAssetEvent(asset.id, 'download')
-            window.open(fileUrl, '_blank', 'noopener,noreferrer')
-          }}
-        >
-          Download
-        </Button>
+        <UsePanel asset={asset} onChanged={item.reload} />
 
         {mine && (
           <Card className="space-y-3 p-4">
@@ -294,6 +425,47 @@ export default function AssetPage() {
                 Delete
               </Button>
             </div>
+
+            {!!requests.data?.length && (
+              <div className="space-y-2 rounded-lg border border-ink-line p-3">
+                <p className="text-xs font-bold uppercase tracking-wide text-muted">
+                  Asking to use this
+                </p>
+                {requests.data.map((request) => (
+                  <div key={request.user_id} className="flex items-start gap-2.5">
+                    <Avatar src={avatarOf(request)} name={request.display_name} size="sm" />
+                    <div className="min-w-0 flex-1">
+                      <Link to={`/u/${request.username}`} className="block truncate text-sm font-bold hover:underline">
+                        {request.display_name}
+                      </Link>
+                      {request.note && (
+                        <p className="text-xs leading-relaxed text-white/60">{request.note}</p>
+                      )}
+                    </div>
+                    <Button
+                      size="sm"
+                      variant="subtle"
+                      icon={faCheck}
+                      aria-label={`Let ${request.display_name} use this`}
+                      onClick={async () => {
+                        await answerAssetRequest(asset.id, request.user_id, true)
+                        requests.reload()
+                      }}
+                    />
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      icon={faXmark}
+                      aria-label={`Turn down ${request.display_name}`}
+                      onClick={async () => {
+                        await answerAssetRequest(asset.id, request.user_id, false)
+                        requests.reload()
+                      }}
+                    />
+                  </div>
+                ))}
+              </div>
+            )}
 
             <p className="flex items-center gap-2 text-xs text-muted">
               <FontAwesomeIcon icon={faEye} />

@@ -14,9 +14,9 @@ import type { AssetKind } from '@/types/db'
 const MAX_BYTES = 25 * 1024 * 1024
 
 const accepts: Record<AssetKind, string> = {
-  image: 'image/png,image/jpeg,image/gif,image/webp',
-  audio: 'audio/mpeg,audio/ogg,audio/wav',
-  video: 'video/mp4,video/webm',
+  image: 'image/png,image/jpeg,image/gif,image/webp,image/avif',
+  audio: 'audio/mpeg,audio/ogg,application/ogg,audio/wav,audio/aac,audio/flac,.mp3,.ogg,.wav,.flac,.aac',
+  video: 'video/mp4,video/webm,video/ogg,.mp4,.webm',
   font: 'font/woff2,font/woff,font/ttf,font/otf,.woff2,.woff,.ttf,.otf',
   model: 'model/gltf-binary,model/gltf+json,.glb,.gltf',
 }

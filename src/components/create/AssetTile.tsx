@@ -4,7 +4,7 @@ import {
   faImage, faMusic, faVideo, faFont, faCube, faCircleCheck, faDownload,
 } from '@fortawesome/free-solid-svg-icons'
 import type { IconDefinition } from '@fortawesome/fontawesome-svg-core'
-import { assetUrl } from '@/lib/api'
+import { useSignedUrl } from '@/hooks/useSignedUrl'
 import { formatCount } from '@/lib/format'
 import type { AssetKind, MarketAsset } from '@/types/db'
 
@@ -33,7 +33,7 @@ export const contentTag = (kind: AssetKind, id: number | null) =>
   id ? `${tagPrefix[kind]}-${id}` : ''
 
 export function AssetTile({ item }: { item: MarketAsset }) {
-  const preview = item.thumbnail_path ?? (item.kind === 'image' ? item.file_path : null)
+  const preview = useSignedUrl(item.thumbnail_path ?? (item.kind === 'image' ? item.file_path : null))
   const tag = contentTag(item.kind, item.content_id)
 
   return (
@@ -43,10 +43,12 @@ export function AssetTile({ item }: { item: MarketAsset }) {
       <div className="relative grid aspect-square place-items-center overflow-hidden bg-brand-ink">
         {preview ? (
           <img
-            src={assetUrl(preview)}
+            src={preview}
             alt=""
             loading="lazy"
-            className="h-full w-full object-cover"
+            draggable={false}
+            onContextMenu={(e) => e.preventDefault()}
+            className="h-full w-full select-none object-cover"
           />
         ) : (
           <FontAwesomeIcon icon={kindIcons[item.kind]} className="text-3xl text-white/35" />

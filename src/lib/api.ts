@@ -6,6 +6,7 @@ import type {
   CommunityMember, CommunityOverview, CommunityPost, CommunityRank, CommunityRequest,
   CommunityRelation, CommunityBan, CommunityAuditEntry,
   AssetPageItem, AssetDay, CreatorAssetRow, Collaborator, UsernameRecord,
+  AssetRequest, UsableAsset,
 } from '@/types/db'
 
 const SPACE_FIELDS =
@@ -307,8 +308,47 @@ export async function submitReport(input: {
 
 export const assetBucket = 'uploads'
 
-export function assetUrl(path: string) {
-  return supabase.storage.from(assetBucket).getPublicUrl(path).data.publicUrl
+/**
+ * Uploads live in a private bucket, so there is no lasting link to a file.
+ * A preview asks for a short-lived signed URL instead, and only gets one for
+ * content that is listed or for your own files.
+ *
+ * This keeps the file from being addressable. It cannot stop a browser from
+ * showing a picture it has been given, and nothing here pretends it can:
+ * what protects the work is that using it in a Space goes through the
+ * permission check, not that the pixels are unreachable.
+ */
+export async function assetUrl(path: string, seconds = 900): Promise<string | null> {
+  const { data } = await supabase.storage.from(assetBucket).createSignedUrl(path, seconds)
+  return data?.signedUrl ?? null
+}
+
+export async function requestAssetUse(assetId: string, note: string) {
+  const { data: session } = await supabase.auth.getUser()
+  const me = session.user?.id
+  if (!me) throw new Error('Sign in first.')
+  unwrap(await supabase.from('asset_grants')
+    .insert({ asset_id: assetId, user_id: me, note: note.trim() || null })
+    .select('asset_id').single())
+}
+
+export async function withdrawAssetRequest(assetId: string) {
+  const { data: session } = await supabase.auth.getUser()
+  unwrap(await supabase.from('asset_grants').delete()
+    .eq('asset_id', assetId).eq('user_id', session.user?.id ?? '').select('asset_id'))
+}
+
+export async function answerAssetRequest(assetId: string, asker: string, accept: boolean) {
+  unwrap(await supabase.rpc('answer_asset_request', { target: assetId, asker, accept }))
+}
+
+export async function listAssetRequests(): Promise<AssetRequest[]> {
+  return (unwrap(await supabase.rpc('asset_requests_for_me')) as AssetRequest[]) ?? []
+}
+
+/** Everything you are allowed to use by ID. */
+export async function listUsableAssets(): Promise<UsableAsset[]> {
+  return (unwrap(await supabase.rpc('assets_i_can_use')) as UsableAsset[]) ?? []
 }
 
 export async function listAssets(options: {
@@ -341,7 +381,7 @@ export async function getAsset(contentId: number): Promise<AssetPageItem | null>
  * A view or a download. Counts, never who: the creator needs to know their
  * work is being used, not who looked at it.
  */
-export async function recordAssetEvent(assetId: string, kind: 'view' | 'download') {
+export async function recordAssetEvent(assetId: string, kind: 'view' | 'use') {
   await supabase.rpc('record_asset_event', { target: assetId, event_kind: kind })
 }
 

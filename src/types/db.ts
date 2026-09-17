@@ -86,6 +86,8 @@ export type MarketAsset = {
 }
 
 export type AssetPageItem = MarketAsset & {
+  i_can_use: boolean
+  i_asked: boolean
   byte_size: number
   status: ModerationStatus
   is_public: boolean
@@ -94,7 +96,31 @@ export type AssetPageItem = MarketAsset & {
   creator_id: string
 }
 
-export type AssetDay = { day: string; views: number; downloads: number }
+export type AssetDay = { day: string; views: number; uses: number }
+
+export type AssetRequest = {
+  asset_id: string
+  asset_name: string
+  kind: AssetKind
+  content_id: number | null
+  user_id: string
+  username: string
+  display_name: string
+  avatar_url: string | null
+  note: string | null
+  requested_at: string
+}
+
+export type UsableAsset = {
+  id: string
+  kind: AssetKind
+  name: string
+  file_path: string
+  thumbnail_path: string | null
+  content_id: number | null
+  creator_username: string
+  source: 'yours' | 'verified' | 'granted'
+}
 
 export type CreatorAssetRow = {
   asset_id: string
@@ -104,7 +130,8 @@ export type CreatorAssetRow = {
   status: ModerationStatus
   is_public: boolean
   views: number
-  downloads: number
+  uses: number
+  pending_requests: number
   created_at: string
 }
 
