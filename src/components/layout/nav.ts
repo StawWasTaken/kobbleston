@@ -17,22 +17,26 @@ export const topNav: { to: string; label: string }[] = [
   { to: '/discover', label: 'Discover' },
   { to: '/create', label: 'Create' },
   { to: '/communities', label: 'Communities' },
-  { to: '/library', label: 'Library' },
 ]
 
-/** The rail down the left. */
+/**
+ * The rail down the left is yours: where you are, who you know, what you
+ * keep. The bar across the top is the platform: places to browse. Nothing
+ * appears in both, so the two never feel like the same menu twice.
+ */
 export const sideNav: NavItem[] = [
   { to: '/home', label: 'Home', icon: faHouse, end: true },
   { to: '/profile', label: 'Profile', icon: faUser },
   { to: '/friends', label: 'Friends', icon: faUserGroup, badge: 'friends' },
-  { to: '/discover', label: 'Discover', icon: faCompass },
-  { to: '/create', label: 'Create', icon: faShapes },
-  { to: '/communities', label: 'Communities', icon: faUsers },
   { to: '/library', label: 'Library', icon: faBookmark },
   { to: '/settings', label: 'Settings', icon: faGear },
 ]
 
-/** The five that fit a phone's bottom bar. */
+/** A phone has no top bar, so its bottom row has to cover both. */
 export const mobileNav: NavItem[] = [
-  sideNav[0], sideNav[3], sideNav[4], sideNav[2], sideNav[5],
+  { to: '/home', label: 'Home', icon: faHouse, end: true },
+  { to: '/discover', label: 'Discover', icon: faCompass },
+  { to: '/create', label: 'Create', icon: faShapes },
+  { to: '/communities', label: 'Communities', icon: faUsers },
+  { to: '/friends', label: 'Friends', icon: faUserGroup, badge: 'friends' },
 ]

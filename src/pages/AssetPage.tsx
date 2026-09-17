@@ -375,7 +375,7 @@ export default function AssetPage() {
           ].map((row) => (
             <div key={row.label} className="flex items-center justify-between gap-3 px-4 py-2.5 text-sm">
               <span className="text-muted">{row.label}</span>
-              <span className={cn('font-bold', row.mono && 'font-mono text-[#9fadff]')}>{row.value}</span>
+              <span className={cn('font-bold', row.mono && 'font-mono text-link')}>{row.value}</span>
             </div>
           ))}
         </Card>

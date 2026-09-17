@@ -110,7 +110,7 @@ export function SpaceChat({ space }: { space: Space }) {
             <p className="min-w-0 flex-1 text-sm leading-snug">
               <Link
                 to={`/u/${message.sender?.username ?? ''}`}
-                className="font-bold text-[#9fadff] hover:underline"
+                className="font-bold text-link hover:underline"
               >
                 {message.sender?.display_name ?? 'Someone'}
               </Link>

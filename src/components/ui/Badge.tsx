@@ -5,7 +5,7 @@ import { cn } from '@/lib/cn'
 
 const tones = {
   neutral: 'bg-white/[0.07] text-white/70 border-white/10',
-  brand: 'bg-brand/20 text-[#9fadff] border-brand/40',
+  brand: 'bg-brand/20 text-link border-brand/40',
   space: 'bg-space/15 text-space-bright border-space/40',
   warm: 'bg-amber-400/15 text-amber-300 border-amber-400/30',
 }

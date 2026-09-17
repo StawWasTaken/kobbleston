@@ -64,7 +64,7 @@ export function AppTopbar({ onOpenNav }: { onOpenNav: () => void }) {
         <button
           onClick={onOpenNav}
           aria-label="Open navigation"
-          className="grid h-9 w-9 shrink-0 place-items-center rounded-lg text-white/85 transition-colors hover:bg-white/15 lg:hidden"
+          className="grid h-9 w-9 shrink-0 place-items-center rounded-lg text-onbrand/85 transition-colors hover:bg-onbrand/15 lg:hidden"
         >
           <FontAwesomeIcon icon={faBars} />
         </button>
@@ -79,7 +79,7 @@ export function AppTopbar({ onOpenNav }: { onOpenNav: () => void }) {
               className={({ isActive }) =>
                 cn(
                   'rounded-lg px-3 py-1.5 text-sm font-bold transition-colors',
-                  isActive ? 'bg-white/20 text-white' : 'text-white/75 hover:bg-white/10 hover:text-white',
+                  isActive ? 'bg-onbrand/20 text-onbrand' : 'text-onbrand/75 hover:bg-onbrand/10 hover:text-onbrand',
                 )
               }
             >
@@ -97,10 +97,10 @@ export function AppTopbar({ onOpenNav }: { onOpenNav: () => void }) {
 
               <Link
                 to={`/u/${profile.username}`}
-                className="hidden items-center gap-2 rounded-lg px-2 py-1 transition-colors hover:bg-white/15 sm:flex"
+                className="hidden items-center gap-2 rounded-lg px-2 py-1 transition-colors hover:bg-onbrand/15 sm:flex"
               >
                 <Avatar src={avatarOf(profile)} name={profile.display_name} size="xs" />
-                <span className="max-w-24 truncate text-sm font-bold text-white">
+                <span className="max-w-24 truncate text-sm font-bold text-onbrand">
                   {profile.display_name}
                 </span>
               </Link>
@@ -109,11 +109,11 @@ export function AppTopbar({ onOpenNav }: { onOpenNav: () => void }) {
                 onClick={() => setNotificationsOpen((v) => !v)}
                 aria-label={unread ? `Notifications, ${unread} unread` : 'Notifications'}
                 aria-expanded={notificationsOpen}
-                className="relative grid h-9 w-9 place-items-center rounded-lg text-white/85 transition-colors hover:bg-white/15"
+                className="relative grid h-9 w-9 place-items-center rounded-lg text-onbrand/85 transition-colors hover:bg-onbrand/15"
               >
                 <FontAwesomeIcon icon={faBell} />
                 {unread > 0 && (
-                  <span className="absolute right-0.5 top-0.5 grid h-4 min-w-[1rem] place-items-center rounded-full bg-space px-1 text-[10px] font-bold text-white">
+                  <span className="absolute right-0.5 top-0.5 grid h-4 min-w-[1rem] place-items-center rounded-full bg-space px-1 text-[10px] font-bold text-onbrand">
                     {unread > 9 ? '9+' : unread}
                   </span>
                 )}

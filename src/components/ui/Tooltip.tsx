@@ -127,7 +127,7 @@ export function Tooltip({
             role="tooltip"
             id={id}
             className={cn(
-              'pointer-events-none fixed z-[80] max-w-[15rem] rounded-xl bg-[#26262f] px-3 py-1.5',
+              'pointer-events-none fixed z-[80] max-w-[15rem] rounded-xl bg-[rgb(var(--bubble))] px-3 py-1.5',
               'text-center text-xs font-semibold leading-snug text-white',
               'shadow-[0_8px_24px_-8px_rgba(0,0,0,0.9)] transition-opacity duration-100',
               placed ? 'opacity-100' : 'opacity-0',
@@ -142,7 +142,7 @@ export function Tooltip({
             {label}
             <span
               aria-hidden="true"
-              className="absolute h-3 w-3 rounded-[3px] bg-[#26262f]"
+              className="absolute h-3 w-3 rounded-[3px] bg-[rgb(var(--bubble))]"
               style={nibStyle()}
             />
           </div>,

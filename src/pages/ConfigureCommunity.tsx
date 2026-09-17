@@ -78,13 +78,13 @@ export default function ConfigureCommunity() {
             Configure {group.name}
           </h1>
           <p className="mt-1 flex items-center gap-2 text-sm text-muted">
-            <FontAwesomeIcon icon={faCubes} className="text-[#9fadff]" />
+            <FontAwesomeIcon icon={faCubes} className="text-link" />
             Community Funds: {formatCount(group.funds ?? 0)}
           </p>
         </div>
         <Link
           to={`/c/${slug}`}
-          className="inline-flex items-center gap-2 text-sm font-bold text-[#9fadff] hover:underline"
+          className="inline-flex items-center gap-2 text-sm font-bold text-link hover:underline"
         >
           Back to Community <FontAwesomeIcon icon={faArrowRight} />
         </Link>
@@ -426,7 +426,7 @@ function AffiliatesSection({ communityId }: { communityId: string }) {
           >
             {name}
             {name === 'Requests' && !!requests.data?.filter((r) => r.incoming).length && (
-              <span className="ml-1.5 text-[#9fadff]">
+              <span className="ml-1.5 text-link">
                 ({requests.data.filter((r) => r.incoming).length})
               </span>
             )}

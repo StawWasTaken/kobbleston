@@ -49,8 +49,8 @@ export function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
   const requests = useFriendRequestCount()
 
   return (
-    <div className="flex h-full flex-col bg-brand-deep">
-      <nav className="flex-1 space-y-0.5 overflow-y-auto p-2 kob-scroll" aria-label="Main">
+    <div className="flex h-full flex-col border-r border-onbrand/10 bg-brand-deep">
+      <nav className="flex-1 space-y-1.5 overflow-y-auto p-3 pt-4 kob-scroll" aria-label="Main">
         {sideNav.map((item) => {
           // Profile only makes sense once we know whose it is.
           const to = item.to === '/profile'
@@ -66,17 +66,17 @@ export function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
               onClick={onNavigate}
               className={({ isActive }) =>
                 cn(
-                  'flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-bold transition-colors',
+                  'flex items-center gap-3.5 rounded-xl px-3.5 py-3 text-sm font-bold transition-colors',
                   isActive
-                    ? 'bg-white/20 text-white'
-                    : 'text-white/70 hover:bg-white/10 hover:text-white',
+                    ? 'bg-onbrand/20 text-onbrand'
+                    : 'text-onbrand/70 hover:bg-onbrand/10 hover:text-onbrand',
                 )
               }
             >
               <FontAwesomeIcon icon={item.icon} className="w-5 text-[15px]" />
               <span className="flex-1">{item.label}</span>
               {badge > 0 && (
-                <span className="grid h-5 min-w-5 place-items-center rounded-full bg-white px-1.5 text-[11px] font-extrabold text-brand-deep">
+                <span className="grid h-5 min-w-5 place-items-center rounded-full bg-onbrand px-1.5 text-[11px] font-extrabold text-brand-deep">
                   {badge > 99 ? '99+' : badge}
                 </span>
               )}
@@ -89,7 +89,7 @@ export function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
         <NavLink
           to={`/u/${profile.username}`}
           onClick={onNavigate}
-          className="flex items-center gap-3 border-t border-white/10 p-3 transition-colors hover:bg-white/10"
+          className="flex items-center gap-3 border-t border-onbrand/10 p-3 transition-colors hover:bg-onbrand/10"
         >
           <span className="relative">
             <Avatar src={avatarOf(profile)} name={profile.display_name} size="sm" />
@@ -98,8 +98,8 @@ export function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
             </span>
           </span>
           <span className="min-w-0 flex-1">
-            <span className="block truncate text-sm font-bold text-white">{profile.display_name}</span>
-            <span className="block truncate text-xs text-white/50">@{profile.username}</span>
+            <span className="block truncate text-sm font-bold text-onbrand">{profile.display_name}</span>
+            <span className="block truncate text-xs text-onbrand/50">@{profile.username}</span>
           </span>
         </NavLink>
       )}

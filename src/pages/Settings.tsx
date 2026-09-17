@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import {
-  faCubes, faRightFromBracket, faUser, faLock, faShieldHalved, faPen, faCheck,
+  faCubes, faRightFromBracket, faUser, faLock, faShieldHalved, faPen, faCheck, faPalette,
+  faMoon, faSun,
 } from '@fortawesome/free-solid-svg-icons'
 import type { IconDefinition } from '@fortawesome/fontawesome-svg-core'
 import { Page } from '@/components/layout/AppShell'
@@ -13,6 +14,7 @@ import { Skeleton } from '@/components/ui/States'
 import { AvatarUpload } from '@/components/auth/AvatarUpload'
 import { useToast } from '@/components/ui/Toast'
 import { useAuth } from '@/hooks/useAuth'
+import { useTheme } from '@/hooks/useTheme'
 import { useAsync } from '@/hooks/useAsync'
 import {
   USERNAME_CHANGE_COST, changeUsername, listPixelTransactions, updateProfile,
@@ -22,11 +24,12 @@ import { supabase } from '@/lib/supabase'
 import { formatCount, timeAgo } from '@/lib/format'
 import { cn } from '@/lib/cn'
 
-type Section = 'Account info' | 'Security' | 'Pixels' | 'Safety'
+type Section = 'Account info' | 'Security' | 'Appearance' | 'Pixels' | 'Safety'
 
 const sections: { name: Section; icon: IconDefinition }[] = [
   { name: 'Account info', icon: faUser },
   { name: 'Security', icon: faLock },
+  { name: 'Appearance', icon: faPalette },
   { name: 'Pixels', icon: faCubes },
   { name: 'Safety', icon: faShieldHalved },
 ]
@@ -281,6 +284,58 @@ function Security() {
   )
 }
 
+/* ------------------------------------------------------------- appearance */
+
+function Appearance() {
+  const { theme, setTheme } = useTheme()
+
+  const modes = [
+    { value: 'dark' as const, label: 'Dark', icon: faMoon, note: 'The way Kobbleston is built.' },
+    { value: 'light' as const, label: 'Light', icon: faSun, note: 'The same interface in daylight.' },
+  ]
+
+  return (
+    <Card className="p-5 sm:p-6">
+      <h2 className="font-display text-lg font-extrabold">Mode</h2>
+      <p className="mt-0.5 text-sm text-muted">
+        Kept on this device, so your other machines are not affected.
+      </p>
+
+      <div className="mt-4 grid gap-3 sm:grid-cols-2">
+        {modes.map((mode) => (
+          <button
+            key={mode.value}
+            onClick={() => setTheme(mode.value)}
+            aria-pressed={theme === mode.value}
+            className={cn(
+              'flex items-center gap-3 rounded-xl border p-4 text-left transition-colors',
+              theme === mode.value
+                ? 'border-brand-bright bg-brand/15'
+                : 'border-ink-line bg-ink-raised hover:bg-ink-hover',
+            )}
+          >
+            <span
+              className={cn(
+                'grid h-10 w-10 shrink-0 place-items-center rounded-lg',
+                mode.value === 'dark' ? 'bg-[#101012] text-white' : 'bg-[#f2f3f7] text-[#101012]',
+              )}
+            >
+              <FontAwesomeIcon icon={mode.icon} />
+            </span>
+            <span className="min-w-0">
+              <span className="block text-sm font-bold">{mode.label}</span>
+              <span className="block text-xs text-muted">{mode.note}</span>
+            </span>
+            {theme === mode.value && (
+              <FontAwesomeIcon icon={faCheck} className="ml-auto text-sm text-link" />
+            )}
+          </button>
+        ))}
+      </div>
+    </Card>
+  )
+}
+
 /* ----------------------------------------------------------------- pixels */
 
 function Pixels() {
@@ -293,7 +348,7 @@ function Pixels() {
   return (
     <Card className="overflow-hidden">
       <div className="flex items-center gap-3 border-b border-ink-line px-5 py-4">
-        <FontAwesomeIcon icon={faCubes} className="text-lg text-[#9fadff]" />
+        <FontAwesomeIcon icon={faCubes} className="text-lg text-link" />
         <p className="font-display text-2xl font-extrabold tabular-nums">
           {formatCount(profile?.pixels ?? 0)}
         </p>
@@ -387,6 +442,7 @@ export default function Settings() {
         <div className="min-w-0">
           {section === 'Account info' && <AccountInfo />}
           {section === 'Security' && <Security />}
+          {section === 'Appearance' && <Appearance />}
           {section === 'Pixels' && <Pixels />}
           {section === 'Safety' && <Safety />}
         </div>

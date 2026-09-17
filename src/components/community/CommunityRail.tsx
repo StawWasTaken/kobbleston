@@ -35,7 +35,7 @@ function RailRow({
         {icon ? <img src={icon} alt="" className="h-full w-full object-cover" /> : name.slice(0, 2).toUpperCase()}
       </span>
       <span className="min-w-0 flex-1">
-        <span className="block truncate text-sm font-bold text-[#9fadff]">{name}</span>
+        <span className="block truncate text-sm font-bold text-link">{name}</span>
         <span className="block text-xs text-muted">
           {formatCount(members)} members{note && ` · ${note}`}
         </span>
@@ -63,12 +63,12 @@ export function CommunityRail() {
 
   return (
     <aside
-      className="sticky top-14 hidden max-h-[calc(100dvh-3.5rem)] w-72 shrink-0 flex-col overflow-y-auto px-3 pb-6 pt-4 lg:flex kob-scroll"
+      className="sticky top-14 hidden max-h-[calc(100dvh-3.5rem)] w-72 shrink-0 flex-col overflow-y-auto border-r border-ink-line px-3 pb-6 pt-4 lg:flex kob-scroll"
       aria-label="My Communities"
     >
       <div className="mb-2 flex items-baseline justify-between px-1">
         <h2 className="font-display text-base font-extrabold">Communities</h2>
-        <Link to="/communities" className="text-xs font-bold text-[#9fadff] hover:underline">
+        <Link to="/communities" className="text-xs font-bold text-link hover:underline">
           See All
         </Link>
       </div>

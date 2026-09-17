@@ -4,13 +4,22 @@ export default {
   theme: {
     extend: {
       colors: {
+        /*
+         * The surfaces and the foreground come from variables so the whole
+         * interface can be light or dark. Brand blue and Space green do not
+         * move: they mean something.
+         */
         ink: {
-          DEFAULT: '#101012',
-          raised: '#16161a',
-          card: '#1a1a20',
-          hover: '#212128',
-          line: '#2a2a33',
+          DEFAULT: 'rgb(var(--ink) / <alpha-value>)',
+          raised: 'rgb(var(--ink-raised) / <alpha-value>)',
+          card: 'rgb(var(--ink-card) / <alpha-value>)',
+          hover: 'rgb(var(--ink-hover) / <alpha-value>)',
+          line: 'rgb(var(--ink-line) / <alpha-value>)',
         },
+        white: 'rgb(var(--fg) / <alpha-value>)',
+        link: 'rgb(var(--link) / <alpha-value>)',
+        /* Chrome that is always blue keeps white text in both themes. */
+        onbrand: 'rgb(255 255 255 / <alpha-value>)',
         brand: {
           DEFAULT: '#1B34E8',
           bright: '#3A50FF',
@@ -22,7 +31,7 @@ export default {
           bright: '#25D68C',
           deep: '#14855a',
         },
-        muted: '#8b8b99',
+        muted: 'rgb(var(--muted) / <alpha-value>)',
       },
       fontFamily: {
         display: ['bd-gravel-vf', 'system-ui', 'sans-serif'],

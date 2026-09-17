@@ -34,7 +34,7 @@ function Line({ event }: { event: ActivityEvent }) {
   const space = event.space_slug ? (
     <Link
       to={`/u/${event.actor_username}/${event.space_slug}`}
-      className="font-semibold text-[#9fadff] hover:underline"
+      className="font-semibold text-link hover:underline"
     >
       {event.space_name}
     </Link>

@@ -320,7 +320,7 @@ export default function Profile() {
                     {user.bio.length > 180 && (
                       <button
                         onClick={() => setBioOpen((v) => !v)}
-                        className="mt-1 text-sm font-bold text-[#9fadff] hover:underline"
+                        className="mt-1 text-sm font-bold text-link hover:underline"
                       >
                         {bioOpen ? 'less' : 'more'}
                       </button>

@@ -176,9 +176,9 @@ export function SignupForm({ onSent }: { onSent: (email: string) => void }) {
 
       <p className="text-center text-[11px] leading-relaxed text-muted">
         By clicking Sign Up you agree to our{' '}
-        <Link to="/terms" className="font-semibold text-[#9fadff] hover:underline">Terms of Service</Link>
+        <Link to="/terms" className="font-semibold text-link hover:underline">Terms of Service</Link>
         {' '}and{' '}
-        <Link to="/guidelines" className="font-semibold text-[#9fadff] hover:underline">Community Guidelines</Link>.
+        <Link to="/guidelines" className="font-semibold text-link hover:underline">Community Guidelines</Link>.
       </p>
     </form>
   )

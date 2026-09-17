@@ -11,7 +11,7 @@ export function PixelBalance({ amount }: { amount: number }) {
       className="hidden items-center gap-1.5 rounded-lg px-2 py-1.5 text-sm font-bold text-white transition-colors hover:bg-white/15 sm:flex"
       aria-label={`${amount} Pixels`}
     >
-      <FontAwesomeIcon icon={faCubes} className="text-[#9fadff]" />
+      <FontAwesomeIcon icon={faCubes} className="text-link" />
       {formatCount(amount)}
     </Link>
   )

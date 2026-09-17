@@ -50,7 +50,7 @@ export default function Search() {
     <Page>
       <header className="mb-5">
         <h1 className="font-display text-2xl font-extrabold sm:text-3xl">
-          Results for <span className="text-[#8fa0ff]">{term || 'nothing'}</span>
+          Results for <span className="text-link">{term || 'nothing'}</span>
         </h1>
       </header>
 

@@ -16,7 +16,7 @@ const icons = {
 const tones: Record<ToastTone, string> = {
   success: 'border-space/40 text-space-bright',
   error: 'border-red-500/40 text-red-300',
-  info: 'border-brand/50 text-[#9fadff]',
+  info: 'border-brand/50 text-link',
 }
 
 const ToastContext = createContext<(message: string, tone?: ToastTone) => void>(() => {})

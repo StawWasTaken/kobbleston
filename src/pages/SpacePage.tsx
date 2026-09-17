@@ -217,7 +217,7 @@ export default function SpacePage() {
                     aria-pressed={numbers?.i_watch}
                     className={cn(
                       'flex shrink-0 flex-col items-center gap-1 text-[11px] font-bold transition-colors disabled:opacity-40',
-                      numbers?.i_watch ? 'text-[#9fadff]' : 'text-white/60 hover:text-white',
+                      numbers?.i_watch ? 'text-link' : 'text-white/60 hover:text-white',
                     )}
                   >
                     <FontAwesomeIcon icon={faBell} className="text-base" />

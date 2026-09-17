@@ -54,7 +54,7 @@ export function SearchBar({ className }: { className?: string }) {
         <label htmlFor="app-search" className="sr-only">Search Kobbleston</label>
         <FontAwesomeIcon
           icon={faMagnifyingGlass}
-          className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-sm text-white/50"
+          className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-sm text-onbrand/50"
         />
         <input
           id="app-search"
@@ -67,14 +67,14 @@ export function SearchBar({ className }: { className?: string }) {
           role="combobox"
           aria-expanded={showing}
           aria-controls="search-scopes"
-          className="h-9 w-full rounded-lg border border-white/20 bg-black/30 pl-9 pr-9 text-sm text-white placeholder:text-white/45 focus:border-white/50 focus:bg-black/45"
+          className="h-9 w-full rounded-lg border border-onbrand/20 bg-black/30 pl-9 pr-9 text-sm text-onbrand placeholder:text-onbrand/45 focus:border-onbrand/50 focus:bg-black/45"
         />
         {term && (
           <button
             type="button"
             onClick={() => { setTerm(''); setOpen(false) }}
             aria-label="Clear search"
-            className="absolute right-2.5 top-1/2 -translate-y-1/2 text-white/45 hover:text-white"
+            className="absolute right-2.5 top-1/2 -translate-y-1/2 text-onbrand/45 hover:text-onbrand"
           >
             <FontAwesomeIcon icon={faXmark} />
           </button>
@@ -100,9 +100,9 @@ export function SearchBar({ className }: { className?: string }) {
                   i === active ? 'bg-ink-hover' : 'hover:bg-ink-hover',
                 )}
               >
-                <FontAwesomeIcon icon={scope.icon} className="w-4 text-white/45" />
-                <span className="truncate font-bold text-white">{term.trim()}</span>
-                <span className="text-white/45">in {scope.label}</span>
+                <FontAwesomeIcon icon={scope.icon} className="w-4 text-onbrand/45" />
+                <span className="truncate font-bold text-onbrand">{term.trim()}</span>
+                <span className="text-onbrand/45">in {scope.label}</span>
               </button>
             </li>
           ))}

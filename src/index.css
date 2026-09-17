@@ -3,8 +3,33 @@
 @tailwind utilities;
 
 @layer base {
-  :root {
+  :root,
+  :root[data-theme='dark'] {
     color-scheme: dark;
+    --ink: 16 16 18;
+    --ink-raised: 22 22 26;
+    --ink-card: 26 26 32;
+    --ink-hover: 33 33 40;
+    --ink-line: 42 42 51;
+    --fg: 255 255 255;
+    --muted: 139 139 153;
+    --link: 159 173 255;
+    --bubble: 38 38 47;
+  }
+
+  /* The same interface in daylight. Brand blue and Space green are
+     untouched, so what a colour means never depends on the theme. */
+  :root[data-theme='light'] {
+    color-scheme: light;
+    --ink: 242 243 247;
+    --ink-raised: 255 255 255;
+    --ink-card: 255 255 255;
+    --ink-hover: 234 236 243;
+    --ink-line: 214 218 228;
+    --fg: 16 16 18;
+    --muted: 92 97 112;
+    --link: 27 52 232;
+    --bubble: 32 33 40;
   }
 
   html {
@@ -37,19 +62,20 @@
 @layer components {
   .kob-scroll {
     scrollbar-width: thin;
-    scrollbar-color: #2a2a33 transparent;
+    scrollbar-color: rgb(var(--ink-line)) transparent;
   }
   .kob-scroll::-webkit-scrollbar { width: 10px; height: 10px; }
   .kob-scroll::-webkit-scrollbar-thumb {
-    background: #2a2a33;
+    background: rgb(var(--ink-line));
     border-radius: 999px;
     border: 3px solid transparent;
     background-clip: content-box;
   }
-  .kob-scroll::-webkit-scrollbar-thumb:hover { background: #3a3a47; background-clip: content-box; }
+  .kob-scroll::-webkit-scrollbar-thumb:hover { background: rgb(var(--muted)); background-clip: content-box; }
 
-  /* the black wordmark/logomark assets sit on a dark interface */
+  /* the wordmark art is black, so it is inverted on a dark interface only */
   .kob-mark-light { filter: invert(1) brightness(1.6); }
+  :root[data-theme='light'] .kob-mark-light { filter: none; }
 }
 
 @media (prefers-reduced-motion: reduce) {

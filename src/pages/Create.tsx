@@ -53,7 +53,7 @@ function OwnUpload({ item, onDeleted }: { item: OwnAsset; onDeleted: () => void 
       <div className="min-w-0 flex-1">
         <Link
           to={tag ? `/create/${tag}` : '/create'}
-          className="block truncate text-sm font-bold hover:text-[#9fadff]"
+          className="block truncate text-sm font-bold hover:text-link"
         >
           {item.name}
         </Link>

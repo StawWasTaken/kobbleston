@@ -5,6 +5,7 @@ import { PublicLayout } from '@/components/layout/PublicLayout'
 import { CommunityShell } from '@/components/community/CommunityRail'
 import { ToastProvider } from '@/components/ui/Toast'
 import { AuthProvider, useAuth } from '@/hooks/useAuth'
+import { ThemeProvider } from '@/hooks/useTheme'
 import { Logomark } from '@/components/brand/Wordmark'
 import Landing from '@/pages/Landing'
 import Auth from '@/pages/Auth'
@@ -55,6 +56,7 @@ function RootRoute() {
 export default function App() {
   return (
     <BrowserRouter basename={import.meta.env.BASE_URL}>
+      <ThemeProvider>
       <AuthProvider>
         <ToastProvider>
           <Suspense fallback={<Booting />}>
@@ -101,6 +103,7 @@ export default function App() {
           </Suspense>
         </ToastProvider>
       </AuthProvider>
+    </ThemeProvider>
     </BrowserRouter>
   )
 }

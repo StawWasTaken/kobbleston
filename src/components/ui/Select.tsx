@@ -110,7 +110,7 @@ export function Select({
             >
               <FontAwesomeIcon
                 icon={faCheck}
-                className={cn('w-3 shrink-0 text-xs', option.value === value ? 'text-[#9fadff]' : 'opacity-0')}
+                className={cn('w-3 shrink-0 text-xs', option.value === value ? 'text-link' : 'opacity-0')}
               />
               <span className="min-w-0 flex-1 truncate">{option.label}</span>
               {option.note && <span className="shrink-0 text-xs text-muted">{option.note}</span>}
