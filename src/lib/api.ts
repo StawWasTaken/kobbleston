@@ -832,6 +832,14 @@ export async function buildSpaceForCommunity(spaceId: string, communityId: strin
   unwrap(await supabase.rpc('link_space_to_community', { space: spaceId, community: communityId }))
 }
 
+export async function closeCommunity(communityId: string, closed: boolean) {
+  unwrap(await supabase.rpc('close_community', { target: communityId, closed }))
+}
+
+export async function transferCommunity(communityId: string, toUser: string) {
+  unwrap(await supabase.rpc('transfer_community', { target: communityId, to_user: toUser }))
+}
+
 export async function listPixelTransactions(userId: string): Promise<PixelTransaction[]> {
   return (unwrap(await supabase.from('pixel_transactions')
     .select('id, amount, kind, note, created_at')

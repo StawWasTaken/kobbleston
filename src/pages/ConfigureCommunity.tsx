@@ -3,12 +3,14 @@ import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import {
   faCircleInfo, faGear, faUserGroup, faUserShield, faHandshake, faScroll,
-  faMagnifyingGlass, faPlus, faSkull, faCalendarDay,
+  faMagnifyingGlass, faPlus, faSkull, faCalendarDay, faTriangleExclamation,
 } from '@fortawesome/free-solid-svg-icons'
 import type { IconDefinition } from '@fortawesome/fontawesome-svg-core'
 import { Page } from '@/components/layout/AppShell'
 import { Button } from '@/components/ui/Button'
+import { Badge } from '@/components/ui/Badge'
 import { Card } from '@/components/ui/Card'
+import { Dialog } from '@/components/ui/Dialog'
 import { Input, Textarea } from '@/components/ui/Input'
 import { Avatar } from '@/components/ui/Avatar'
 import { ErrorState, Skeleton } from '@/components/ui/States'
@@ -21,7 +23,7 @@ import { EventsEditor } from '@/components/community/EventsEditor'
 import { useAuth } from '@/hooks/useAuth'
 import { useAsync } from '@/hooks/useAsync'
 import {
-  answerAllyRequest, declareEnemy, getCommunity, getCommunityOverview, liftBan,
+  answerAllyRequest, closeCommunity, declareEnemy, getCommunity, getCommunityOverview, liftBan,
   listCommunities, listCommunityAudit, listCommunityBanned, listRelations, removeRelation,
   requestAlly, updateCommunity, uploadCommunityImage,
 } from '@/lib/api'
@@ -34,15 +36,24 @@ import { BackLink } from '@/components/ui/BackLink'
 
 type Section = 'Information' | 'Settings' | 'Events' | 'Members' | 'Roles' | 'Affiliates' | 'Audit Log'
 
-const sections: { name: Section; icon: IconDefinition }[] = [
-  { name: 'Information', icon: faCircleInfo },
-  { name: 'Settings', icon: faGear },
-  { name: 'Events', icon: faCalendarDay },
-  { name: 'Members', icon: faUserGroup },
-  { name: 'Roles', icon: faUserShield },
-  { name: 'Affiliates', icon: faHandshake },
-  { name: 'Audit Log', icon: faScroll },
+type Group = 'Identity' | 'People' | 'Activity'
+
+const sections: {
+  name: Section
+  icon: IconDefinition
+  group: Group
+  note: string
+}[] = [
+  { name: 'Information', icon: faCircleInfo, group: 'Identity', note: 'Name, emblem, cover, description' },
+  { name: 'Settings', icon: faGear, group: 'Identity', note: 'Joining, funds, closing it down' },
+  { name: 'Members', icon: faUserGroup, group: 'People', note: 'Who is in, who is asking, who is banned' },
+  { name: 'Roles', icon: faUserShield, group: 'People', note: 'Ranks and what each one may do' },
+  { name: 'Events', icon: faCalendarDay, group: 'Activity', note: 'What is on and who is coming' },
+  { name: 'Affiliates', icon: faHandshake, group: 'Activity', note: 'Allies and enemies' },
+  { name: 'Audit Log', icon: faScroll, group: 'Activity', note: 'Everything that has been done here' },
 ]
+
+const groups: Group[] = ['Identity', 'People', 'Activity']
 
 export default function ConfigureCommunity() {
   const { slug = '' } = useParams()
@@ -86,55 +97,100 @@ export default function ConfigureCommunity() {
     )
   }
 
+  const current = sections.find((item) => item.name === section)
+
   return (
     <Page className="max-w-[80rem]">
-      <header className="mb-6 flex flex-wrap items-start justify-between gap-4">
-        <div>
-          <h1 className="font-display text-2xl font-extrabold sm:text-3xl">
-            Configure {group.name}
-          </h1>
-          <p className="mt-1 flex items-center gap-2 text-sm text-muted">
-            <Kube className="text-link" />
-            Community Funds: {formatCount(group.funds ?? 0)}
+      <BackLink to={`/c/${slug}`} className="mb-4">Back to {group.name}</BackLink>
+
+      {/* The Community you are configuring, so it is never in doubt which
+          one you are changing. */}
+      <header className="mb-6 flex flex-wrap items-center gap-4 rounded-2xl border border-ink-line bg-ink-card p-4">
+        <span className="grid h-14 w-14 shrink-0 place-items-center overflow-hidden rounded-xl bg-brand-deep font-display text-base font-extrabold">
+          {group.icon_url
+            ? <img src={group.icon_url} alt="" className="h-full w-full object-cover" />
+            : group.name.slice(0, 2).toUpperCase()}
+        </span>
+
+        <div className="min-w-0 flex-1">
+          <h1 className="truncate font-display text-xl font-extrabold sm:text-2xl">{group.name}</h1>
+          <p className="mt-0.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted">
+            <span>{formatCount(group.member_count)} members</span>
+            <span className="inline-flex items-center gap-1.5">
+              <Kube className="text-link" />
+              {formatCount(group.funds ?? 0)} in funds
+            </span>
+            {group.is_removed && <Badge tone="warm">Closed</Badge>}
           </p>
         </div>
-        <BackLink to={`/c/${slug}`}>Back to {group.name}</BackLink>
+
+        <Button variant="subtle" to={`/c/${slug}`}>View it</Button>
       </header>
 
       <div className="grid gap-6 lg:grid-cols-[14rem_1fr] lg:items-start">
-        <Card className="overflow-hidden p-1.5 lg:sticky lg:top-20">
-          <nav aria-label="Configure sections">
-            {sections.map((item) => (
-              <button
-                key={item.name}
-                onClick={() => setSection(item.name)}
-                aria-current={section === item.name}
-                className={cn(
-                  'flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left text-sm font-semibold transition-colors',
-                  section === item.name
-                    ? 'bg-brand text-white'
-                    : 'text-white/65 hover:bg-ink-hover hover:text-white',
-                )}
-              >
-                <FontAwesomeIcon icon={item.icon} className="w-4 text-xs opacity-70" />
-                <span className="flex-1">{item.name}</span>
-                {item.name === 'Members' && !!rights.data?.request_count && (
-                  <span className="grid h-5 min-w-5 place-items-center rounded-full bg-white px-1.5 text-[11px] font-extrabold text-brand-deep">
-                    {rights.data.request_count}
-                  </span>
-                )}
-              </button>
+        <Card className="overflow-hidden p-2 lg:sticky lg:top-20">
+          <nav aria-label="Configure sections" className="space-y-3">
+            {groups.map((name) => (
+              <div key={name}>
+                <p className="px-2 pb-1 text-[11px] font-bold uppercase tracking-wide text-muted">
+                  {name}
+                </p>
+                {sections.filter((item) => item.group === name).map((item) => (
+                  <button
+                    key={item.name}
+                    onClick={() => setSection(item.name)}
+                    aria-current={section === item.name}
+                    className={cn(
+                      'flex w-full items-start gap-3 rounded-lg px-3 py-2.5 text-left transition-colors',
+                      section === item.name
+                        ? 'bg-brand text-white'
+                        : 'text-white/65 hover:bg-ink-hover hover:text-white',
+                    )}
+                  >
+                    <FontAwesomeIcon icon={item.icon} className="mt-0.5 w-4 text-xs opacity-80" />
+                    <span className="min-w-0 flex-1">
+                      <span className="block text-sm font-semibold">{item.name}</span>
+                      <span
+                        className={cn(
+                          'mt-0.5 block text-[11px] leading-snug',
+                          section === item.name ? 'text-white/70' : 'text-muted',
+                        )}
+                      >
+                        {item.note}
+                      </span>
+                    </span>
+                    {item.name === 'Members' && !!rights.data?.request_count && (
+                      <span className="mt-0.5 grid h-5 min-w-5 place-items-center rounded-full bg-white px-1.5 text-[11px] font-extrabold text-brand-deep">
+                        {rights.data.request_count}
+                      </span>
+                    )}
+                  </button>
+                ))}
+              </div>
             ))}
           </nav>
         </Card>
 
-        <div className="min-w-0">
+        <div className="min-w-0 space-y-4">
+          <div>
+            <h2 className="font-display text-xl font-extrabold">{section}</h2>
+            <p className="mt-0.5 text-sm text-muted">{current?.note}</p>
+          </div>
+
           {section === 'Information' && (
             <Information group={group} onSaved={community.reload} />
           )}
 
           {section === 'Settings' && (
-            <SettingsSection group={group} onSaved={community.reload} />
+            <div className="space-y-4">
+              <SettingsSection group={group} onSaved={community.reload} />
+              <FundsCard group={group} />
+              <DangerCard
+                group={group}
+                isOwner={group.owner_id === profile?.id}
+                onChanged={community.reload}
+              />
+            </div>
           )}
 
           {section === 'Members' && (
@@ -168,6 +224,18 @@ export default function ConfigureCommunity() {
   )
 }
 
+/** A local preview of a file the browser has but the server has not. */
+function useObjectUrl(file: File | null) {
+  const [url, setUrl] = useState<string | null>(null)
+  useEffect(() => {
+    if (!file) { setUrl(null); return }
+    const made = URL.createObjectURL(file)
+    setUrl(made)
+    return () => URL.revokeObjectURL(made)
+  }, [file])
+  return url
+}
+
 /* ------------------------------------------------------------ information */
 
 function Information({ group, onSaved }: { group: NonNullable<Awaited<ReturnType<typeof getCommunity>>>; onSaved: () => void }) {
@@ -178,6 +246,10 @@ function Information({ group, onSaved }: { group: NonNullable<Awaited<ReturnType
   const [emblem, setEmblem] = useState<File | null>(null)
   const [cover, setCover] = useState<File | null>(null)
   const [pending, setPending] = useState(false)
+
+  // Local previews of a picture that has not been uploaded yet.
+  const emblemPreview = useObjectUrl(emblem)
+  const coverPreview = useObjectUrl(cover)
 
   const save = async () => {
     if (!profile) return
@@ -204,35 +276,93 @@ function Information({ group, onSaved }: { group: NonNullable<Awaited<ReturnType
     }
   }
 
+  const dirty = name.trim() !== group.name
+    || description.trim() !== (group.description ?? '')
+    || !!emblem
+    || !!cover
+
   return (
-    <Card className="space-y-6 p-5 sm:p-6">
-      <ImageDrop label="Emblem" required file={emblem} existing={group.icon_url} onChange={setEmblem} />
+    <div className="space-y-4">
+      {/* What it will look like, beside what you are typing, so there is no
+          save-and-check loop. */}
+      <Card className="overflow-hidden">
+        <div className="relative h-28 bg-media">
+          {(coverPreview ?? group.banner_url) && (
+            <img
+              src={coverPreview ?? group.banner_url ?? ''}
+              alt=""
+              className="h-full w-full object-cover"
+            />
+          )}
+          <div className="absolute inset-0 bg-gradient-to-t from-ink-card via-ink-card/50 to-transparent" />
+        </div>
 
-      <ImageDrop
-        label="Cover photo"
-        aspect="wide"
-        file={cover}
-        existing={group.banner_url}
-        onChange={setCover}
-        note="Wide, around 1440 by 456. It fades into the page behind the name."
-      />
+        <div className="-mt-8 flex items-end gap-3 px-4 pb-4">
+          <span className="grid h-16 w-16 shrink-0 place-items-center overflow-hidden rounded-2xl bg-brand-deep font-display text-lg font-extrabold ring-4 ring-ink-card">
+            {(emblemPreview ?? group.icon_url)
+              ? <img src={emblemPreview ?? group.icon_url ?? ''} alt="" className="h-full w-full object-cover" />
+              : (name || group.name).slice(0, 2).toUpperCase()}
+          </span>
+          <div className="min-w-0 flex-1 pb-1">
+            <p className="truncate font-display text-lg font-extrabold">{name || group.name}</p>
+            <p className="line-clamp-1 text-xs text-muted">
+              {description || 'No description yet.'}
+            </p>
+          </div>
+          <span className="pb-1 text-[11px] font-bold uppercase tracking-wide text-muted">
+            Preview
+          </span>
+        </div>
+      </Card>
 
-      <Input label="Name" value={name} onChange={(e) => setName(e.target.value)} maxLength={50}
-        hint={`${name.length}/50`} />
+      <Card className="space-y-6 p-5 sm:p-6">
+        <div className="grid gap-5 sm:grid-cols-2">
+          <ImageDrop label="Emblem" required file={emblem} existing={group.icon_url} onChange={setEmblem}
+            note="Square. Cut to shape when you pick it." />
 
-      <Textarea
-        label="Description"
-        value={description}
-        onChange={(e) => setDescription(e.target.value)}
-        maxLength={1000}
-        className="min-h-[10rem]"
-        hint={`${description.length}/1000`}
-      />
+          <ImageDrop
+            label="Cover photo"
+            aspect="wide"
+            file={cover}
+            existing={group.banner_url}
+            onChange={setCover}
+            note="Wide. It fades into the page behind the name."
+          />
+        </div>
 
-      <div className="flex justify-end">
-        <Button loading={pending} onClick={save}>Save</Button>
-      </div>
-    </Card>
+        <Input label="Name" value={name} onChange={(e) => setName(e.target.value)} maxLength={50}
+          hint={`${name.length}/50`} />
+
+        <Textarea
+          label="Description"
+          value={description}
+          onChange={(e) => setDescription(e.target.value)}
+          maxLength={1000}
+          className="min-h-[10rem]"
+          hint={`${description.length}/1000`}
+        />
+      </Card>
+
+      {/* The save bar follows you down the page, and only when there is
+          something to save. */}
+      {dirty && (
+        <div className="sticky bottom-4 z-10 flex items-center gap-3 rounded-2xl border border-brand/40 bg-ink-card/95 px-4 py-3 shadow-pop backdrop-blur">
+          <p className="flex-1 text-sm font-semibold">You have changes that are not saved.</p>
+          <Button
+            variant="ghost"
+            onClick={() => {
+              setName(group.name)
+              setDescription(group.description ?? '')
+              setEmblem(null)
+              setCover(null)
+            }}
+          >
+            Undo
+          </Button>
+          <Button loading={pending} onClick={save}>Save changes</Button>
+        </div>
+      )}
+    </div>
   )
 }
 
@@ -293,6 +423,101 @@ function SettingsSection({ group, onSaved }: { group: NonNullable<Awaited<Return
       <div className="flex justify-end">
         <Button loading={pending} onClick={save}>Save</Button>
       </div>
+    </Card>
+  )
+}
+
+/** The money a Community has, and where it came from. */
+function FundsCard({ group }: { group: NonNullable<Awaited<ReturnType<typeof getCommunity>>> }) {
+  return (
+    <Card className="p-5 sm:p-6">
+      <h3 className="font-display text-lg font-extrabold">Funds</h3>
+      <p className="mt-0.5 text-sm text-muted">
+        Everything this Community sells in the marketplace goes in here.
+      </p>
+
+      <p className="mt-4 flex items-center gap-2 font-display text-3xl font-extrabold tabular-nums">
+        <Kube className="text-link" />
+        {formatCount(group.funds ?? 0)}
+      </p>
+
+      <p className="mt-2 text-xs text-muted">
+        Paying out to members is not built yet, so nothing can leave this balance.
+      </p>
+    </Card>
+  )
+}
+
+/** The two things only an owner can do, kept apart from everything else. */
+function DangerCard({
+  group, isOwner, onChanged,
+}: {
+  group: NonNullable<Awaited<ReturnType<typeof getCommunity>>>
+  isOwner: boolean
+  onChanged: () => void
+}) {
+  const toast = useToast()
+  const [confirming, setConfirming] = useState(false)
+  const [pending, setPending] = useState(false)
+
+  if (!isOwner) return null
+
+  const closed = group.is_removed
+
+  return (
+    <Card className="border-red-500/30 p-5 sm:p-6">
+      <h3 className="flex items-center gap-2 font-display text-lg font-extrabold text-red-300">
+        <FontAwesomeIcon icon={faTriangleExclamation} className="text-base" />
+        {closed ? 'This Community is closed' : 'Closing it down'}
+      </h3>
+      <p className="mt-1 text-sm leading-relaxed text-muted">
+        {closed
+          ? 'Nobody can find it or join it while it is closed. Nothing has been deleted, and you can open it again whenever you like.'
+          : 'Closing hides it from everywhere and stops anybody joining. Nothing is deleted, the wall and the members stay as they are, and you can open it again.'}
+      </p>
+
+      <Button
+        variant={closed ? 'subtle' : 'danger'}
+        className="mt-4"
+        onClick={() => setConfirming(true)}
+      >
+        {closed ? 'Open it again' : 'Close this Community'}
+      </Button>
+
+      <Dialog
+        open={confirming}
+        onClose={() => setConfirming(false)}
+        title={closed ? `Open ${group.name} again?` : `Close ${group.name}?`}
+        description={
+          closed
+            ? 'It goes back into Communities and people can find and join it again.'
+            : 'It disappears from Communities and from search. Members keep their place, and nothing is deleted.'
+        }
+        footer={
+          <>
+            <Button variant="ghost" onClick={() => setConfirming(false)}>Cancel</Button>
+            <Button
+              variant={closed ? 'primary' : 'danger'}
+              loading={pending}
+              onClick={async () => {
+                setPending(true)
+                try {
+                  await closeCommunity(group.id, !closed)
+                  toast(closed ? 'Open again.' : 'Closed.', closed ? 'success' : 'info')
+                  setConfirming(false)
+                  onChanged()
+                } catch (err) {
+                  toast(err instanceof Error ? err.message : 'That did not work.', 'error')
+                } finally {
+                  setPending(false)
+                }
+              }}
+            >
+              {closed ? 'Open it' : 'Close it'}
+            </Button>
+          </>
+        }
+      />
     </Card>
   )
 }

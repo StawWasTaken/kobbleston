@@ -265,6 +265,7 @@ export type Community = {
   is_verified: boolean
   member_count: number
   funds: number
+  is_removed: boolean
   content_id: number | null
   created_at: string
 }
