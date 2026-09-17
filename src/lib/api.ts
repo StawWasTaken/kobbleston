@@ -802,6 +802,25 @@ export async function listBuildTargets(): Promise<BuildTarget[]> {
   return (unwrap(await supabase.rpc('communities_i_build_for')) as BuildTarget[]) ?? []
 }
 
+/** A Community's uploads, drafts and all, for the people who run it. */
+export async function listCommunityUploads(communityId: string): Promise<OwnAsset[]> {
+  return (unwrap(await supabase.rpc('community_uploads', {
+    target: communityId,
+  })) as OwnAsset[]) ?? []
+}
+
+export async function communityAnalytics(communityId: string): Promise<CreatorAssetRow[]> {
+  return (unwrap(await supabase.rpc('community_analytics', {
+    target: communityId,
+  })) as CreatorAssetRow[]) ?? []
+}
+
+export async function listCommunitySpacesManaged(communityId: string): Promise<Space[]> {
+  return (unwrap(await supabase.rpc('community_spaces_managed', {
+    target: communityId,
+  })) as unknown as Space[]) ?? []
+}
+
 export async function listCommunityAssets(communityId: string): Promise<MarketAsset[]> {
   return (unwrap(await supabase.rpc('community_assets', {
     target: communityId, limit_count: 40,
@@ -985,14 +1004,49 @@ export async function updateCommunity(id: string, patch: Partial<Pick<Community,
 
 // --------------------------------------------------------- community walls
 
-export async function listCommunityPosts(communityId: string): Promise<CommunityPost[]> {
-  return (unwrap(await supabase.from('community_posts')
-    .select('id, community_id, author_id, body, is_announcement, created_at, ' +
-      'author:profiles!community_posts_author_id_fkey (username, display_name, avatar_url)')
-    .eq('community_id', communityId)
-    .order('is_announcement', { ascending: false })
-    .order('created_at', { ascending: false })
-    .limit(50)) as unknown as CommunityPost[]) ?? []
+/**
+ * The wall and the announcements are separate lists, both newest first. An
+ * announcement never shows on the wall and a wall post never pretends to be
+ * an announcement.
+ */
+export async function listCommunityPosts(
+  communityId: string, announcements = false,
+): Promise<CommunityPost[]> {
+  return (unwrap(await supabase.rpc('community_posts_list', {
+    target: communityId, announcements, limit_count: 50,
+  })) as unknown as CommunityPost[]) ?? []
+}
+
+export async function saveAnnouncement(input: {
+  id?: number
+  communityId: string
+  authorId: string
+  title: string | null
+  body: string
+  mediaUrl: string | null
+  mediaKind: 'image' | 'video' | null
+}) {
+  const row = {
+    title: input.title,
+    body: input.body,
+    media_url: input.mediaUrl,
+    media_kind: input.mediaKind,
+  }
+  if (input.id) {
+    unwrap(await supabase.from('community_posts').update(row).eq('id', input.id)
+      .select('id').single())
+    return
+  }
+  unwrap(await supabase.from('community_posts').insert({
+    ...row,
+    community_id: input.communityId,
+    author_id: input.authorId,
+    is_announcement: true,
+  }).select('id').single())
+}
+
+export async function editPost(id: number, body: string) {
+  unwrap(await supabase.from('community_posts').update({ body }).eq('id', id).select('id').single())
 }
 
 export async function postToCommunity(input: {

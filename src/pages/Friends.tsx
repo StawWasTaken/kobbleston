@@ -25,6 +25,7 @@ import { cn } from '@/lib/cn'
 import type { Profile } from '@/types/db'
 import { profileLink } from '@/lib/links'
 import { useTitle } from '@/hooks/useTitle'
+import { Verified, isVerified } from '@/components/brand/Verified'
 
 const tabs = ['Friends', 'Requests', 'Following', 'Followers'] as const
 type Tab = (typeof tabs)[number]
@@ -47,9 +48,10 @@ function PersonTile({ person, actions }: { person: Profile; actions?: React.Reac
 
       <Link
         to={profileLink(person)}
-        className="mt-2.5 w-full truncate text-sm font-bold hover:text-link"
+        className="mt-2.5 flex w-full items-center justify-center gap-1 text-sm font-bold hover:text-link"
       >
-        {person.display_name}
+        <span className="truncate">{person.display_name}</span>
+        {isVerified(person) && <Verified className="text-[11px]" />}
       </Link>
       <span className="w-full truncate text-xs text-muted">@{person.username}</span>
 

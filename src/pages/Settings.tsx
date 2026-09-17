@@ -429,7 +429,7 @@ export default function Settings() {
   const [section, setSection] = useState<Section>('Account info')
 
   return (
-    <Page className="max-w-5xl">
+    <Page width="narrow">
       <h1 className="mb-6 font-display text-3xl font-extrabold sm:text-4xl">Settings</h1>
 
       <div className="grid gap-6 md:grid-cols-[13rem_1fr] md:items-start">

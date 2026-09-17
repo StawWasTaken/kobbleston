@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faBullhorn, faCalendarDay } from '@fortawesome/free-solid-svg-icons'
+import { faCalendarDay } from '@fortawesome/free-solid-svg-icons'
 import { Page } from '@/components/layout/AppShell'
 import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
@@ -14,18 +14,18 @@ import { CommunityWall } from '@/components/community/CommunityWall'
 import { CommunityMembers } from '@/components/community/CommunityMembers'
 import { AffiliateGrid } from '@/components/community/AffiliateGrid'
 import { EventCard } from '@/components/community/EventCard'
+import { Announcements } from '@/components/community/Announcements'
 import { AssetTile } from '@/components/create/AssetTile'
 import { useAuth } from '@/hooks/useAuth'
 import { useAsync } from '@/hooks/useAsync'
 import { useTitle } from '@/hooks/useTitle'
 import {
   communitySlugById, getCommunity, getCommunityOverview, joinCommunity, leaveCommunity,
-  listCommunityAssets, listCommunityEvents, listCommunityPosts, listCommunitySpaces, listRelations,
+  listCommunityAssets, listCommunityEvents, listCommunitySpaces, listRelations,
   setEventAttendance,
 } from '@/lib/api'
 import { supabase } from '@/lib/supabase'
 import { cn } from '@/lib/cn'
-import { timeAgo } from '@/lib/format'
 import { communityLink } from '@/lib/links'
 
 const tabs = ['About', 'Events', 'Members', 'Affiliates'] as const
@@ -60,10 +60,6 @@ export default function CommunityPage() {
     [group?.owner_id],
   )
   const spaces = useAsync(async () => (group ? listCommunitySpaces(group.id) : []), [group?.id])
-  const announcements = useAsync(
-    async () => (group ? (await listCommunityPosts(group.id)).filter((p) => p.is_announcement) : []),
-    [group?.id],
-  )
   const events = useAsync(
     async () => (group ? listCommunityEvents(group.id) : []),
     [group?.id],
@@ -144,7 +140,7 @@ export default function CommunityPage() {
         onReport={() => setReporting(true)}
       />
 
-      <Page className="max-w-5xl pt-6">
+      <Page width="narrow" className="pt-6">
         <div className="flex overflow-x-auto border-b border-ink-line kob-scroll" role="tablist">
           {tabs.map((name) => (
             <button
@@ -166,41 +162,12 @@ export default function CommunityPage() {
 
         {tab === 'About' && (
           <div className="mt-6 space-y-8">
-            {!!announcements.data?.length && (
-              <section>
-                <h2 className="mb-3 flex items-center gap-2 font-display text-xl font-extrabold">
-                  <FontAwesomeIcon icon={faBullhorn} className="text-base text-white/40" />
-                  Announcements
-                </h2>
-                <div className="space-y-3">
-                  {announcements.data.map((post) => (
-                    <article
-                      key={post.id}
-                      className="relative overflow-hidden rounded-2xl border border-brand/35 bg-brand/10 p-5"
-                    >
-                      <span
-                        aria-hidden="true"
-                        className="pointer-events-none absolute -right-10 -top-10 h-32 w-32 rounded-full bg-brand/20 blur-2xl"
-                      />
-                      <div className="relative flex gap-3">
-                        <span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-brand text-sm text-white">
-                          <FontAwesomeIcon icon={faBullhorn} />
-                        </span>
-                        <div className="min-w-0">
-                          <p className="whitespace-pre-wrap text-sm leading-relaxed text-white/85">
-                            {post.body}
-                          </p>
-                          <p className="mt-2 text-xs text-muted">
-                            {post.author?.display_name ?? 'The Community'} ·{' '}
-                            {timeAgo(post.created_at)}
-                          </p>
-                        </div>
-                      </div>
-                    </article>
-                  ))}
-                </div>
-              </section>
-            )}
+            <Announcements
+              communityId={group.id}
+              rights={rights.data}
+              compact
+              onSeeAll={() => setTab('Events')}
+            />
 
             {/* What is on, kept short here with the rest under its own tab. */}
             {!!events.data?.filter((e) => !e.is_cancelled).length && (
@@ -217,7 +184,7 @@ export default function CommunityPage() {
                     See all
                   </button>
                 </div>
-                <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
                   {events.data.filter((e) => !e.is_cancelled).slice(0, 3).map((event) => (
                     <EventCard
                       key={event.id}

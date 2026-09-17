@@ -37,7 +37,7 @@ export function EventCard({
         className,
       )}
     >
-      <Link to={eventLink(event)} className="relative block aspect-[16/9] overflow-hidden bg-media">
+      <Link to={eventLink(event)} className="relative block aspect-[2/1] overflow-hidden bg-media">
         {event.cover_url ? (
           <img
             src={event.cover_url}
@@ -60,22 +60,23 @@ export function EventCard({
         )}
       </Link>
 
-      <div className="flex flex-1 flex-col p-4">
-        <Link to={eventLink(event)} className="font-display text-base font-extrabold hover:text-link">
+      <div className="flex flex-1 flex-col p-3">
+        <Link to={eventLink(event)} className="font-display text-sm font-extrabold hover:text-link">
           {event.title}
         </Link>
-        {event.subtitle && <p className="mt-0.5 text-sm text-muted">{event.subtitle}</p>}
+        {event.subtitle && <p className="mt-0.5 truncate text-xs text-muted">{event.subtitle}</p>}
 
-        <p className="mt-2 text-sm font-semibold">{eventWhen(event.starts_at)}</p>
+        <p className="mt-1.5 text-xs font-semibold">{eventWhen(event.starts_at)}</p>
 
-        <p className="mt-1 flex items-center gap-1.5 text-xs text-muted">
+        <p className="mt-0.5 flex items-center gap-1.5 text-[11px] text-muted">
           <FontAwesomeIcon icon={faUserGroup} />
           {formatCount(event.attending_count)} going
         </p>
 
         {onJoin && !event.is_cancelled && !over && (
           <Button
-            className="mt-3"
+            className="mt-2.5"
+            size="sm"
             block
             variant={event.i_am_going ? 'subtle' : 'primary'}
             onClick={() => onJoin(!event.i_am_going)}

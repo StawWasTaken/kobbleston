@@ -12,6 +12,7 @@ export type Profile = {
   in_space_id: string | null
   is_moderator: boolean
   is_admin: boolean
+  is_verified: boolean
   is_guest: boolean
   pixels: number
   birth_date: string | null
@@ -303,6 +304,9 @@ export type CommunityMember = {
   display_name: string
   avatar_url: string | null
   is_online: boolean
+  is_guest: boolean
+  is_verified: boolean
+  content_id: number | null
   in_space_id: string | null
   rank_id: string | null
   rank_name: string | null
@@ -322,10 +326,21 @@ export type CommunityPost = {
   id: number
   community_id: string
   author_id: string
+  title: string | null
   body: string
+  media_url: string | null
+  media_kind: 'image' | 'video' | null
   is_announcement: boolean
   created_at: string
-  author?: Pick<Profile, 'username' | 'display_name' | 'avatar_url'> | null
+  edited_at: string | null
+  author_username: string
+  author_display_name: string
+  author_avatar_url: string | null
+  author_is_guest: boolean
+  author_is_verified: boolean
+  author_content_id: number | null
+  author_rank: string | null
+  i_can_remove: boolean
 }
 
 export type MemberCommunity = {

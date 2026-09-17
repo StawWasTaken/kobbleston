@@ -13,13 +13,14 @@ import { EmptyState, ErrorState, Skeleton } from '@/components/ui/States'
 import { GuestGate } from '@/components/ui/GuestGate'
 import { AssetTile, contentTag, kindIcons, kindLabels } from '@/components/create/AssetTile'
 import { CreateRail } from '@/components/create/CreateRail'
-import { WorkingAsProvider } from '@/components/create/WorkingAs'
+import { WorkingAsProvider, useWorkingAs } from '@/components/create/WorkingAs'
 import { UploadDialog } from '@/components/create/UploadDialog'
 import { useAuth } from '@/hooks/useAuth'
 import { useAsync } from '@/hooks/useAsync'
 import { useTitle } from '@/hooks/useTitle'
 import {
-  creatorAnalytics, listAssets, listInventory, listOwnAssets, listSharedSpaces, listSpacesByOwner,
+  communityAnalytics, creatorAnalytics, listAssets, listCommunitySpacesManaged,
+  listCommunityUploads, listInventory, listOwnAssets, listSharedSpaces, listSpacesByOwner,
 } from '@/lib/api'
 import type { AssetSort } from '@/lib/api'
 import { formatCount, timeAgo } from '@/lib/format'
@@ -94,12 +95,24 @@ export function CreateOverview() {
   const { profile } = useAuth()
   const { openUpload, inventory } = useHub()
 
-  const mine = useAsync(async () => (profile ? listOwnAssets(profile.id) : []), [profile?.id])
-  const spaces = useAsync(
-    async () => (profile ? listSpacesByOwner(profile.id, true) : []),
-    [profile?.id],
+  const { target } = useWorkingAs()
+
+  const mine = useAsync(
+    async () => (target ? listCommunityUploads(target.id) : profile ? listOwnAssets(profile.id) : []),
+    [profile?.id, target?.id],
   )
-  const rows = useAsync(async () => (profile ? creatorAnalytics(profile.id) : []), [profile?.id])
+  const spaces = useAsync(
+    async () => (target
+      ? listCommunitySpacesManaged(target.id)
+      : profile ? listSpacesByOwner(profile.id, true) : []),
+    [profile?.id, target?.id],
+  )
+  const rows = useAsync(
+    async () => (target
+      ? communityAnalytics(target.id)
+      : profile ? creatorAnalytics(profile.id) : []),
+    [profile?.id, target?.id],
+  )
 
   useEffect(() => {
     const reload = () => mine.reload()
@@ -115,9 +128,13 @@ export function CreateOverview() {
     <div className="space-y-6">
       <header className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <h1 className="font-display text-3xl font-extrabold sm:text-4xl">Kobbleston Create</h1>
+          <h1 className="font-display text-3xl font-extrabold sm:text-4xl">
+            {target ? target.name : 'Kobbleston Create'}
+          </h1>
           <p className="mt-1.5 text-muted">
-            Everything you have made, and everything you are allowed to build with.
+            {target
+              ? 'Everything this Community has made. What it sells fills its funds.'
+              : 'Everything you have made, and everything you are allowed to build with.'}
           </p>
         </div>
         <div className="flex gap-2">
@@ -218,7 +235,11 @@ function UploadRow({ item }: { item: OwnAsset }) {
 export function CreateUploads() {
   const { profile } = useAuth()
   const { openUpload } = useHub()
-  const mine = useAsync(async () => (profile ? listOwnAssets(profile.id) : []), [profile?.id])
+  const { target } = useWorkingAs()
+  const mine = useAsync(
+    async () => (target ? listCommunityUploads(target.id) : profile ? listOwnAssets(profile.id) : []),
+    [profile?.id, target?.id],
+  )
 
   useEffect(() => {
     const reload = () => mine.reload()
@@ -230,7 +251,9 @@ export function CreateUploads() {
     <div className="space-y-5">
       <header className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <h1 className="font-display text-2xl font-extrabold sm:text-3xl">My Uploads</h1>
+          <h1 className="font-display text-2xl font-extrabold sm:text-3xl">
+            {target ? `${target.name}'s uploads` : 'My Uploads'}
+          </h1>
           <p className="mt-1 text-sm text-muted">
             Every upload keeps its number. Open one to rename it, unlist it or see who is asking.
           </p>
@@ -267,11 +290,17 @@ export function CreateUploads() {
 
 export function CreateSpaces() {
   const { profile } = useAuth()
+  const { target } = useWorkingAs()
   const spaces = useAsync(
-    async () => (profile ? listSpacesByOwner(profile.id, true) : []),
-    [profile?.id],
+    async () => (target
+      ? listCommunitySpacesManaged(target.id)
+      : profile ? listSpacesByOwner(profile.id, true) : []),
+    [profile?.id, target?.id],
   )
-  const shared = useAsync(async () => (profile ? listSharedSpaces() : []), [profile?.id])
+  const shared = useAsync(
+    async () => (target || !profile ? [] : listSharedSpaces()),
+    [profile?.id, target?.id],
+  )
 
   const row = (space: { id: string; name: string; emblem_url?: string | null; content_id?: number | null; is_published?: boolean }, action: string) => (
     <li key={space.id} className="flex items-center gap-3 border-b border-ink-line/70 px-4 py-3 last:border-0">
@@ -295,7 +324,9 @@ export function CreateSpaces() {
     <div className="space-y-5">
       <header className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <h1 className="font-display text-2xl font-extrabold sm:text-3xl">My Spaces</h1>
+          <h1 className="font-display text-2xl font-extrabold sm:text-3xl">
+            {target ? `${target.name}'s Spaces` : 'My Spaces'}
+          </h1>
           <p className="mt-1 text-sm text-muted">Yours to build, and the ones you were invited onto.</p>
         </div>
         <Button icon={faPlus} to="/spaces/new">New Space</Button>
@@ -697,7 +728,13 @@ export function CreateInventory() {
 
 export function CreateAnalytics() {
   const { profile } = useAuth()
-  const rows = useAsync(async () => (profile ? creatorAnalytics(profile.id) : []), [profile?.id])
+  const { target } = useWorkingAs()
+  const rows = useAsync(
+    async () => (target
+      ? communityAnalytics(target.id)
+      : profile ? creatorAnalytics(profile.id) : []),
+    [profile?.id, target?.id],
+  )
 
   return (
     <div className="space-y-5">

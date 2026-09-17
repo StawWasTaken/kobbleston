@@ -9,6 +9,7 @@ import { asset } from '@/lib/asset'
 import { useAssetRef } from '@/hooks/useSignedUrl'
 import { spaceLink } from '@/lib/links'
 import { Tooltip } from '@/components/ui/Tooltip'
+import { Verified, isVerified } from '@/components/brand/Verified'
 
 export const categoryLabels: Record<SpaceCategory, string> = {
   personal: 'Personal',
@@ -84,7 +85,10 @@ export function SpaceCard({ space, className }: { space: Space; className?: stri
 
       <p className="mt-0.5 flex items-center gap-2 text-xs text-muted">
         {score === null ? (
-          <span className="truncate">{owner ? `By ${owner.display_name}` : 'New'}</span>
+          <span className="inline-flex min-w-0 items-center gap-1">
+            <span className="truncate">{owner ? `By ${owner.display_name}` : 'New'}</span>
+            {owner && isVerified(owner) && <Verified className="text-[10px]" />}
+          </span>
         ) : (
           <span className="inline-flex items-center gap-1">
             <FontAwesomeIcon icon={faThumbsUp} />

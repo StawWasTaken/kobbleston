@@ -12,7 +12,7 @@ import type { CommunityRelation } from '@/types/db'
 import { communityLink } from '@/lib/links'
 import { cn } from '@/lib/cn'
 
-const PER_PAGE = 12
+const PER_PAGE = 16
 
 /**
  * Allies and enemies as a shelf of emblems, a page at a time. The emblem is
@@ -67,7 +67,7 @@ export function AffiliateGrid({
       </div>
 
       {loading && (
-        <div className="grid grid-cols-3 gap-3 sm:grid-cols-4 lg:grid-cols-6">
+        <div className="grid grid-cols-4 gap-3 sm:grid-cols-6 lg:grid-cols-8">
           {[0, 1, 2, 3, 4, 5].map((i) => <Skeleton key={i} className="aspect-square rounded-xl" />)}
         </div>
       )}
@@ -75,7 +75,7 @@ export function AffiliateGrid({
       {!loading && !all.length && <p className="text-sm text-muted">{empty}</p>}
 
       {!!shown.length && (
-        <div className="grid grid-cols-3 gap-3 sm:grid-cols-4 lg:grid-cols-6">
+        <div className="grid grid-cols-4 gap-3 sm:grid-cols-6 lg:grid-cols-8">
           {shown.map((other) => (
             <article key={other.id} className="group relative min-w-0">
               {onRemove && (

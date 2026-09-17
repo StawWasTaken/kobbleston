@@ -9,6 +9,7 @@ import { Badge } from '@/components/ui/Badge'
 import { Menu } from '@/components/ui/Menu'
 import { formatCount } from '@/lib/format'
 import { asset } from '@/lib/asset'
+import { PAGE_WIDTH } from '@/components/layout/AppShell'
 import { cn } from '@/lib/cn'
 import type { Community, CommunityOverview } from '@/types/db'
 import { Verified } from '@/components/brand/Verified'
@@ -59,7 +60,7 @@ export function CommunityHeader({
       </div>
 
       <div className="relative px-4 pt-40 sm:px-6 sm:pt-52">
-        <div className="mx-auto w-full max-w-5xl">
+        <div className={cn('mx-auto w-full', PAGE_WIDTH.narrow)}>
           <div className="flex items-start gap-4">
             <span className="grid h-20 w-20 shrink-0 place-items-center overflow-hidden rounded-2xl bg-brand-deep font-display text-xl font-extrabold shadow-pop sm:h-24 sm:w-24">
               {group.icon_url

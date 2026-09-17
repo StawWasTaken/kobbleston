@@ -12,10 +12,21 @@ import { useToast } from '@/components/ui/Toast'
 import { useAuth } from '@/hooks/useAuth'
 import { useAsync } from '@/hooks/useAsync'
 import { listCommunityPosts, postToCommunity, removeCommunityPost } from '@/lib/api'
-import type { CommunityOverview } from '@/types/db'
+import type { CommunityOverview, CommunityPost } from '@/types/db'
 import { avatarOf } from '@/lib/avatars'
+import { profileLink } from '@/lib/links'
+import { Verified } from '@/components/brand/Verified'
 
-/** A wall post carries who said it, their rank at the time, and when. */
+/** The author, in the shape the avatar and link helpers expect. */
+const authorOf = (post: CommunityPost) => ({
+  username: post.author_username,
+  display_name: post.author_display_name,
+  avatar_url: post.author_avatar_url,
+  is_guest: post.author_is_guest,
+  content_id: post.author_content_id,
+})
+
+/** A wall post carries who said it, their rank, and when. */
 function stamp(at: string) {
   const when = new Date(at)
   return `${when.toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' })} | ${when.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' })}`
@@ -117,10 +128,10 @@ export function CommunityWall({
         {posts.data?.map((post) => (
           <Card key={post.id} className="p-4">
             <div className="flex items-start gap-3">
-              <Link to={`/u/${post.author?.username ?? ''}`} className="shrink-0">
+              <Link to={profileLink(authorOf(post))} className="shrink-0">
                 <Avatar
-                  src={avatarOf(post.author)}
-                  name={post.author?.display_name ?? 'K'}
+                  src={avatarOf(authorOf(post))}
+                  name={post.author_display_name}
                   size="lg"
                   className="rounded-xl"
                 />
@@ -129,13 +140,14 @@ export function CommunityWall({
               <div className="min-w-0 flex-1">
                 <div className="flex flex-wrap items-center gap-2">
                   <Link
-                    to={`/u/${post.author?.username ?? ''}`}
-                    className="font-bold hover:underline"
+                    to={profileLink(authorOf(post))}
+                    className="inline-flex items-center gap-1.5 font-bold hover:underline"
                   >
-                    {post.author?.display_name ?? 'Someone'}
+                    {post.author_display_name}
+                    {post.author_is_verified && <Verified className="text-xs" />}
                   </Link>
-                  {post.is_announcement && (
-                    <Badge tone="brand" icon={faBullhorn}>Announcement</Badge>
+                  {post.author_rank && (
+                    <Badge tone="neutral">{post.author_rank}</Badge>
                   )}
                 </div>
 
@@ -143,10 +155,13 @@ export function CommunityWall({
                   {post.body}
                 </p>
 
-                <p className="mt-2 text-xs text-muted">{stamp(post.created_at)}</p>
+                <p className="mt-2 text-xs text-muted">
+                  {stamp(post.created_at)}
+                  {post.edited_at && ' · edited'}
+                </p>
               </div>
 
-              {(rights?.can_moderate_wall || post.author_id === profile?.id) && (
+              {post.i_can_remove && (
                 <Menu
                   label="Post options"
                   trigger={

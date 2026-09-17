@@ -18,6 +18,7 @@ import { timeAgo } from '@/lib/format'
 import type { CommunityOverview } from '@/types/db'
 import { avatarOf } from '@/lib/avatars'
 import { profileLink } from '@/lib/links'
+import { Verified, isVerified } from '@/components/brand/Verified'
 
 export function CommunityMembers({
   communityId, ownerId, rights, onChanged,
@@ -111,9 +112,10 @@ export function CommunityMembers({
                   <div className="min-w-0 flex-1">
                     <Link
                       to={profileLink(member)}
-                      className="block truncate font-bold hover:underline"
+                      className="flex items-center gap-1.5 truncate font-bold hover:underline"
                     >
-                      {member.display_name}
+                      <span className="truncate">{member.display_name}</span>
+                      {isVerified(member) && <Verified className="text-xs" />}
                     </Link>
                     <PresenceLabel presence={presenceOf(member)} />
                   </div>

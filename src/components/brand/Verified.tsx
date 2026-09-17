@@ -30,6 +30,15 @@ export function VerifiedMark({ className }: { className?: string }) {
   )
 }
 
+/**
+ * Whether somebody's name should carry the tick. Being staff implies it;
+ * being verified does not imply being staff.
+ */
+export const isVerified = (person?: {
+  is_verified?: boolean | null
+  is_admin?: boolean | null
+} | null) => !!(person?.is_verified || person?.is_admin)
+
 export function Verified({
   label = 'Verified by Kobbleston',
   className,

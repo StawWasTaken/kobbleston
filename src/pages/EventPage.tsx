@@ -73,7 +73,7 @@ export default function EventPage() {
   }
 
   return (
-    <Page className="max-w-5xl space-y-6">
+    <Page width="narrow" className="space-y-6">
       <BackLink
         to={communityLink({ slug: it.community_slug, content_id: it.community_content_id })}
       >

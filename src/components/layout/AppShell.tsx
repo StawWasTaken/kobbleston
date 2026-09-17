@@ -79,14 +79,29 @@ export function AppShell() {
   )
 }
 
+/**
+ * The column a page lives in. `width` rather than a class, because cn only
+ * joins strings: passing max-w-5xl alongside the default left both in the
+ * markup and the wider one won, which is how a page ended up wider than its
+ * own header.
+ */
+export const PAGE_WIDTH = {
+  wide: 'max-w-[86rem]',
+  narrow: 'max-w-5xl',
+} as const
+
 export function Page({
   children,
   className,
+  width = 'wide',
 }: {
   children: React.ReactNode
   className?: string
+  width?: keyof typeof PAGE_WIDTH
 }) {
   return (
-    <div className={cn('mx-auto w-full max-w-[86rem] px-4 py-6 sm:px-6', className)}>{children}</div>
+    <div className={cn('mx-auto w-full px-4 py-6 sm:px-6', PAGE_WIDTH[width], className)}>
+      {children}
+    </div>
   )
 }
