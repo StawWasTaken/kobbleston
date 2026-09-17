@@ -272,8 +272,7 @@ export default function Auth({ mode }: { mode: 'login' | 'signup' }) {
               <Link to="/terms" className="font-semibold hover:text-white">Terms</Link>
               <span className="px-2">·</span>
               <Link to="/guidelines" className="font-semibold hover:text-white">Guidelines</Link>
-              <span className="px-2">·</span>
-              <Link to="/roadmap" className="font-semibold hover:text-white">What is coming</Link>
+
             </p>
           </section>
         </main>

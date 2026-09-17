@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import {
-  faGear, faShieldHalved, faRightFromBracket, faUser, faScroll, faRightLeft, faUserPlus, faRoad,
+  faGear, faShieldHalved, faRightFromBracket, faUser, faScroll, faRightLeft, faUserPlus,
 } from '@fortawesome/free-solid-svg-icons'
 import type { IconDefinition } from '@fortawesome/fontawesome-svg-core'
 import { SwitchAccounts } from './SwitchAccounts'
@@ -41,7 +41,6 @@ export function UserMenu() {
     { to: '/settings', label: 'Settings', icon: faGear },
     { to: '/guidelines', label: 'Help & Safety', icon: faShieldHalved },
     { to: '/terms', label: 'Terms', icon: faScroll },
-    { to: '/roadmap', label: 'Roadmap', icon: faRoad },
     ...(profile
       ? [
           { label: 'Switch Accounts', icon: faRightLeft, onSelect: () => setSwitching(true) },
