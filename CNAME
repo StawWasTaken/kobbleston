@@ -1,1 +1,4 @@
-kobbleston.com
+Type: CNAME
+Host: www
+Value: stawwastaken.github.io
+TTL: 1800
