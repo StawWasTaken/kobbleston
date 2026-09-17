@@ -1,7 +1,5 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faCubes } from '@fortawesome/free-solid-svg-icons'
 import { Page } from '@/components/layout/AppShell'
 import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
@@ -156,7 +154,7 @@ export default function CreateCommunity() {
           )}
           <Button type="button" variant="ghost" onClick={() => navigate(-1)}>Cancel</Button>
           <Button type="submit" size="lg" loading={pending} disabled={!affordable}>
-            <FontAwesomeIcon icon={faCubes} />
+            <Kube />
             {COST}
           </Button>
         </div>

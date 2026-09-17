@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import {
-  faCircleInfo, faGear, faUserGroup, faUserShield, faHandshake, faScroll, faCubes,
+  faCircleInfo, faGear, faUserGroup, faUserShield, faHandshake, faScroll,
   faArrowRight, faMagnifyingGlass, faPlus, faSkull,
 } from '@fortawesome/free-solid-svg-icons'
 import type { IconDefinition } from '@fortawesome/fontawesome-svg-core'
@@ -28,6 +28,7 @@ import { formatCount, timeAgo } from '@/lib/format'
 import { cn } from '@/lib/cn'
 import { avatarOf } from '@/lib/avatars'
 import { profileLink } from '@/lib/links'
+import { Kube } from '@/components/brand/Kube'
 
 type Section = 'Information' | 'Settings' | 'Members' | 'Roles' | 'Affiliates' | 'Audit Log'
 
@@ -79,7 +80,7 @@ export default function ConfigureCommunity() {
             Configure {group.name}
           </h1>
           <p className="mt-1 flex items-center gap-2 text-sm text-muted">
-            <FontAwesomeIcon icon={faCubes} className="text-link" />
+            <Kube className="text-link" />
             Community Funds: {formatCount(group.funds ?? 0)}
           </p>
         </div>
