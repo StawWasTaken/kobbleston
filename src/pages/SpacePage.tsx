@@ -18,6 +18,7 @@ import { RatingBar } from '@/components/spaces/RatingBar'
 import { Carousel } from '@/components/spaces/Carousel'
 import { SpaceViewer } from '@/components/spaces/SpaceViewer'
 import { categoryLabels, coverFor } from '@/components/spaces/SpaceCard'
+import { RefImage } from '@/components/create/RefImage'
 import { useAuth } from '@/hooks/useAuth'
 import { useAsync } from '@/hooks/useAsync'
 import {
@@ -132,7 +133,7 @@ export default function SpacePage() {
   const owner = space.owner
   const isOwner = profile?.id === space.owner_id
   // The cover leads, then whatever thumbnails have been added.
-  const shots = [coverFor(space), ...(space.thumbnail_urls ?? [])]
+  const shots = [coverFor(space), ...(space.thumbnail_urls ?? [])].filter(Boolean) as string[]
   const numbers = stats.data
 
   return (
@@ -144,8 +145,8 @@ export default function SpacePage() {
           <div className="flex flex-col">
             <div className="flex items-start gap-3">
               {space.emblem_url && (
-                <img
-                  src={space.emblem_url}
+                <RefImage
+                  value={space.emblem_url}
                   alt=""
                   className="h-14 w-14 shrink-0 rounded-xl border border-ink-line object-cover"
                 />

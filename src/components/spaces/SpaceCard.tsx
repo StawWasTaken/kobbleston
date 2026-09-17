@@ -6,6 +6,7 @@ import { formatCount } from '@/lib/format'
 import { cn } from '@/lib/cn'
 import type { Space, SpaceCategory } from '@/types/db'
 import { asset } from '@/lib/asset'
+import { useAssetRef } from '@/hooks/useSignedUrl'
 
 export const categoryLabels: Record<SpaceCategory, string> = {
   personal: 'Personal',
@@ -20,8 +21,11 @@ export const categoryLabels: Record<SpaceCategory, string> = {
 const fallbackCovers = [asset('/brand/banner.png'), asset('/brand/banner2.png'), asset('/brand/banner3.png')]
 
 export function coverFor(space: Space) {
-  if (space.emblem_url) return space.emblem_url
-  if (space.cover_url) return space.cover_url
+  return space.emblem_url ?? space.cover_url ?? null
+}
+
+/** Something to show while nothing else is there, so a row has no holes. */
+export function fallbackFor(space: Space) {
   const seed = space.id.charCodeAt(0) + space.id.charCodeAt(space.id.length - 1)
   return fallbackCovers[seed % fallbackCovers.length]
 }
@@ -43,6 +47,9 @@ export function SpaceCard({ space, className }: { space: Space; className?: stri
   const owner = space.owner
   const href = owner ? `/u/${owner.username}/${space.slug}` : '#'
   const score = ratio(space)
+  // A picture may be stored as a reference to Create content rather than a
+  // link, so it is resolved before it can be shown.
+  const picture = useAssetRef(coverFor(space)) ?? fallbackFor(space)
 
   return (
     <article className={cn('group relative min-w-0', className)}>
@@ -51,7 +58,7 @@ export function SpaceCard({ space, className }: { space: Space; className?: stri
         className="relative block aspect-square overflow-hidden rounded-xl bg-brand-ink ring-1 ring-ink-line transition-[transform,box-shadow] duration-200 group-hover:-translate-y-0.5 group-hover:ring-brand/70"
       >
         <img
-          src={coverFor(space)}
+          src={picture}
           alt=""
           loading="lazy"
           decoding="async"

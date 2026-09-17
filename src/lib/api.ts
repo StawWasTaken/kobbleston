@@ -323,6 +323,37 @@ export async function assetUrl(path: string, seconds = 900): Promise<string | nu
   return data?.signedUrl ?? null
 }
 
+/**
+ * A Space stores a reference, not a file: "kob://IMG-1042". Resolving one
+ * looks the item up and asks for a short-lived link to show it. The answers
+ * are kept for the life of the page so a grid of tiles does not ask twice
+ * for the same thing.
+ */
+const refCache = new Map<string, Promise<string | null>>()
+
+export const isAssetRef = (value?: string | null): value is string =>
+  typeof value === 'string' && value.startsWith('kob://')
+
+export function assetRefTag(value: string) {
+  return value.replace('kob://', '').toUpperCase()
+}
+
+export function resolveAssetRef(value: string): Promise<string | null> {
+  const cached = refCache.get(value)
+  if (cached) return cached
+
+  const work = (async () => {
+    const number = Number(assetRefTag(value).split('-')[1])
+    if (!Number.isFinite(number)) return null
+    const item = await getAsset(number)
+    if (!item) return null
+    return assetUrl(item.file_path, 3600)
+  })()
+
+  refCache.set(value, work)
+  return work
+}
+
 export async function requestAssetUse(assetId: string, note: string) {
   const { data: session } = await supabase.auth.getUser()
   const me = session.user?.id

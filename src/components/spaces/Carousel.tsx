@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faChevronLeft, faChevronRight } from '@fortawesome/free-solid-svg-icons'
+import { RefImage } from '@/components/create/RefImage'
 import { cn } from '@/lib/cn'
 
 /**
@@ -18,16 +19,16 @@ export function Carousel({ images, alt }: { images: string[]; alt: string }) {
     <div>
       <div className="group relative aspect-[16/9] overflow-hidden rounded-xl border border-ink-line bg-brand-ink">
         {images.map((url, i) => (
-          <img
+          <span
             key={url}
-            src={url}
-            alt={i === at ? alt : ''}
             aria-hidden={i === at ? undefined : true}
             className={cn(
-              'absolute inset-0 h-full w-full object-cover transition-opacity duration-500 ease-out',
+              'absolute inset-0 transition-opacity duration-500 ease-out',
               i === at ? 'opacity-100' : 'opacity-0',
             )}
-          />
+          >
+            <RefImage value={url} alt={i === at ? alt : ''} className="h-full w-full object-cover" />
+          </span>
         ))}
 
         {many && (
@@ -85,7 +86,7 @@ export function Carousel({ images, alt }: { images: string[]; alt: string }) {
                 i === at ? 'ring-2 ring-white' : 'opacity-55 hover:opacity-100',
               )}
             >
-              <img src={url} alt="" className="h-full w-full object-cover" />
+              <RefImage value={url} alt="" className="h-full w-full object-cover" />
             </button>
           ))}
         </div>
