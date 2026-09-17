@@ -9,6 +9,7 @@ import { Avatar } from '@/components/ui/Avatar'
 import { EmptyState, ErrorState, Skeleton } from '@/components/ui/States'
 import { AssetTile, kindLabels } from '@/components/create/AssetTile'
 import { useAsync } from '@/hooks/useAsync'
+import { useTitle } from '@/hooks/useTitle'
 import { getCreatorPage, listAssets } from '@/lib/api'
 import { avatarOf } from '@/lib/avatars'
 import { formatCount, timeAgo } from '@/lib/format'
@@ -31,6 +32,7 @@ export default function CreatorPage() {
   }, [term])
 
   const creator = useAsync(() => getCreatorPage(username), [username])
+  useTitle(creator.data ? `${creator.data.display_name} on Create` : 'Creator')
   const items = useAsync(
     () => listAssets({ creator: username, kind, search: debounced, limit: 60 }),
     [username, kind, debounced],

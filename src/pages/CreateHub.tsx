@@ -18,6 +18,7 @@ import { CreateRail } from '@/components/create/CreateRail'
 import { UploadDialog } from '@/components/create/UploadDialog'
 import { useAuth } from '@/hooks/useAuth'
 import { useAsync } from '@/hooks/useAsync'
+import { useTitle } from '@/hooks/useTitle'
 import {
   answerAssetRequest, creatorAnalytics, listAssetRequests, listAssets, listOwnAssets,
   listSharedSpaces, listSpacesByOwner,
@@ -43,6 +44,7 @@ const statusLook: Record<string, { icon: IconDefinition; tone: string; label: st
 
 export default function CreateHub() {
   const { profile } = useAuth()
+  useTitle('Kobbleston Create')
   const [uploading, setUploading] = useState(false)
 
   const requests = useAsync(
