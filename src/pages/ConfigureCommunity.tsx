@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Link, useNavigate, useParams } from 'react-router-dom'
+import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import {
   faCircleInfo, faGear, faUserGroup, faUserShield, faHandshake, faScroll,
@@ -47,7 +47,18 @@ export default function ConfigureCommunity() {
   const { slug = '' } = useParams()
   const { profile } = useAuth()
   const navigate = useNavigate()
-  const [section, setSection] = useState<Section>('Information')
+  const [params, setParams] = useSearchParams()
+
+  // A link can name the section it wants, so "Make an event" lands on Events
+  // rather than on the front of Configure.
+  const asked = params.get('section') as Section | null
+  const [section, setSectionState] = useState<Section>(
+    asked && sections.some((s) => s.name === asked) ? asked : 'Information',
+  )
+  const setSection = (next: Section) => {
+    setSectionState(next)
+    setParams(next === 'Information' ? {} : { section: next }, { replace: true })
+  }
 
   const community = useAsync(() => getCommunity(slug), [slug])
   const group = community.data

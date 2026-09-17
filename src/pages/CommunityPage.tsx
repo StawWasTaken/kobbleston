@@ -145,10 +145,7 @@ export default function CommunityPage() {
       />
 
       <Page className="max-w-5xl pt-6">
-        <div
-          className="flex justify-center overflow-x-auto border-b border-ink-line kob-scroll"
-          role="tablist"
-        >
+        <div className="flex overflow-x-auto border-b border-ink-line kob-scroll" role="tablist">
           {tabs.map((name) => (
             <button
               key={name}
@@ -156,7 +153,7 @@ export default function CommunityPage() {
               aria-selected={tab === name}
               onClick={() => setTab(name)}
               className={cn(
-                'shrink-0 border-b-2 px-6 py-3 text-sm font-bold transition-colors sm:px-10',
+                'flex-1 shrink-0 border-b-2 px-6 py-3 text-sm font-bold transition-colors',
                 tab === name
                   ? 'border-white text-white'
                   : 'border-transparent text-white/50 hover:text-white',
@@ -286,7 +283,7 @@ export default function CommunityPage() {
                   }
                   action={
                     rights.data?.can_manage_community
-                      ? <Button to={`/c/${group.slug}/configure`}>Make an event</Button>
+                      ? <Button to={`/c/${group.slug}/configure?section=Events`}>Make an event</Button>
                       : undefined
                   }
                 />

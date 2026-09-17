@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faImage, faXmark } from '@fortawesome/free-solid-svg-icons'
+import { Cropper } from '@/components/ui/Cropper'
 import { cn } from '@/lib/cn'
 
 const MAX_BYTES = 4 * 1024 * 1024
@@ -27,6 +28,7 @@ export function ImageDrop({
   const [preview, setPreview] = useState<string | null>(null)
   const [dragging, setDragging] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [cropping, setCropping] = useState<File | null>(null)
 
   useEffect(() => {
     if (!file) {
@@ -38,6 +40,11 @@ export function ImageDrop({
     return () => URL.revokeObjectURL(url)
   }, [file])
 
+  /*
+   * Anything chosen goes through the cropper first, so what is stored is
+   * already the shape it will be shown in and nothing ends up squashed or
+   * cut off at the top by the page.
+   */
   const take = (chosen: File | null | undefined) => {
     if (!chosen) return
     if (!chosen.type.startsWith('image/')) {
@@ -49,7 +56,7 @@ export function ImageDrop({
       return
     }
     setError(null)
-    onChange(chosen)
+    setCropping(chosen)
   }
 
   const shown = preview ?? existing ?? null
@@ -118,7 +125,15 @@ export function ImageDrop({
         type="file"
         accept="image/png,image/jpeg,image/gif,image/webp"
         className="sr-only"
-        onChange={(e) => take(e.target.files?.[0])}
+        onChange={(e) => { take(e.target.files?.[0]); e.target.value = '' }}
+      />
+
+      <Cropper
+        open={!!cropping}
+        file={cropping}
+        aspect={aspect === 'wide' ? 16 / 9 : 1}
+        onCancel={() => setCropping(null)}
+        onDone={(cut) => { setCropping(null); onChange(cut) }}
       />
     </div>
   )

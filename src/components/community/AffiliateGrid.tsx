@@ -12,7 +12,7 @@ import type { CommunityRelation } from '@/types/db'
 import { communityLink } from '@/lib/links'
 import { cn } from '@/lib/cn'
 
-const PER_PAGE = 5
+const PER_PAGE = 12
 
 /**
  * Allies and enemies as a shelf of emblems, a page at a time. The emblem is
@@ -39,7 +39,7 @@ export function AffiliateGrid({
   return (
     <section>
       <div className="mb-3 flex items-center gap-3">
-        {title && <h3 className="font-display text-xl font-extrabold">{title}</h3>}
+        {title && <h3 className="font-display text-lg font-extrabold">{title}</h3>}
 
         {all.length > PER_PAGE && (
           <div className="ml-auto flex items-center gap-2 text-sm">
@@ -67,15 +67,15 @@ export function AffiliateGrid({
       </div>
 
       {loading && (
-        <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
-          {[0, 1, 2, 3, 4].map((i) => <Skeleton key={i} className="aspect-square rounded-xl" />)}
+        <div className="grid grid-cols-3 gap-3 sm:grid-cols-4 lg:grid-cols-6">
+          {[0, 1, 2, 3, 4, 5].map((i) => <Skeleton key={i} className="aspect-square rounded-xl" />)}
         </div>
       )}
 
       {!loading && !all.length && <p className="text-sm text-muted">{empty}</p>}
 
       {!!shown.length && (
-        <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
+        <div className="grid grid-cols-3 gap-3 sm:grid-cols-4 lg:grid-cols-6">
           {shown.map((other) => (
             <article key={other.id} className="group relative min-w-0">
               {onRemove && (
@@ -118,11 +118,11 @@ export function AffiliateGrid({
 
               <Link
                 to={communityLink(other)}
-                className="mt-2 block truncate text-sm font-bold hover:text-link"
+                className="mt-1.5 block truncate text-[13px] font-bold hover:text-link"
               >
                 {other.name}
               </Link>
-              <p className="text-xs text-muted">{formatCount(other.member_count)} Members</p>
+              <p className="text-[11px] text-muted">{formatCount(other.member_count)} Members</p>
 
               {onAnswer && other.incoming && (
                 <div className="mt-2 flex gap-1.5">
