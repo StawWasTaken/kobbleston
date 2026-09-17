@@ -34,7 +34,8 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add index.html 404.html assets brand
+          git add index.html 404.html assets brand CNAME \
+            discover create communities people login signup terms guidelines
           if git diff --staged --quiet; then
             echo "Build output is already up to date."
             exit 0

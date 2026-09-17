@@ -13,7 +13,7 @@ import { EmptyState, ErrorState, Skeleton } from '@/components/ui/States'
 import { Tooltip } from '@/components/ui/Tooltip'
 import { useToast } from '@/components/ui/Toast'
 import { useAsync } from '@/hooks/useAsync'
-import { useExactTitle } from '@/hooks/useTitle'
+import { useExactTitle, useSocialCard } from '@/hooks/useTitle'
 import { getEvent, listEventAttendees, setEventAttendance } from '@/lib/api'
 import { avatarOf } from '@/lib/avatars'
 import { formatCount } from '@/lib/format'
@@ -40,6 +40,11 @@ export default function EventPage() {
   )
 
   useExactTitle(event.data ? `${event.data.title} - Kobbleston` : null)
+  useSocialCard({
+    title: event.data ? `${event.data.title} - Kobbleston` : null,
+    description: event.data?.subtitle ?? event.data?.description ?? null,
+    image: event.data?.cover_url ?? null,
+  })
 
   if (event.loading) return <Page><Skeleton className="h-96 w-full" /></Page>
   if (event.error) return <Page><ErrorState message={event.error} onRetry={event.reload} /></Page>

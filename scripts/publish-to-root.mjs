@@ -2,8 +2,9 @@
 // publishes when its source is a branch. Run by the deploy workflow after
 // `npm run build`; `npm run deploy` does both by hand.
 import { cpSync, existsSync, rmSync } from 'node:fs'
+import { pageRoots } from './site-pages.mjs'
 
-const built = ['index.html', '404.html', 'assets', 'brand']
+const built = ['index.html', '404.html', 'assets', 'brand', ...pageRoots]
 
 if (!existsSync('dist/index.html')) {
   console.error('No build to publish. Run `npm run build` first.')

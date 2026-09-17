@@ -22,7 +22,7 @@ import { Tooltip } from '@/components/ui/Tooltip'
 import { GuestGate } from '@/components/ui/GuestGate'
 import { useAuth } from '@/hooks/useAuth'
 import { useAsync } from '@/hooks/useAsync'
-import { useTitle } from '@/hooks/useTitle'
+import { useTitle, useSocialCard } from '@/hooks/useTitle'
 import {
   getProfileByUsername, getProfileOverview, isFollowing, listEarnedBadges, listFriendships,
   listMemberCommunities, listSpacesByOwner, sendFriendRequest, setFollowing, startConversation,
@@ -145,6 +145,11 @@ export default function Profile() {
   )
 
   useTitle(user ? `${user.display_name} (@${user.username})` : 'Profile')
+  useSocialCard({
+    title: user ? `${user.display_name} (@${user.username}) - Kobbleston` : null,
+    description: user?.bio ?? (user ? `${user.display_name} on Kobbleston.` : null),
+    image: user?.avatar_url ?? null,
+  })
 
   useEffect(() => {
     if (!me || !user || isMe) return

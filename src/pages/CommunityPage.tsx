@@ -18,7 +18,7 @@ import { Announcements } from '@/components/community/Announcements'
 import { AssetTile } from '@/components/create/AssetTile'
 import { useAuth } from '@/hooks/useAuth'
 import { useAsync } from '@/hooks/useAsync'
-import { useTitle } from '@/hooks/useTitle'
+import { useTitle, useSocialCard } from '@/hooks/useTitle'
 import {
   communitySlugById, getCommunity, getCommunityOverview, joinCommunity, leaveCommunity,
   listCommunityAssets, listCommunityEvents, listCommunitySpaces, listRelations,
@@ -72,6 +72,12 @@ export default function CommunityPage() {
   const enemies = useAsync(async () => (group ? listRelations(group.id, 'enemy') : []), [group?.id])
 
   useTitle(group?.name ?? 'Community')
+  useSocialCard({
+    title: group ? `${group.name} - Kobbleston` : null,
+    description: group?.description
+      ?? (group ? `A Community on Kobbleston with ${group.member_count} members.` : null),
+    image: group?.icon_url ?? group?.banner_url ?? null,
+  })
 
   // A name-only community link answers, then swaps itself for the numbered one.
   useEffect(() => {

@@ -22,7 +22,7 @@ import { RefImage } from '@/components/create/RefImage'
 import { profileLink, spaceLink } from '@/lib/links'
 import { useAuth } from '@/hooks/useAuth'
 import { useAsync } from '@/hooks/useAsync'
-import { useExactTitle } from '@/hooks/useTitle'
+import { useExactTitle, useSocialCard } from '@/hooks/useTitle'
 import {
   enterSpace, getSpace, getSpaceStats, leaveSpace, listSpaceBadges, spaceById, toggleSpaceFlag,
 } from '@/lib/api'
@@ -59,6 +59,12 @@ export default function SpacePage() {
   )
 
   useExactTitle(space ? `${space.name} - Visit on Kobbleston` : null)
+  useSocialCard({
+    title: space ? `${space.name} - Kobbleston` : null,
+    description: space?.description
+      ?? (space?.owner ? `A Space on Kobbleston by ${space.owner.display_name}.` : null),
+    image: space?.cover_url ?? space?.emblem_url ?? null,
+  })
 
   // The old owner/slug address still works, and hands you the numbered one.
   useEffect(() => {
