@@ -15,8 +15,14 @@ import NotFound from '@/pages/NotFound'
 
 // Everything behind the front door loads on demand.
 const SpacePage = lazy(() => import('@/pages/SpacePage'))
-const Create = lazy(() => import('@/pages/Create'))
+const CreateHub = lazy(() => import('@/pages/CreateHub'))
 const AssetPage = lazy(() => import('@/pages/AssetPage'))
+const CreateOverview = lazy(() => import('@/pages/CreateHub').then((m) => ({ default: m.CreateOverview })))
+const CreateSpaces = lazy(() => import('@/pages/CreateHub').then((m) => ({ default: m.CreateSpaces })))
+const CreateUploads = lazy(() => import('@/pages/CreateHub').then((m) => ({ default: m.CreateUploads })))
+const CreateMarketplace = lazy(() => import('@/pages/CreateHub').then((m) => ({ default: m.CreateMarketplace })))
+const CreateRequests = lazy(() => import('@/pages/CreateHub').then((m) => ({ default: m.CreateRequests })))
+const CreateAnalytics = lazy(() => import('@/pages/CreateHub').then((m) => ({ default: m.CreateAnalytics })))
 const Search = lazy(() => import('@/pages/Search'))
 const Communities = lazy(() => import('@/pages/Communities'))
 const CommunityPage = lazy(() => import('@/pages/CommunityPage'))
@@ -74,8 +80,15 @@ export default function App() {
               <Route element={<AppShell />}>
                 {/* open to guests so a shared link works logged out */}
                 <Route path="/discover" element={<Discover />} />
-                <Route path="/create" element={<Create />} />
-                <Route path="/create/:tag" element={<AssetPage />} />
+                <Route path="/create" element={<CreateHub />}>
+                  <Route index element={<CreateOverview />} />
+                  <Route path="spaces" element={<CreateSpaces />} />
+                  <Route path="uploads" element={<CreateUploads />} />
+                  <Route path="marketplace" element={<CreateMarketplace />} />
+                  <Route path="requests" element={<CreateRequests />} />
+                  <Route path="analytics" element={<CreateAnalytics />} />
+                  <Route path=":tag" element={<AssetPage />} />
+                </Route>
                 <Route path="/search" element={<Search />} />
                 <Route element={<CommunityShell />}>
                   <Route path="/communities" element={<Communities />} />

@@ -5,7 +5,6 @@ import {
   faCopy, faEye, faCircleCheck, faLock, faLockOpen, faPen, faTrash, faShieldHalved,
   faTriangleExclamation, faClock, faHandPointUp, faCheck, faXmark,
 } from '@fortawesome/free-solid-svg-icons'
-import { Page } from '@/components/layout/AppShell'
 import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
 import { Badge } from '@/components/ui/Badge'
@@ -228,23 +227,21 @@ export default function AssetPage() {
   }, [asset?.id])
 
   if (item.loading) {
-    return <Page className="space-y-4"><Skeleton className="h-96 w-full" /></Page>
+    return <div className="space-y-4"><Skeleton className="h-96 w-full" /></div>
   }
   if (item.error) {
-    return <Page><ErrorState message={item.error} onRetry={item.reload} /></Page>
+    return <ErrorState message={item.error} onRetry={item.reload} />
   }
   if (!asset || (prefix && prefixes[prefix] !== asset.kind)) {
     return (
-      <Page>
-        <Card>
-          <EmptyState
+      <Card>
+        <EmptyState
             mood="noResults"
             title="Nothing carries that number"
             body={`There is no item at ${tag}. It may have been taken down, or it may not be listed.`}
-            action={<Button to="/create">Kobbleston Create</Button>}
-          />
-        </Card>
-      </Page>
+          action={<Button to="/create">Kobbleston Create</Button>}
+        />
+      </Card>
     )
   }
 
@@ -277,7 +274,7 @@ export default function AssetPage() {
   }
 
   return (
-    <Page className="grid gap-6 lg:grid-cols-[1fr_22rem] lg:items-start">
+    <div className="grid gap-6 lg:grid-cols-[1fr_22rem] lg:items-start">
       <div className="min-w-0 space-y-6">
         <Card className="overflow-hidden">
           <div className="grid aspect-[16/10] place-items-center bg-brand-ink">
@@ -476,6 +473,6 @@ export default function AssetPage() {
           </Card>
         )}
       </aside>
-    </Page>
+    </div>
   )
 }
