@@ -3,7 +3,7 @@ import { Link, useNavigate, useParams } from 'react-router-dom'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import {
   faCircleInfo, faGear, faUserGroup, faUserShield, faHandshake, faScroll, faCubes,
-  faArrowRight, faMagnifyingGlass, faPlus,
+  faArrowRight, faMagnifyingGlass, faPlus, faSkull,
 } from '@fortawesome/free-solid-svg-icons'
 import type { IconDefinition } from '@fortawesome/fontawesome-svg-core'
 import { Page } from '@/components/layout/AppShell'
@@ -432,7 +432,7 @@ function AffiliatesSection({ communityId }: { communityId: string }) {
           </button>
         ))}
         <Button size="sm" className="ml-auto mb-1.5" icon={faPlus} onClick={() => setFinding((v) => !v)}>
-          Send Ally Request
+          {tab === 'Enemies' ? 'Declare Enemy' : 'Send Ally Request'}
         </Button>
       </div>
 
@@ -442,9 +442,15 @@ function AffiliatesSection({ communityId }: { communityId: string }) {
             icon={faMagnifyingGlass}
             value={term}
             onChange={(e) => setTerm(e.target.value)}
-            placeholder="Find a Community to ally with"
+            placeholder={tab === 'Enemies'
+              ? 'Find a Community to declare an enemy'
+              : 'Find a Community to ally with'}
             aria-label="Find a Community"
           />
+          <p className="text-xs text-muted">
+            An alliance needs both sides to agree. Declaring an enemy does not, and it
+            ends any alliance between you straight away.
+          </p>
           {!!candidates.data?.length && (
             <ul className="space-y-1">
               {candidates.data
@@ -459,7 +465,8 @@ function AffiliatesSection({ communityId }: { communityId: string }) {
                     <span className="min-w-0 flex-1 truncate text-sm font-bold">{c.name}</span>
                     <Button
                       size="sm"
-                      variant="subtle"
+                      variant={tab === 'Enemies' ? 'ghost' : 'subtle'}
+                      icon={faHandshake}
                       onClick={() => guard(async () => {
                         await requestAlly(communityId, c.id)
                         toast('Ally request sent.', 'success')
@@ -469,10 +476,14 @@ function AffiliatesSection({ communityId }: { communityId: string }) {
                     </Button>
                     <Button
                       size="sm"
-                      variant="ghost"
+                      variant={tab === 'Enemies' ? 'subtle' : 'ghost'}
+                      icon={faSkull}
                       onClick={() => guard(async () => {
                         await declareEnemy(communityId, c.id)
-                        toast('Declared an enemy.', 'info')
+                        toast(`${c.name} is now an enemy.`, 'info')
+                        setTab('Enemies')
+                        setFinding(false)
+                        setTerm('')
                       })}
                     >
                       Enemy

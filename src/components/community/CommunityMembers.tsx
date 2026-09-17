@@ -7,6 +7,7 @@ import { Badge } from '@/components/ui/Badge'
 import { PresenceLabel, presenceOf } from '@/components/ui/StatusDot'
 import { Skeleton } from '@/components/ui/States'
 import { Tooltip } from '@/components/ui/Tooltip'
+import { Select } from '@/components/ui/Select'
 import { useToast } from '@/components/ui/Toast'
 import { useAsync } from '@/hooks/useAsync'
 import {
@@ -120,18 +121,18 @@ export function CommunityMembers({
                       <label className="sr-only" htmlFor={`rank-${member.id}`}>
                         Rank for {member.display_name}
                       </label>
-                      <select
-                        id={`rank-${member.id}`}
+                      <Select
+                        label={`Rank for ${member.display_name}`}
                         value={member.rank_id ?? ''}
-                        onChange={(e) => guard(() => setMemberRank(communityId, member.id, e.target.value))}
-                        className="h-9 rounded-lg border border-ink-line bg-ink-raised px-2.5 text-sm font-semibold"
-                      >
-                        {(ranks.data ?? []).map((rank) => (
-                          <option key={rank.id} value={rank.id}>
-                            {rank.rank} · {rank.name}
-                          </option>
-                        ))}
-                      </select>
+                        onChange={(next) => guard(() => setMemberRank(communityId, member.id, next))}
+                        className="w-44"
+                        align="right"
+                        options={(ranks.data ?? []).map((rank) => ({
+                          value: rank.id,
+                          label: rank.name,
+                          note: String(rank.rank),
+                        }))}
+                      />
                     </>
                   ) : (
                     member.rank_name && <Badge tone="brand">{member.rank_name}</Badge>
