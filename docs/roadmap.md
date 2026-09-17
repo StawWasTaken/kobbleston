@@ -18,9 +18,12 @@ Badges worth earning, visiting people inside a Space, what a Space can do
 beyond showing pictures: guestbooks, pages, links between Spaces. Presence
 inside a Space is built; the Space itself is not.
 
-### The logged-out page
-The landing page needs redoing. It is the first thing anybody sees and it
-currently says less than it should.
+### The logged-out page **(done)**
+Redone. It now says what Kobbleston is in three pillars, carries the real
+platform numbers, the Spaces being visited, what people have put on the
+marketplace and the Communities worth joining, and walks somebody through
+getting started. Everything on it is read from the database or it is not
+shown at all.
 
 ### Login and signup
 The whole flow needs another pass: username login goes through an edge
