@@ -71,6 +71,7 @@ export function RolesEditor({ communityId }: { communityId: string }) {
   const toast = useToast()
   const ranks = useAsync(() => listCommunityRanks(communityId), [communityId])
   const [selected, setSelected] = useState<string | null>(null)
+  const [draftName, setDraftName] = useState('')
   const [name, setName] = useState('')
   const [number, setNumber] = useState('')
   const [adding, setAdding] = useState(false)
@@ -90,6 +91,27 @@ export function RolesEditor({ communityId }: { communityId: string }) {
     } catch (err) {
       toast(err instanceof Error ? err.message : 'That did not save.', 'error')
     }
+  }
+
+  // The name is edited locally and saved when the field is left. Saving on
+  // every keystroke meant deleting the last character tried to store an empty
+  // name, which the database refuses outright.
+  useEffect(() => {
+    setDraftName(current?.name ?? '')
+  }, [current?.id, current?.name])
+
+  const commitName = async () => {
+    if (!current) return
+    const next = draftName.trim()
+    if (!next) {
+      setDraftName(current.name)
+      toast('A role needs a name.', 'error')
+      return
+    }
+    if (next === current.name) return
+    await guard(() => saveCommunityRank({
+      id: current.id, community_id: communityId, name: next,
+    }))
   }
 
   const create = async () => {
@@ -172,12 +194,13 @@ export function RolesEditor({ communityId }: { communityId: string }) {
           <Card className="p-5">
             <div className="flex flex-wrap items-center gap-3">
               <input
-                value={current.name}
-                onChange={(e) =>
-                  guard(() => saveCommunityRank({
-                    id: current.id, community_id: communityId, name: e.target.value,
-                  }))
-                }
+                value={draftName}
+                onChange={(e) => setDraftName(e.target.value)}
+                onBlur={commitName}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') e.currentTarget.blur()
+                  if (e.key === 'Escape') setDraftName(current.name)
+                }}
                 maxLength={32}
                 aria-label="Role name"
                 className="h-10 min-w-40 flex-1 rounded-lg border border-ink-line bg-ink-raised px-3 font-display text-lg font-extrabold focus:border-brand-bright"

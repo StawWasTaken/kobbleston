@@ -22,7 +22,7 @@ import {
 import { supabase } from '@/lib/supabase'
 import { cn } from '@/lib/cn'
 
-const tabs = ['About', 'Wall', 'Members', 'Affiliates'] as const
+const tabs = ['About', 'Members', 'Affiliates'] as const
 type Tab = (typeof tabs)[number]
 
 export default function CommunityPage() {
@@ -177,11 +177,6 @@ export default function CommunityPage() {
                 </div>
               )}
             </section>
-          </div>
-        )}
-
-        {tab === 'Wall' && (
-          <div className="mt-6">
             <CommunityWall communityId={group.id} rights={rights.data} />
           </div>
         )}
