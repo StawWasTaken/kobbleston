@@ -16,6 +16,8 @@ import { useAsync } from '@/hooks/useAsync'
 import { getSpaceById, updateSpace, uploadSpaceImage } from '@/lib/api'
 import { cn } from '@/lib/cn'
 import type { SpaceCategory } from '@/types/db'
+import { BackLink } from '@/components/ui/BackLink'
+import { spaceLink } from '@/lib/links'
 
 const genres = ['other', 'personal', 'community', 'game', 'art', 'music', 'story', 'tools', 'fan']
 const categories = Object.keys(categoryLabels) as SpaceCategory[]
@@ -107,6 +109,8 @@ export default function EditSpace() {
 
   return (
     <Page className="max-w-3xl space-y-6">
+      <BackLink to={spaceLink(space.data)}>Back to {space.data.name}</BackLink>
+
       <div>
         <h1 className="font-display text-3xl font-extrabold sm:text-4xl">Configure Space</h1>
         <p className="mt-1.5 text-muted">

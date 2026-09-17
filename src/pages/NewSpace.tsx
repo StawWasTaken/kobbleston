@@ -16,6 +16,7 @@ import { cn } from '@/lib/cn'
 import type { SpaceCategory } from '@/types/db'
 import { spaceLink } from '@/lib/links'
 import { useTitle } from '@/hooks/useTitle'
+import { BackLink } from '@/components/ui/BackLink'
 
 const categories = Object.keys(categoryLabels) as SpaceCategory[]
 
@@ -66,6 +67,8 @@ export default function CreateSpace() {
 
   return (
     <Page className="max-w-3xl">
+      <BackLink to={'/create/spaces'} className="mb-4">Back to My Spaces</BackLink>
+
       <header className="mb-6">
         <h1 className="font-display text-3xl font-extrabold sm:text-4xl">Make a Space</h1>
         <p className="mt-1.5 text-muted">

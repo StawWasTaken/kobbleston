@@ -3,7 +3,7 @@ import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import {
   faCircleInfo, faGear, faUserGroup, faUserShield, faHandshake, faScroll,
-  faArrowRight, faMagnifyingGlass, faPlus, faSkull, faCalendarDay,
+  faMagnifyingGlass, faPlus, faSkull, faCalendarDay,
 } from '@fortawesome/free-solid-svg-icons'
 import type { IconDefinition } from '@fortawesome/fontawesome-svg-core'
 import { Page } from '@/components/layout/AppShell'
@@ -30,6 +30,7 @@ import { cn } from '@/lib/cn'
 import { avatarOf } from '@/lib/avatars'
 import { profileLink } from '@/lib/links'
 import { Kube } from '@/components/brand/Kube'
+import { BackLink } from '@/components/ui/BackLink'
 
 type Section = 'Information' | 'Settings' | 'Events' | 'Members' | 'Roles' | 'Affiliates' | 'Audit Log'
 
@@ -97,12 +98,7 @@ export default function ConfigureCommunity() {
             Community Funds: {formatCount(group.funds ?? 0)}
           </p>
         </div>
-        <Link
-          to={`/c/${slug}`}
-          className="inline-flex items-center gap-2 text-sm font-bold text-link hover:underline"
-        >
-          Back to Community <FontAwesomeIcon icon={faArrowRight} />
-        </Link>
+        <BackLink to={`/c/${slug}`}>Back to {group.name}</BackLink>
       </header>
 
       <div className="grid gap-6 lg:grid-cols-[14rem_1fr] lg:items-start">

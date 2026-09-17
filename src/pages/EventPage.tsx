@@ -18,6 +18,7 @@ import { getEvent, listEventAttendees, setEventAttendance } from '@/lib/api'
 import { avatarOf } from '@/lib/avatars'
 import { formatCount } from '@/lib/format'
 import { communityLink, profileLink } from '@/lib/links'
+import { BackLink } from '@/components/ui/BackLink'
 
 const stamp = (iso: string) => new Date(iso).toLocaleString('en-GB', {
   weekday: 'short', day: 'numeric', month: 'short', hour: 'numeric', minute: '2-digit',
@@ -73,6 +74,12 @@ export default function EventPage() {
 
   return (
     <Page className="max-w-5xl space-y-6">
+      <BackLink
+        to={communityLink({ slug: it.community_slug, content_id: it.community_content_id })}
+      >
+        Back to {it.community_name}
+      </BackLink>
+
       <div className="grid gap-6 lg:grid-cols-[22rem_1fr] lg:items-start">
         <div className="space-y-4">
           <div className="aspect-[16/9] overflow-hidden rounded-2xl border border-ink-line bg-media">

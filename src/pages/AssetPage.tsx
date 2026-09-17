@@ -35,6 +35,7 @@ import type { AssetDay, AssetPageItem } from '@/types/db'
 import { timeAgo } from '@/lib/format'
 import { Kube } from '@/components/brand/Kube'
 import { Verified } from '@/components/brand/Verified'
+import { BackLink } from '@/components/ui/BackLink'
 
 const prefixes: Record<string, string> = {
   IMG: 'image', SND: 'audio', VID: 'video', FNT: 'font', MDL: 'model',
@@ -283,6 +284,8 @@ export default function AssetPage() {
 
   return (
     <div className="mx-auto max-w-5xl space-y-6">
+      <BackLink to="/create/marketplace">Back to the marketplace</BackLink>
+
       {/* The head of an item: what it is, who made it, and what you may do
           with it. The file itself is never one of the options. */}
       <header className="flex flex-wrap items-start gap-4">

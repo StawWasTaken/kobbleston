@@ -12,6 +12,7 @@ import { slugify } from '@/lib/format'
 import { cn } from '@/lib/cn'
 import { useTitle } from '@/hooks/useTitle'
 import { Kube } from '@/components/brand/Kube'
+import { BackLink } from '@/components/ui/BackLink'
 
 const COST = 100
 
@@ -71,6 +72,8 @@ export default function CreateCommunity() {
 
   return (
     <Page className="max-w-3xl">
+      <BackLink to={'/communities'} className="mb-4">Back to Communities</BackLink>
+
       <h1 className="font-display text-3xl font-extrabold sm:text-4xl">Create Community</h1>
       <p className="mt-1.5 text-muted">
         A place for people building around the same thing.

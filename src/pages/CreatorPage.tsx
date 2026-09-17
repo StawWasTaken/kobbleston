@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Link, useParams } from 'react-router-dom'
+import { useParams } from 'react-router-dom'
 import { faMagnifyingGlass, faUser } from '@fortawesome/free-solid-svg-icons'
 import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
@@ -16,6 +16,7 @@ import { profileLink } from '@/lib/links'
 import { cn } from '@/lib/cn'
 import type { AssetKind } from '@/types/db'
 import { Verified } from '@/components/brand/Verified'
+import { BackLink } from '@/components/ui/BackLink'
 
 const kinds: (AssetKind | 'all')[] = ['all', 'image', 'audio', 'video', 'font', 'model']
 
@@ -58,6 +59,8 @@ export default function CreatorPage() {
 
   return (
     <div className="space-y-6">
+      <BackLink to="/create/marketplace">Back to the marketplace</BackLink>
+
       <header className="flex flex-wrap items-center gap-4">
         <Avatar
           src={avatarOf({ avatar_url: person.avatar_url })}
@@ -141,9 +144,6 @@ export default function CreatorPage() {
         </div>
       )}
 
-      <p className="text-xs text-muted">
-        <Link to="/create/marketplace" className="hover:text-white">All of Kobbleston Create</Link>
-      </p>
     </div>
   )
 }
