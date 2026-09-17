@@ -1,13 +1,13 @@
 -- How a Space presents itself, and the numbers under it.
 
 alter table public.spaces
-  add column emblem_url text,
-  add column thumbnail_urls text[] not null default '{}',
-  add column genre text not null default 'other'
+  add column if not exists emblem_url text,
+  add column if not exists thumbnail_urls text[] not null default '{}',
+  add column if not exists genre text not null default 'other'
     check (genre in ('other','personal','community','game','art','music','story','tools','fan')),
-  add column dislike_count integer not null default 0;
+  add column if not exists dislike_count integer not null default 0;
 
-create table public.space_dislikes (
+create table if not exists public.space_dislikes (
   space_id uuid not null references public.spaces on delete cascade,
   user_id uuid not null references public.profiles on delete cascade,
   created_at timestamptz not null default now(),
@@ -15,9 +15,12 @@ create table public.space_dislikes (
 );
 
 alter table public.space_dislikes enable row level security;
+drop policy if exists space_dislikes_read on public.space_dislikes;
 create policy space_dislikes_read on public.space_dislikes for select using (true);
+drop policy if exists space_dislikes_write on public.space_dislikes;
 create policy space_dislikes_write on public.space_dislikes for insert
   with check (user_id = auth.uid() and not public.is_guest());
+drop policy if exists space_dislikes_delete on public.space_dislikes;
 create policy space_dislikes_delete on public.space_dislikes for delete using (user_id = auth.uid());
 
 create or replace function public.on_space_dislike_change()
@@ -34,6 +37,7 @@ begin
 end;
 $$;
 
+drop trigger if exists space_dislikes_change on public.space_dislikes;
 create trigger space_dislikes_change
   after insert or delete on public.space_dislikes
   for each row execute function public.on_space_dislike_change();
@@ -46,13 +50,14 @@ begin
 end;
 $$;
 
+drop trigger if exists space_likes_exclusive on public.space_likes;
 create trigger space_likes_exclusive
   after insert on public.space_likes
   for each row execute function public.on_space_like_exclusive();
 
 -- ----------------------------------------------------------------- notify
 
-create table public.space_watchers (
+create table if not exists public.space_watchers (
   space_id uuid not null references public.spaces on delete cascade,
   user_id uuid not null references public.profiles on delete cascade,
   created_at timestamptz not null default now(),
@@ -60,10 +65,13 @@ create table public.space_watchers (
 );
 
 alter table public.space_watchers enable row level security;
+drop policy if exists space_watchers_read_own on public.space_watchers;
 create policy space_watchers_read_own on public.space_watchers for select
   using (user_id = auth.uid());
+drop policy if exists space_watchers_write_own on public.space_watchers;
 create policy space_watchers_write_own on public.space_watchers for insert
   with check (user_id = auth.uid() and not public.is_guest());
+drop policy if exists space_watchers_delete_own on public.space_watchers;
 create policy space_watchers_delete_own on public.space_watchers for delete
   using (user_id = auth.uid());
 
@@ -80,6 +88,7 @@ begin
 end;
 $$;
 
+drop trigger if exists space_updates_notify on public.space_updates;
 create trigger space_updates_notify
   after insert on public.space_updates
   for each row execute function public.notify_watchers();

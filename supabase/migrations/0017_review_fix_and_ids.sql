@@ -1,6 +1,9 @@
 -- Three fixes: uploads being refused outright, uploads sitting in review that
 -- had no business being there, and giving every piece of user made content an
 -- ID of its own.
+--
+-- Safe to run again: every step checks for itself first, so a half applied
+-- run can simply be re-run.
 
 -- ------------------------------------------------ uploads were being refused
 --
@@ -20,7 +23,24 @@ create policy assets_insert_own on public.assets for insert
 -- and they were parking innocent files in a queue nobody empties.
 
 alter table public.moderation_terms
-  add column scope text not null default 'all' check (scope in ('all', 'identity'));
+  add column if not exists scope text not null default 'all';
+
+alter table public.moderation_terms
+  drop constraint if exists moderation_terms_scope_check;
+alter table public.moderation_terms
+  add constraint moderation_terms_scope_check check (scope in ('all', 'identity'));
+
+-- The original patterns needed the word to end on a boundary, so "fuckyou"
+-- and "niggerlover" walked straight through as usernames. The leading
+-- boundary stays, which is what keeps "scunthorpe" and "class" out of it,
+-- but a slur or strong profanity now matches wherever the word starts.
+update public.moderation_terms
+   set pattern = '(^|[^a-z])(fuck|shit|bitch|cunt|whore|slut)'
+ where pattern = '(^|[^a-z])(fuck|shit|bitch|cunt|whore|slut)([^a-z]|$)';
+
+update public.moderation_terms
+   set pattern = '(^|[^a-z])(kys|kill\s*your\s*self|hang\s*your\s*self)'
+ where pattern = '(^|[^a-z])(kys|kill\s*your\s*self|hang\s*your\s*self)';
 
 update public.moderation_terms
    set scope = 'identity'
@@ -29,6 +49,12 @@ update public.moderation_terms
    '(https?://|www\.)',
    '(^|[^a-z])(discord\.gg|t\.me|bit\.ly|tinyurl)'
  );
+
+-- The scope is a new argument, which would otherwise leave the old one
+-- argument version in place beside this one and make every existing call
+-- ambiguous. Dropping it first is what keeps `screen_text(body)` meaning one
+-- thing. Nothing is lost: the argument defaults, so those calls still work.
+drop function if exists public.screen_text(text);
 
 create or replace function public.screen_text(input text, check_scope text default 'all')
 returns table (decision public.screen_decision, reason text)
@@ -58,6 +84,8 @@ begin
   return query select 'ok'::public.screen_decision, null::text;
 end;
 $$;
+
+grant execute on function public.screen_text(text, text) to authenticated;
 
 -- Identity keeps the stricter list.
 create or replace function public.screen_profile()
@@ -119,37 +147,56 @@ $$;
 
 create sequence if not exists public.content_id_seq start 1000;
 
-alter table public.assets      add column content_id bigint unique default nextval('public.content_id_seq');
-alter table public.spaces      add column content_id bigint unique default nextval('public.content_id_seq');
-alter table public.space_badges add column content_id bigint unique default nextval('public.content_id_seq');
-alter table public.communities add column content_id bigint unique default nextval('public.content_id_seq');
+alter table public.assets       add column if not exists content_id bigint;
+alter table public.spaces       add column if not exists content_id bigint;
+alter table public.space_badges add column if not exists content_id bigint;
+alter table public.communities  add column if not exists content_id bigint;
 
--- Anything made before this migration is numbered by when it was made, so the
--- order holds for old content too.
-with ordered as (
-  select id, row_number() over (order by created_at) as n
-    from (
-      select id, created_at from public.spaces
-      union all select id, created_at from public.assets
-      union all select id, created_at from public.space_badges
-      union all select id, created_at from public.communities
+-- Anything made before this migration is numbered by when it was made, all
+-- four kinds interleaved, so the order holds across the platform and not just
+-- within a table.
+do $$
+declare
+  item record;
+begin
+  for item in
+    select kind, id from (
+      select 'space' as kind, id, created_at from public.spaces where content_id is null
+      union all select 'asset', id, created_at from public.assets where content_id is null
+      union all select 'badge', id, created_at from public.space_badges where content_id is null
+      union all select 'community', id, created_at from public.communities where content_id is null
     ) everything
-)
-update public.spaces s set content_id = o.n from ordered o where o.id = s.id;
+    order by created_at
+  loop
+    case item.kind
+      when 'space' then
+        update public.spaces set content_id = nextval('public.content_id_seq') where id = item.id;
+      when 'asset' then
+        update public.assets set content_id = nextval('public.content_id_seq') where id = item.id;
+      when 'badge' then
+        update public.space_badges set content_id = nextval('public.content_id_seq') where id = item.id;
+      when 'community' then
+        update public.communities set content_id = nextval('public.content_id_seq') where id = item.id;
+    end case;
+  end loop;
+end $$;
 
-update public.assets a set content_id = nextval('public.content_id_seq') where a.content_id is null;
-update public.space_badges b set content_id = nextval('public.content_id_seq') where b.content_id is null;
-update public.communities c set content_id = nextval('public.content_id_seq') where c.content_id is null;
+-- Only now, once every existing row has a number, can these be made unique
+-- and given a default for everything made from here on.
+alter table public.assets       alter column content_id set default nextval('public.content_id_seq');
+alter table public.spaces       alter column content_id set default nextval('public.content_id_seq');
+alter table public.space_badges alter column content_id set default nextval('public.content_id_seq');
+alter table public.communities  alter column content_id set default nextval('public.content_id_seq');
 
-select setval('public.content_id_seq', greatest(
-  (select coalesce(max(content_id), 1000) from public.spaces),
-  (select coalesce(max(content_id), 1000) from public.assets),
-  (select coalesce(max(content_id), 1000) from public.space_badges),
-  (select coalesce(max(content_id), 1000) from public.communities)
-) + 1);
+create unique index if not exists assets_content_id_idx       on public.assets (content_id);
+create unique index if not exists spaces_content_id_idx       on public.spaces (content_id);
+create unique index if not exists space_badges_content_id_idx on public.space_badges (content_id);
+create unique index if not exists communities_content_id_idx  on public.communities (content_id);
 
 -- Finding anything by its number, whatever kind it is.
-create or replace function public.find_by_content_id(target bigint)
+drop function if exists public.find_by_content_id(bigint);
+
+create function public.find_by_content_id(target bigint)
 returns table (kind text, id uuid, name text, slug text, owner_username text)
 language sql stable security definer set search_path = public as $$
   select 'space', s.id, s.name, s.slug, p.username
@@ -174,8 +221,11 @@ $$;
 
 grant execute on function public.find_by_content_id to anon, authenticated;
 
--- The marketplace read carries the number too.
-create or replace function public.list_assets(
+-- The marketplace read carries the number too. Postgres will not replace a
+-- function whose returned columns change, so this one is dropped first.
+drop function if exists public.list_assets(text, text, integer);
+
+create function public.list_assets(
   kind_filter text default null,
   search text default null,
   limit_count int default 24
@@ -207,3 +257,5 @@ language sql stable security definer set search_path = public as $$
    order by p.is_admin desc, a.created_at desc
    limit least(greatest(limit_count, 1), 60);
 $$;
+
+grant execute on function public.list_assets to anon, authenticated;

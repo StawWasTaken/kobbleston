@@ -1,7 +1,7 @@
 -- Messages can be changed and taken back by whoever sent them.
 
 alter table public.messages
-  add column edited_at timestamptz;
+  add column if not exists edited_at timestamptz;
 
 -- Editing keeps the row so the conversation does not renumber itself; the
 -- body changes and the edit is stamped. Deleting marks it removed.
@@ -9,6 +9,7 @@ drop policy if exists messages_read on public.messages;
 create policy messages_read on public.messages for select
   using (public.in_conversation(conversation_id, auth.uid()));
 
+drop policy if exists messages_edit_own on public.messages;
 create policy messages_edit_own on public.messages for update
   using (sender_id = auth.uid())
   with check (sender_id = auth.uid());
@@ -29,13 +30,14 @@ begin
 end;
 $$;
 
+drop trigger if exists messages_screen_edit on public.messages;
 create trigger messages_screen_edit
   before update on public.messages
   for each row execute function public.screen_message_edit();
 
 -- ----------------------------------------------------------------- blocking
 
-create table public.blocks (
+create table if not exists public.blocks (
   blocker_id uuid not null references public.profiles on delete cascade,
   blocked_id uuid not null references public.profiles on delete cascade,
   created_at timestamptz not null default now(),
@@ -45,8 +47,11 @@ create table public.blocks (
 
 alter table public.blocks enable row level security;
 
+drop policy if exists blocks_read_own on public.blocks;
 create policy blocks_read_own on public.blocks for select using (blocker_id = auth.uid());
+drop policy if exists blocks_write_own on public.blocks;
 create policy blocks_write_own on public.blocks for insert with check (blocker_id = auth.uid());
+drop policy if exists blocks_delete_own on public.blocks;
 create policy blocks_delete_own on public.blocks for delete using (blocker_id = auth.uid());
 
 /** Blocking also ends the friendship, so the two cannot keep messaging. */

@@ -2,7 +2,9 @@
 
 Supabase project: `https://sdnjdgeqrhzkyfyohcsz.supabase.co`
 
-Apply the migrations in order from the SQL editor (or `supabase db push`):
+Apply the migrations in order from the SQL editor (or `supabase db push`).
+They are re-runnable: every step checks for itself first, so a run that fails
+part way can simply be run again once the cause is fixed.
 
 1. `0001_init.sql` - tables and indexes
 2. `0002_policies.sql` - row level security
