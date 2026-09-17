@@ -3,6 +3,7 @@ import { Link, useParams } from 'react-router-dom'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import {
   faComment, faFlag, faGear, faUserPlus, faClock, faUserCheck, faCircleCheck, faAward,
+  faEllipsis, faLink, faUserGroup, faCubes, faEye,
 } from '@fortawesome/free-solid-svg-icons'
 import { Page } from '@/components/layout/AppShell'
 import { Button } from '@/components/ui/Button'
@@ -16,11 +17,14 @@ import { ReportDialog } from '@/components/social/ReportDialog'
 import { SpaceCard } from '@/components/spaces/SpaceCard'
 import { BadgeTile } from '@/components/spaces/BadgeGrid'
 import { useChatDock } from '@/components/chat/ChatDock'
+import { Menu } from '@/components/ui/Menu'
+import { Tooltip } from '@/components/ui/Tooltip'
 import { useAuth } from '@/hooks/useAuth'
 import { useAsync } from '@/hooks/useAsync'
 import {
   getProfileByUsername, getProfileOverview, isFollowing, listEarnedBadges, listFriendships,
   listMemberCommunities, listSpacesByOwner, sendFriendRequest, setFollowing, startConversation,
+  usernameHistory,
 } from '@/lib/api'
 import { formatCount } from '@/lib/format'
 import { asset } from '@/lib/asset'
@@ -30,11 +34,26 @@ import { avatarOf } from '@/lib/avatars'
 const tabs = ['About', 'Creations'] as const
 type Tab = (typeof tabs)[number]
 
-function Count({ label, value }: { label: string; value: number }) {
+function Count({ label, value, to }: { label: string; value: number; to?: string }) {
+  const body = (
+    <>
+      <span className="font-display text-lg font-extrabold tabular-nums">{formatCount(value)}</span>
+      <span className="block text-xs text-muted">{label}</span>
+    </>
+  )
+  return to
+    ? <Link to={to} className="rounded-lg px-3 py-1 text-center transition-colors hover:bg-ink-hover">{body}</Link>
+    : <span className="px-3 py-1 text-center">{body}</span>
+}
+
+/** A short line of real numbers about an account, nothing invented. */
+function Fact({ icon, label, value }: { icon: typeof faEye; label: string; value: string }) {
   return (
-    <span className="rounded-lg border border-ink-line bg-ink-card px-2.5 py-1 text-xs font-bold">
-      {formatCount(value)} <span className="font-medium text-muted">{label}</span>
-    </span>
+    <div className="flex items-center gap-2.5 px-4 py-2.5">
+      <FontAwesomeIcon icon={icon} className="w-4 text-xs text-white/35" />
+      <span className="flex-1 text-sm text-muted">{label}</span>
+      <span className="text-sm font-bold">{value}</span>
+    </div>
   )
 }
 
@@ -47,6 +66,7 @@ export default function Profile() {
   const [tab, setTab] = useState<Tab>('About')
   const [reporting, setReporting] = useState(false)
   const [following, setFollowingState] = useState(false)
+  const [bioOpen, setBioOpen] = useState(false)
 
   const person = useAsync(() => getProfileByUsername(username), [username])
   const user = person.data
@@ -66,6 +86,18 @@ export default function Profile() {
   )
   const communities = useAsync(
     async () => (user ? listMemberCommunities(user.id) : []),
+    [user?.id],
+  )
+  const names = useAsync(
+    async () => (user ? usernameHistory(user.id) : []),
+    [user?.id],
+  )
+  const friends = useAsync(
+    async () => {
+      if (!user) return []
+      const edges = await listFriendships(user.id)
+      return edges.filter((e) => e.friendship.status === 'accepted').map((e) => e.profile)
+    },
     [user?.id],
   )
   const relationship = useAsync(
@@ -172,23 +204,28 @@ export default function Profile() {
                 <FontAwesomeIcon icon={faCircleCheck} className="text-xl text-[#4d68ff]" title="Verified" />
               )}
             </h1>
+
             <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-muted">
-              <span>@{user.username}</span>
+              {/* Old names sit behind the current one, so somebody who knew
+                  them under an earlier name can still place them. */}
+              {names.data?.length ? (
+                <Tooltip
+                  side="bottom"
+                  label={`Was ${names.data.map((row) => `@${row.username}`).join(', ')}`}
+                >
+                  <span className="cursor-help border-b border-dotted border-white/30">
+                    @{user.username}
+                  </span>
+                </Tooltip>
+              ) : (
+                <span>@{user.username}</span>
+              )}
               <PresenceLabel presence={presenceOf(user)} />
               {user.is_guest && <Badge tone="neutral">Guest</Badge>}
             </div>
-
-            {stats && (
-              <div className="mt-3 flex flex-wrap gap-2">
-                <Count label="Friends" value={stats.friend_count} />
-                <Count label="Followers" value={stats.follower_count} />
-                <Count label="Following" value={stats.following_count} />
-                <Count label="Badges" value={stats.badge_count} />
-              </div>
-            )}
           </div>
 
-          <div className="flex flex-wrap gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             {isMe ? (
               <Button variant="subtle" icon={faGear} to="/settings">Edit profile</Button>
             ) : (
@@ -208,18 +245,44 @@ export default function Profile() {
                 >
                   {following ? 'Following' : 'Follow'}
                 </Button>
-                {me && (
-                  <Button
-                    variant="ghost"
-                    icon={faFlag}
-                    aria-label={`Report ${user.display_name}`}
-                    onClick={() => setReporting(true)}
-                  />
-                )}
               </>
             )}
+
+            <Menu
+              label={`More about ${user.display_name}`}
+              align="right"
+              trigger={
+                <span className="grid h-10 w-10 place-items-center rounded-xl border border-ink-line bg-ink-card text-white/70 transition-colors hover:bg-ink-hover hover:text-white">
+                  <FontAwesomeIcon icon={faEllipsis} />
+                </span>
+              }
+              items={[
+                {
+                  label: 'Copy link',
+                  icon: faLink,
+                  onSelect: () => {
+                    void navigator.clipboard?.writeText(window.location.href)
+                    toast('Link copied.', 'success')
+                  },
+                },
+                ...(me && !isMe
+                  ? [{ label: 'Report abuse', icon: faFlag, danger: true, onSelect: () => setReporting(true) }]
+                  : []),
+              ]}
+            />
           </div>
         </div>
+
+        {/* The counts read as one strip, the way they do on the pages this
+            borrows from, rather than as loose chips. */}
+        {stats && (
+          <div className="mt-5 flex flex-wrap items-center divide-x divide-ink-line rounded-xl border border-ink-line bg-ink-card py-2">
+            <Count label="Friends" value={stats.friend_count} />
+            <Count label="Followers" value={stats.follower_count} />
+            <Count label="Following" value={stats.following_count} />
+            <Count label="Badges" value={stats.badge_count} />
+          </div>
+        )}
 
         <div className="mt-6 flex border-b border-ink-line" role="tablist">
           {tabs.map((name) => (
@@ -242,9 +305,95 @@ export default function Profile() {
 
         {tab === 'About' && (
           <div className="mt-6 space-y-8">
-            {user.bio && (
-              <p className="max-w-2xl whitespace-pre-wrap leading-relaxed text-white/70">{user.bio}</p>
-            )}
+            <div className="grid gap-5 lg:grid-cols-[1fr_18rem] lg:items-start">
+              <div className="min-w-0">
+                {user.bio ? (
+                  <>
+                    <p
+                      className={cn(
+                        'max-w-2xl whitespace-pre-wrap leading-relaxed text-white/70',
+                        !bioOpen && 'line-clamp-3',
+                      )}
+                    >
+                      {user.bio}
+                    </p>
+                    {user.bio.length > 180 && (
+                      <button
+                        onClick={() => setBioOpen((v) => !v)}
+                        className="mt-1 text-sm font-bold text-[#9fadff] hover:underline"
+                      >
+                        {bioOpen ? 'less' : 'more'}
+                      </button>
+                    )}
+                  </>
+                ) : (
+                  <p className="text-sm text-muted">
+                    {isMe ? 'Say something about yourself in Settings.' : 'Nothing written yet.'}
+                  </p>
+                )}
+              </div>
+
+              <Card className="divide-y divide-ink-line">
+                <Fact
+                  icon={faClock}
+                  label="Joined"
+                  value={new Date(user.created_at).toLocaleDateString('en-GB', {
+                    day: 'numeric', month: 'short', year: 'numeric',
+                  })}
+                />
+                <Fact
+                  icon={faCubes}
+                  label="Spaces"
+                  value={formatCount(spaces.data?.length ?? 0)}
+                />
+                <Fact
+                  icon={faEye}
+                  label="Visits to their Spaces"
+                  value={formatCount(
+                    (spaces.data ?? []).reduce((sum, space) => sum + (space.visit_count ?? 0), 0),
+                  )}
+                />
+              </Card>
+            </div>
+
+            <section>
+              <h2 className="mb-3 flex items-center gap-2 font-display text-xl font-extrabold">
+                <FontAwesomeIcon icon={faUserGroup} className="text-base text-white/40" />
+                Friends
+                {!!friends.data?.length && (
+                  <span className="text-base font-bold text-muted">({friends.data.length})</span>
+                )}
+              </h2>
+              {friends.loading && (
+                <div className="flex gap-3">
+                  {[0, 1, 2, 3].map((i) => <Skeleton key={i} className="h-24 w-24" />)}
+                </div>
+              )}
+              {!friends.loading && !friends.data?.length && (
+                <p className="text-sm text-muted">
+                  {isMe ? 'Nobody yet. Add somebody from their profile.' : 'No friends yet.'}
+                </p>
+              )}
+              {!!friends.data?.length && (
+                <div className="-mx-4 flex gap-3 overflow-x-auto px-4 pb-2 sm:mx-0 sm:px-0 kob-scroll">
+                  {friends.data.slice(0, 12).map((friend) => (
+                    <Link
+                      key={friend.id}
+                      to={`/u/${friend.username}`}
+                      className="w-24 shrink-0 rounded-xl p-2 text-center transition-colors hover:bg-ink-hover"
+                    >
+                      <Avatar
+                        src={avatarOf(friend)}
+                        name={friend.display_name}
+                        size="lg"
+                        className="mx-auto rounded-xl"
+                      />
+                      <p className="mt-1.5 truncate text-xs font-bold">{friend.display_name}</p>
+                    </Link>
+                  ))}
+                </div>
+              )}
+            </section>
 
             <section>
               <h2 className="mb-3 font-display text-xl font-extrabold">Communities</h2>

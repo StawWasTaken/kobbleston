@@ -131,6 +131,8 @@ export type OwnAsset = {
   created_at: string
 }
 
+export type UsernameRecord = { username: string; changed_at: string }
+
 export type FriendshipStatus = 'pending' | 'accepted' | 'blocked'
 
 export type Friendship = {

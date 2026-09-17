@@ -5,7 +5,7 @@ import type {
   ProfileOverview, Space, SpaceBadge, SpaceCategory, SpaceMessage, SpaceStats, Conversation,
   CommunityMember, CommunityOverview, CommunityPost, CommunityRank, CommunityRequest,
   CommunityRelation, CommunityBan, CommunityAuditEntry,
-  AssetPageItem, AssetDay, CreatorAssetRow, Collaborator,
+  AssetPageItem, AssetDay, CreatorAssetRow, Collaborator, UsernameRecord,
 } from '@/types/db'
 
 const SPACE_FIELDS =
@@ -140,6 +140,17 @@ export async function searchProfiles(
     .order('username').limit(limit)
   if (excludeId) query = query.neq('id', excludeId)
   return (unwrap(await query) as Profile[]) ?? []
+}
+
+/** What a name change costs. The database charges it; this is for the copy. */
+export const USERNAME_CHANGE_COST = 250
+
+export async function changeUsername(name: string): Promise<string> {
+  return unwrap(await supabase.rpc('change_username', { new_name: name })) as string
+}
+
+export async function usernameHistory(userId: string): Promise<UsernameRecord[]> {
+  return (unwrap(await supabase.rpc('username_history_of', { target: userId })) as UsernameRecord[]) ?? []
 }
 
 export async function updateProfile(id: string, patch: Partial<Pick<Profile,

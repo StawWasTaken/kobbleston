@@ -206,7 +206,7 @@ export default function SpacePage() {
                     )}
                   >
                     <FontAwesomeIcon icon={faStar} className="text-base" />
-                    Favorite
+                    Favourite
                   </button>
                 </Tooltip>
 
@@ -274,7 +274,7 @@ export default function SpacePage() {
             <div className="mt-6 flex flex-wrap border-y border-ink-line">
               <Stat label="Active" value={formatCount(numbers?.active_now ?? 0)} />
               <Stat label="Visits" value={formatCount(numbers?.visits ?? space.visit_count)} />
-              <Stat label="Favorites" value={formatCount(numbers?.favorites ?? space.favorite_count)} />
+              <Stat label="Favourites" value={formatCount(numbers?.favorites ?? space.favorite_count)} />
               <Stat label="Created" value={new Date(space.created_at).toLocaleDateString()} />
               <Stat label="Updated" value={timeAgo(space.updated_at)} />
               <Stat label="Genre" value={space.genre} />
