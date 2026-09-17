@@ -7,6 +7,7 @@ import type {
   CommunityRelation, CommunityBan, CommunityAuditEntry,
   AssetPageItem, AssetDay, CreatorAssetRow, Collaborator, UsernameRecord,
   AssetRequest, OwnedAsset, AssetReview, CreatorPage,
+  CommunityEvent, EventPage, EventAttendee, BuildTarget,
 } from '@/types/db'
 
 const SPACE_FIELDS =
@@ -360,9 +361,9 @@ export function resolveAssetRef(value: string): Promise<string | null> {
   const work = (async () => {
     const number = Number(assetRefTag(value).split('-')[1])
     if (!Number.isFinite(number)) return null
-    const item = await getAsset(number)
-    if (!item) return null
-    return assetUrl(item.file_path, 3600)
+    const path = await resolveOwnedRef(number)
+    if (!path) return null
+    return assetUrl(path, 3600)
   })()
 
   refCache.set(value, work)
@@ -406,6 +407,36 @@ export async function listAssetsByCreator(creatorId: string, exceptId?: string):
   return (unwrap(await supabase.rpc('assets_by_creator', {
     target: creatorId, except_id: exceptId ?? null, limit_count: 12,
   })) as MarketAsset[]) ?? []
+}
+
+/**
+ * A reference only resolves for somebody who has the thing. The id in an
+ * address bar is just a number: without it being in your inventory, this
+ * answers with nothing.
+ */
+export async function resolveOwnedRef(contentId: number): Promise<string | null> {
+  const rows = unwrap(await supabase.rpc('resolve_asset_ref', {
+    target_content_id: contentId,
+  })) as { file_path: string }[]
+  return rows?.[0]?.file_path ?? null
+}
+
+/** Putting content into a Space you own. Checked once, at that moment. */
+export async function useAssetInSpace(spaceId: string, contentId: number): Promise<string> {
+  return unwrap(await supabase.rpc('use_asset_in_space', {
+    space: spaceId, target_content_id: contentId,
+  })) as string
+}
+
+/** The file behind a reference a Space is already using, for its visitors. */
+export async function spaceAssetPath(spaceId: string, contentId: number): Promise<string | null> {
+  return (unwrap(await supabase.rpc('space_asset_path', {
+    space: spaceId, target_content_id: contentId,
+  })) as string | null) ?? null
+}
+
+export async function dropFromInventory(assetId: string) {
+  unwrap(await supabase.rpc('drop_from_inventory', { target: assetId }))
 }
 
 export async function requestAssetUse(assetId: string, note: string) {
@@ -545,6 +576,8 @@ export async function uploadAsset(input: {
   kind: AssetKind
   name: string
   description: string
+  /** Set when the upload is being made for a Community rather than a person. */
+  communityId?: string | null
 }): Promise<OwnAsset> {
   const extension = input.file.name.split('.').pop()?.toLowerCase() ?? 'bin'
   const path = `${input.userId}/${crypto.randomUUID()}.${extension}`
@@ -562,6 +595,7 @@ export async function uploadAsset(input: {
       description: input.description.trim() || null,
       file_path: path,
       byte_size: input.file.size,
+      community_id: input.communityId ?? null,
     }).select('id, kind, name, description, file_path, status, review_note, byte_size, download_count, content_id, is_public, created_at')
       .single()) as unknown as OwnAsset
   } catch (err) {
@@ -707,6 +741,76 @@ export async function getCommunity(slug: string): Promise<Community | null> {
     .from('communities').select('*').eq('slug', slug).maybeSingle()
   if (error) throw new Error(error.message)
   return (data as Community | null) ?? null
+}
+
+// --------------------------------------------------------- community events
+
+export async function listCommunityEvents(
+  communityId: string, upcomingOnly = false,
+): Promise<CommunityEvent[]> {
+  return (unwrap(await supabase.rpc('community_events_list', {
+    target: communityId, upcoming_only: upcomingOnly,
+  })) as CommunityEvent[]) ?? []
+}
+
+export async function getEvent(contentId: number): Promise<EventPage | null> {
+  const rows = unwrap(await supabase.rpc('event_by_id', { target: contentId })) as EventPage[]
+  return rows?.[0] ?? null
+}
+
+export async function listEventAttendees(eventId: string): Promise<EventAttendee[]> {
+  return (unwrap(await supabase.rpc('event_attendees', {
+    target: eventId, limit_count: 24,
+  })) as EventAttendee[]) ?? []
+}
+
+export async function setEventAttendance(eventId: string, going: boolean) {
+  unwrap(await supabase.rpc('set_event_attendance', { target: eventId, going }))
+}
+
+export async function saveEvent(input: {
+  id?: string
+  community_id: string
+  title: string
+  subtitle: string | null
+  description: string | null
+  cover_url: string | null
+  starts_at: string
+  ends_at: string | null
+}) {
+  if (input.id) {
+    const { id, ...patch } = input
+    unwrap(await supabase.from('community_events').update(patch).eq('id', id).select('id').single())
+    return
+  }
+  unwrap(await supabase.from('community_events').insert(input).select('id').single())
+}
+
+export async function cancelEvent(id: string, cancelled: boolean) {
+  unwrap(await supabase.from('community_events')
+    .update({ is_cancelled: cancelled }).eq('id', id).select('id').single())
+}
+
+export async function deleteEvent(id: string) {
+  unwrap(await supabase.from('community_events').delete().eq('id', id).select('id'))
+}
+
+// ----------------------------------------------- making things for a Community
+
+/** The Communities you are allowed to make things for. */
+export async function listBuildTargets(): Promise<BuildTarget[]> {
+  return (unwrap(await supabase.rpc('communities_i_build_for')) as BuildTarget[]) ?? []
+}
+
+export async function listCommunityAssets(communityId: string): Promise<MarketAsset[]> {
+  return (unwrap(await supabase.rpc('community_assets', {
+    target: communityId, limit_count: 40,
+  })) as MarketAsset[]) ?? []
+}
+
+/** Making a Space for a Community, from Create, as that Community. */
+export async function buildSpaceForCommunity(spaceId: string, communityId: string) {
+  unwrap(await supabase.rpc('link_space_to_community', { space: spaceId, community: communityId }))
 }
 
 export async function listPixelTransactions(userId: string): Promise<PixelTransaction[]> {

@@ -13,6 +13,7 @@ import { EmptyState, ErrorState, Skeleton } from '@/components/ui/States'
 import { GuestGate } from '@/components/ui/GuestGate'
 import { AssetTile, contentTag, kindIcons, kindLabels } from '@/components/create/AssetTile'
 import { CreateRail } from '@/components/create/CreateRail'
+import { WorkingAsProvider } from '@/components/create/WorkingAs'
 import { UploadDialog } from '@/components/create/UploadDialog'
 import { useAuth } from '@/hooks/useAuth'
 import { useAsync } from '@/hooks/useAsync'
@@ -51,6 +52,7 @@ export default function CreateHub() {
   )
 
   return (
+    <WorkingAsProvider>
     <div className="flex items-start">
       <CreateRail ownedCount={inventory.data?.length ?? 0} />
 
@@ -64,6 +66,7 @@ export default function CreateHub() {
         onUploaded={() => window.dispatchEvent(new CustomEvent('kobbleston:uploaded'))}
       />
     </div>
+    </WorkingAsProvider>
   )
 }
 

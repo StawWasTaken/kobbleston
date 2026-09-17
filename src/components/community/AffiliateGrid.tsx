@@ -1,12 +1,24 @@
+import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faCheck, faXmark, faEllipsis } from '@fortawesome/free-solid-svg-icons'
+import {
+  faCheck, faXmark, faEllipsis, faChevronLeft, faChevronRight,
+} from '@fortawesome/free-solid-svg-icons'
 import { Menu } from '@/components/ui/Menu'
 import { Skeleton } from '@/components/ui/States'
+import { Tooltip } from '@/components/ui/Tooltip'
 import { formatCount } from '@/lib/format'
 import type { CommunityRelation } from '@/types/db'
 import { communityLink } from '@/lib/links'
+import { cn } from '@/lib/cn'
 
+const PER_PAGE = 5
+
+/**
+ * Allies and enemies as a shelf of emblems, a page at a time. The emblem is
+ * the thing people recognise, so it is large and square and nothing sits on
+ * top of it.
+ */
 export function AffiliateGrid({
   title, relations, loading, empty, onRemove, onAnswer,
 }: {
@@ -17,31 +29,61 @@ export function AffiliateGrid({
   onRemove?: (otherId: string) => void
   onAnswer?: (otherId: string, accept: boolean) => void
 }) {
+  const [page, setPage] = useState(0)
+
+  const all = relations ?? []
+  const pages = Math.max(1, Math.ceil(all.length / PER_PAGE))
+  const current = Math.min(page, pages - 1)
+  const shown = all.slice(current * PER_PAGE, current * PER_PAGE + PER_PAGE)
+
   return (
     <section>
-      {title && <h3 className="mb-3 font-display text-lg font-extrabold">{title}</h3>}
+      <div className="mb-3 flex items-center gap-3">
+        {title && <h3 className="font-display text-xl font-extrabold">{title}</h3>}
+
+        {all.length > PER_PAGE && (
+          <div className="ml-auto flex items-center gap-2 text-sm">
+            <button
+              onClick={() => setPage(Math.max(current - 1, 0))}
+              disabled={current === 0}
+              aria-label={`Previous page of ${title ?? 'affiliates'}`}
+              className="grid h-8 w-8 place-items-center rounded-lg text-white/50 transition-colors hover:bg-ink-hover hover:text-white disabled:opacity-30"
+            >
+              <FontAwesomeIcon icon={faChevronLeft} />
+            </button>
+            <span className="text-sm font-semibold text-muted">
+              Page {current + 1} / {pages}
+            </span>
+            <button
+              onClick={() => setPage(Math.min(current + 1, pages - 1))}
+              disabled={current >= pages - 1}
+              aria-label={`Next page of ${title ?? 'affiliates'}`}
+              className="grid h-8 w-8 place-items-center rounded-lg text-white/50 transition-colors hover:bg-ink-hover hover:text-white disabled:opacity-30"
+            >
+              <FontAwesomeIcon icon={faChevronRight} />
+            </button>
+          </div>
+        )}
+      </div>
 
       {loading && (
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
-          {[0, 1, 2].map((i) => <Skeleton key={i} className="h-28" />)}
+        <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
+          {[0, 1, 2, 3, 4].map((i) => <Skeleton key={i} className="aspect-square rounded-xl" />)}
         </div>
       )}
 
-      {!loading && !relations?.length && <p className="text-sm text-muted">{empty}</p>}
+      {!loading && !all.length && <p className="text-sm text-muted">{empty}</p>}
 
-      {!!relations?.length && (
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
-          {relations.map((other) => (
-            <article
-              key={other.id}
-              className="relative rounded-xl border border-ink-line bg-ink-card p-3 text-center transition-colors hover:border-brand/60"
-            >
+      {!!shown.length && (
+        <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
+          {shown.map((other) => (
+            <article key={other.id} className="group relative min-w-0">
               {onRemove && (
-                <span className="absolute right-1.5 top-1.5">
+                <span className="absolute right-1.5 top-1.5 z-10 opacity-0 transition-opacity group-hover:opacity-100 focus-within:opacity-100">
                   <Menu
                     label={`Options for ${other.name}`}
                     trigger={
-                      <span className="grid h-6 w-6 place-items-center rounded-md text-white/35 hover:bg-ink-hover hover:text-white">
+                      <span className="grid h-7 w-7 place-items-center rounded-lg bg-ink/80 text-white/70 backdrop-blur hover:text-white">
                         <FontAwesomeIcon icon={faEllipsis} className="text-xs" />
                       </span>
                     }
@@ -50,15 +92,37 @@ export function AffiliateGrid({
                 </span>
               )}
 
-              <Link to={communityLink(other)} className="block">
-                <span className="mx-auto grid h-14 w-14 place-items-center overflow-hidden rounded-xl bg-brand-deep font-display text-base font-extrabold">
-                  {other.icon_url
-                    ? <img src={other.icon_url} alt="" className="h-full w-full object-cover" />
-                    : other.name.slice(0, 2).toUpperCase()}
-                </span>
-                <p className="mt-2 truncate text-sm font-bold">{other.name}</p>
-                <p className="text-xs text-muted">{formatCount(other.member_count)} members</p>
+              <Tooltip label={`${other.name} · ${formatCount(other.member_count)} members`} side="top">
+                <Link
+                  to={communityLink(other)}
+                  className={cn(
+                    'block aspect-square overflow-hidden rounded-xl bg-media ring-1 ring-ink-line',
+                    'transition-[transform,box-shadow] duration-200 group-hover:-translate-y-0.5 group-hover:ring-brand/70',
+                  )}
+                >
+                  {other.icon_url ? (
+                    <img
+                      src={other.icon_url}
+                      alt=""
+                      loading="lazy"
+                      draggable={false}
+                      className="h-full w-full select-none object-cover"
+                    />
+                  ) : (
+                    <span className="grid h-full w-full place-items-center font-display text-2xl font-extrabold text-white/70">
+                      {other.name.slice(0, 2).toUpperCase()}
+                    </span>
+                  )}
+                </Link>
+              </Tooltip>
+
+              <Link
+                to={communityLink(other)}
+                className="mt-2 block truncate text-sm font-bold hover:text-link"
+              >
+                {other.name}
               </Link>
+              <p className="text-xs text-muted">{formatCount(other.member_count)} Members</p>
 
               {onAnswer && other.incoming && (
                 <div className="mt-2 flex gap-1.5">

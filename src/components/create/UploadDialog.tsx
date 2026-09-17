@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/Button'
 import { Input, Textarea } from '@/components/ui/Input'
 import { useToast } from '@/components/ui/Toast'
 import { useAuth } from '@/hooks/useAuth'
+import { useWorkingAs, WorkingAsNote } from '@/components/create/WorkingAs'
 import { uploadAsset } from '@/lib/api'
 import { kindLabels, kindIcons } from './AssetTile'
 import { cn } from '@/lib/cn'
@@ -33,6 +34,7 @@ export function UploadDialog({
   onUploaded: () => void
 }) {
   const { profile } = useAuth()
+  const { target } = useWorkingAs()
   const toast = useToast()
   const fileInput = useRef<HTMLInputElement>(null)
 
@@ -69,7 +71,9 @@ export function UploadDialog({
     }
     setPending(true)
     try {
-      const created = await uploadAsset({ userId: profile.id, file, kind, name, description })
+      const created = await uploadAsset({
+        userId: profile.id, file, kind, name, description, communityId: target?.id ?? null,
+      })
       toast(
         created.status === 'approved'
           ? 'Uploaded and live.'
@@ -101,6 +105,10 @@ export function UploadDialog({
         </>
       }
     >
+      <div className="mb-4">
+        <WorkingAsNote />
+      </div>
+
       <fieldset className="mb-4">
         <legend className="mb-2 text-xs font-bold uppercase tracking-wide text-muted">Type</legend>
         <div className="flex flex-wrap gap-2">

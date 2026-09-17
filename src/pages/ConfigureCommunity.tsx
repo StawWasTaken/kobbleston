@@ -3,7 +3,7 @@ import { Link, useNavigate, useParams } from 'react-router-dom'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import {
   faCircleInfo, faGear, faUserGroup, faUserShield, faHandshake, faScroll,
-  faArrowRight, faMagnifyingGlass, faPlus, faSkull,
+  faArrowRight, faMagnifyingGlass, faPlus, faSkull, faCalendarDay,
 } from '@fortawesome/free-solid-svg-icons'
 import type { IconDefinition } from '@fortawesome/fontawesome-svg-core'
 import { Page } from '@/components/layout/AppShell'
@@ -17,6 +17,7 @@ import { ImageDrop } from '@/components/community/ImageDrop'
 import { CommunityMembers } from '@/components/community/CommunityMembers'
 import { RolesEditor } from '@/components/community/RolesEditor'
 import { AffiliateGrid } from '@/components/community/AffiliateGrid'
+import { EventsEditor } from '@/components/community/EventsEditor'
 import { useAuth } from '@/hooks/useAuth'
 import { useAsync } from '@/hooks/useAsync'
 import {
@@ -30,11 +31,12 @@ import { avatarOf } from '@/lib/avatars'
 import { profileLink } from '@/lib/links'
 import { Kube } from '@/components/brand/Kube'
 
-type Section = 'Information' | 'Settings' | 'Members' | 'Roles' | 'Affiliates' | 'Audit Log'
+type Section = 'Information' | 'Settings' | 'Events' | 'Members' | 'Roles' | 'Affiliates' | 'Audit Log'
 
 const sections: { name: Section; icon: IconDefinition }[] = [
   { name: 'Information', icon: faCircleInfo },
   { name: 'Settings', icon: faGear },
+  { name: 'Events', icon: faCalendarDay },
   { name: 'Members', icon: faUserGroup },
   { name: 'Roles', icon: faUserShield },
   { name: 'Affiliates', icon: faHandshake },
@@ -138,6 +140,8 @@ export default function ConfigureCommunity() {
           )}
 
           {section === 'Roles' && <RolesEditor communityId={group.id} />}
+
+          {section === 'Events' && <EventsEditor communityId={group.id} />}
 
           {section === 'Affiliates' && <AffiliatesSection communityId={group.id} />}
 

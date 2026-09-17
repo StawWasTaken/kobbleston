@@ -24,6 +24,7 @@ const CreateMarketplace = lazy(() => import('@/pages/CreateHub').then((m) => ({ 
 const CreateInventory = lazy(() => import('@/pages/CreateHub').then((m) => ({ default: m.CreateInventory })))
 const CreateAnalytics = lazy(() => import('@/pages/CreateHub').then((m) => ({ default: m.CreateAnalytics })))
 const CreatorPage = lazy(() => import('@/pages/CreatorPage'))
+const EventPage = lazy(() => import('@/pages/EventPage'))
 const Search = lazy(() => import('@/pages/Search'))
 const Communities = lazy(() => import('@/pages/Communities'))
 const CommunityPage = lazy(() => import('@/pages/CommunityPage'))
@@ -102,6 +103,8 @@ export default function App() {
                 <Route path="/u/:id/:name" element={<Profile />} />
                 <Route path="/u/:username" element={<Profile />} />
                 <Route path="/s/:id/:name" element={<SpacePage />} />
+                <Route path="/e/:id/:name" element={<EventPage />} />
+                <Route path="/e/:id" element={<EventPage />} />
                 <Route path="/u/:username/:slug" element={<SpacePage />} />
 
                 <Route element={<RequireAuth />}>

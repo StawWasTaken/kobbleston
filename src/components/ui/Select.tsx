@@ -1,4 +1,5 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useLayoutEffect, useRef, useState } from 'react'
+import { createPortal } from 'react-dom'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faCaretDown, faCheck } from '@fortawesome/free-solid-svg-icons'
 import { cn } from '@/lib/cn'
@@ -23,6 +24,7 @@ export function Select({
 }) {
   const [open, setOpen] = useState(false)
   const [active, setActive] = useState(0)
+  const [box, setBox] = useState<{ left: number; top: number; width: number } | null>(null)
   const root = useRef<HTMLDivElement>(null)
   const list = useRef<HTMLDivElement>(null)
 
@@ -32,11 +34,47 @@ export function Select({
     if (!open) return
     setActive(Math.max(0, options.findIndex((o) => o.value === value)))
     const onPointer = (e: PointerEvent) => {
-      if (!root.current?.contains(e.target as Node)) setOpen(false)
+      const target = e.target as Node
+      if (!root.current?.contains(target) && !list.current?.contains(target)) setOpen(false)
     }
     document.addEventListener('pointerdown', onPointer)
     return () => document.removeEventListener('pointerdown', onPointer)
   }, [open, options, value])
+
+  /*
+   * The list is drawn into the body rather than inside whatever card the
+   * select happens to sit in, so nothing clips it, and it flips above the
+   * button when there is no room below.
+   */
+  useLayoutEffect(() => {
+    if (!open) return
+
+    const place = () => {
+      const anchor = root.current?.getBoundingClientRect()
+      if (!anchor) return
+      const height = list.current?.offsetHeight ?? 240
+      const below = window.innerHeight - anchor.bottom
+      const goUp = below < height + 12 && anchor.top > below
+      const width = Math.max(anchor.width, 180)
+      const left = align === 'right'
+        ? Math.min(anchor.right - width, window.innerWidth - width - 8)
+        : Math.max(8, Math.min(anchor.left, window.innerWidth - width - 8))
+
+      setBox({
+        left,
+        top: goUp ? Math.max(8, anchor.top - height - 6) : anchor.bottom + 6,
+        width,
+      })
+    }
+
+    place()
+    window.addEventListener('scroll', place, true)
+    window.addEventListener('resize', place)
+    return () => {
+      window.removeEventListener('scroll', place, true)
+      window.removeEventListener('resize', place)
+    }
+  }, [open, align, options.length])
 
   useEffect(() => {
     if (!open) return
@@ -85,15 +123,13 @@ export function Select({
         />
       </button>
 
-      {open && (
+      {open && createPortal(
         <div
           ref={list}
           role="listbox"
           aria-label={label}
-          className={cn(
-            'absolute top-[calc(100%+6px)] z-50 max-h-64 min-w-full overflow-y-auto rounded-xl border border-ink-line bg-ink-card py-1 shadow-pop animate-pop-in kob-scroll',
-            align === 'right' ? 'right-0' : 'left-0',
-          )}
+          style={box ? { left: box.left, top: box.top, width: box.width } : { opacity: 0 }}
+          className="fixed z-[70] max-h-64 overflow-y-auto rounded-xl border border-ink-line bg-ink-card py-1 shadow-pop animate-pop-in kob-scroll"
         >
           {options.map((option, index) => (
             <button
@@ -116,7 +152,8 @@ export function Select({
               {option.note && <span className="shrink-0 text-xs text-muted">{option.note}</span>}
             </button>
           ))}
-        </div>
+        </div>,
+        document.body,
       )}
     </div>
   )

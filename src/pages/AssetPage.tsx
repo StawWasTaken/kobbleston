@@ -4,12 +4,13 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import {
   faCopy, faCircleCheck, faLock, faLockOpen, faPen, faTrash, faShieldHalved,
   faTriangleExclamation, faClock, faEllipsis,
-  faThumbsUp, faThumbsDown, faComment, faChevronRight, faTag, faBagShopping,
+  faThumbsUp, faThumbsDown, faComment, faChevronRight, faTag, faBagShopping, faLink, faBoxOpen,
 } from '@fortawesome/free-solid-svg-icons'
 import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
 import { Avatar } from '@/components/ui/Avatar'
 import { Input, Textarea } from '@/components/ui/Input'
+import { Dialog } from '@/components/ui/Dialog'
 import { EmptyState, ErrorState, Skeleton } from '@/components/ui/States'
 import { Tooltip } from '@/components/ui/Tooltip'
 import { useToast } from '@/components/ui/Toast'
@@ -23,6 +24,7 @@ import { useAsync } from '@/hooks/useAsync'
 import {
   assetAnalytics, deleteAsset, getAsset, listAssetReviews, listAssetsByCreator, rateAsset,
   recordAssetEvent, removeAssetReview, updateAsset, writeAssetReview, buyAsset, priceCeilings,
+  dropFromInventory,
 } from '@/lib/api'
 import { useSignedUrl } from '@/hooks/useSignedUrl'
 import { useTitle } from '@/hooks/useTitle'
@@ -164,6 +166,7 @@ export default function AssetPage() {
   const [panel, setPanel] = useState<'Description' | 'Reviews' | 'Numbers'>('Description')
   // The picture tells us its own proportions once it loads.
   const [shape, setShape] = useState<{ w: number; h: number } | null>(null)
+  const [dropping, setDropping] = useState(false)
 
   const [prefix, number] = useMemo(() => {
     const match = tag.toUpperCase().match(/^([A-Z]{3})-(\d+)$/)
@@ -327,37 +330,86 @@ export default function AssetPage() {
           <div className="w-56">
             <UsePanel asset={asset} onChanged={item.reload} />
           </div>
-          {mine && (
-            <Menu
-              label="More"
-              align="right"
-              trigger={
-                <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl border border-ink-line bg-ink-card text-white/70 transition-colors hover:bg-ink-hover hover:text-white">
-                  <FontAwesomeIcon icon={faEllipsis} />
-                </span>
-              }
-              items={[
-                { label: 'Edit details', icon: faPen, onSelect: () => setEditing(true) },
-                {
-                  label: asset.is_public ? 'Take out of Create' : 'List in Create again',
-                  icon: asset.is_public ? faLock : faLockOpen,
-                  onSelect: () => setListed(!asset.is_public),
+          <Menu
+            label="More"
+            align="right"
+            trigger={
+              <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl border border-ink-line bg-ink-card text-white/70 transition-colors hover:bg-ink-hover hover:text-white">
+                <FontAwesomeIcon icon={faEllipsis} />
+              </span>
+            }
+            items={[
+              {
+                label: 'Copy link',
+                icon: faLink,
+                onSelect: () => {
+                  void navigator.clipboard?.writeText(window.location.href)
+                  toast('Link copied.', 'success')
                 },
-                {
-                  label: 'Delete',
-                  icon: faTrash,
-                  danger: true,
-                  onSelect: async () => {
-                    await deleteAsset(asset.id, asset.file_path)
-                    toast('Deleted.', 'success')
-                    item.reload()
-                  },
-                },
-              ]}
-            />
-          )}
+              },
+              ...(asset.i_can_use && !mine
+                ? [{
+                    label: 'Remove from my inventory',
+                    icon: faBoxOpen,
+                    danger: true,
+                    onSelect: () => setDropping(true),
+                  }]
+                : []),
+              ...(mine
+                ? [
+                    { label: 'Edit details', icon: faPen, onSelect: () => setEditing(true) },
+                    {
+                      label: asset.is_public ? 'Take out of Create' : 'List in Create again',
+                      icon: asset.is_public ? faLock : faLockOpen,
+                      onSelect: () => setListed(!asset.is_public),
+                    },
+                    {
+                      label: 'Delete',
+                      icon: faTrash,
+                      danger: true,
+                      onSelect: async () => {
+                        await deleteAsset(asset.id, asset.file_path)
+                        toast('Deleted.', 'success')
+                        item.reload()
+                      },
+                    },
+                  ]
+                : []),
+            ]}
+          />
         </div>
       </header>
+
+      <Dialog
+        open={dropping}
+        onClose={() => setDropping(false)}
+        title="Remove this from your inventory?"
+        description={
+          asset.price > 0
+            ? `You paid ${formatCount(asset.price)} Kubes for this. Removing it does not refund them, and taking it again would cost the same.`
+            : 'Any Space already using it keeps working. You would have to take it again to use it somewhere new.'
+        }
+        footer={
+          <>
+            <Button variant="ghost" onClick={() => setDropping(false)}>Keep it</Button>
+            <Button
+              variant="danger"
+              onClick={async () => {
+                try {
+                  await dropFromInventory(asset.id)
+                  toast('Out of your inventory.', 'info')
+                  setDropping(false)
+                  item.reload()
+                } catch (err) {
+                  toast(err instanceof Error ? err.message : 'That did not work.', 'error')
+                }
+              }}
+            >
+              Remove it
+            </Button>
+          </>
+        }
+      />
 
       {mine && asset.status !== 'approved' && (
         <p className={cn(

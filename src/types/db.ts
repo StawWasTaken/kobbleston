@@ -338,6 +338,48 @@ export type MemberCommunity = {
   role: CommunityRole
 }
 
+export type CommunityEvent = {
+  id: string
+  content_id: number | null
+  title: string
+  subtitle: string | null
+  description: string | null
+  cover_url: string | null
+  space_id: string | null
+  starts_at: string
+  ends_at: string | null
+  is_cancelled: boolean
+  attending_count: number
+  i_am_going: boolean
+  community_slug: string
+  community_name: string
+  community_icon: string | null
+}
+
+export type EventPage = CommunityEvent & {
+  community_id: string
+  i_can_manage: boolean
+  community_content_id: number | null
+}
+
+export type EventAttendee = {
+  user_id: string
+  username: string
+  display_name: string
+  avatar_url: string | null
+  is_guest: boolean
+  content_id: number | null
+}
+
+export type BuildTarget = {
+  id: string
+  slug: string
+  name: string
+  icon_url: string | null
+  content_id: number | null
+  funds: number
+}
+
 export type PixelTransaction = {
   id: number
   amount: number

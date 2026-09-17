@@ -4,6 +4,7 @@ import {
   faChartSimple, faCubes, faGaugeHigh, faBoxOpen, faShapes, faUpload,
 } from '@fortawesome/free-solid-svg-icons'
 import type { IconDefinition } from '@fortawesome/fontawesome-svg-core'
+import { WorkingAsMenu } from '@/components/create/WorkingAs'
 import { cn } from '@/lib/cn'
 import { Tooltip } from '@/components/ui/Tooltip'
 
@@ -30,6 +31,10 @@ export function CreateRail({ ownedCount = 0 }: { ownedCount?: number }) {
       aria-label="Kobbleston Create"
     >
       <p className="mb-2 px-2 font-display text-base font-extrabold">Create</p>
+
+      <div className="mb-3 px-1">
+        <WorkingAsMenu />
+      </div>
 
       {createSections.map((section) => (
         <Tooltip key={section.to} label={section.note} side="right">
