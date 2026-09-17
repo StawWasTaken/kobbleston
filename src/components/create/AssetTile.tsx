@@ -40,7 +40,7 @@ export function AssetTile({ item, owned }: { item: MarketAsset; owned?: boolean 
 
   return (
     <Tooltip
-      label={item.price ? `${item.name} · ${item.price} Kubes` : `${item.name} · ${tag}`}
+      label={item.price ? `${item.name} · ${item.price} Kubes` : `${item.name} · free`}
       side="top"
     >
     <Link

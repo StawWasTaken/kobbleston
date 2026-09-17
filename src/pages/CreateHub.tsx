@@ -675,8 +675,8 @@ export function CreateInventory() {
       <header>
         <h1 className="font-display text-2xl font-extrabold sm:text-3xl">Inventory</h1>
         <p className="mt-1 text-sm text-muted">
-          Your own work, everything Kobbleston publishes, and everything you have taken from the
-          marketplace. Copy an id and paste it into a Space.
+          Your own work and everything you have taken from the marketplace, Kobbleston's
+          included. Copy an id and paste it into a Space.
         </p>
       </header>
 

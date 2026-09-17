@@ -68,7 +68,7 @@ export function WorkingAsMenu() {
     return () => window.removeEventListener('pointerdown', close)
   }, [open])
 
-  if (!profile || !targets.length) return null
+  if (!profile) return null
 
   return (
     <div className="relative" onPointerDown={(e) => e.stopPropagation()}>
@@ -131,6 +131,13 @@ export function WorkingAsMenu() {
           <p className="px-3 pb-1 pt-2 text-[11px] font-bold uppercase tracking-wide text-muted">
             Communities
           </p>
+
+          {!targets.length && (
+            <p className="px-3 pb-2 text-xs leading-relaxed text-muted">
+              None yet. A Community you can make things for appears here once somebody gives you
+              the Spaces permission there.
+            </p>
+          )}
 
           {targets.map((option) => (
             <button

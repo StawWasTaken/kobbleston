@@ -111,7 +111,7 @@ function UsePanel({ asset, onChanged }: { asset: AssetPageItem; onChanged: () =>
             {mine
               ? 'Yours, so you can use it anywhere.'
               : asset.creator_is_admin
-                ? 'Verified, so it is in everybody\'s inventory.'
+                ? 'In your inventory, and verified by Kobbleston.'
                 : 'In your inventory.'}
           </span>
         </p>
@@ -151,7 +151,7 @@ function UsePanel({ asset, onChanged }: { asset: AssetPageItem; onChanged: () =>
       <p className="text-xs leading-relaxed text-muted">
         {paid
           ? `The Kubes go to ${asset.creator_display_name}. You get the right to use ${tag}, not the file.`
-          : `Free. It lands in your inventory and ${tag} is yours to paste.`}
+          : `Free to take. It lands in your inventory and ${tag} is yours to paste.`}
       </p>
     </div>
   )
@@ -669,6 +669,21 @@ function ReviewBox({ asset, onDone }: { asset: AssetPageItem; onDone: () => void
 
   if (!profile || profile.is_guest) {
     return <p className="text-sm text-muted">Sign in to rate this or leave a review.</p>
+  }
+
+  /*
+   * A rating from somebody who has never had the thing says nothing about
+   * it, so it has to be in your inventory first. Taking a free one costs
+   * nothing but the press.
+   */
+  if (!asset.i_can_use) {
+    return (
+      <p className="rounded-xl border border-ink-line bg-ink-raised px-4 py-3 text-sm text-muted">
+        {asset.price > 0
+          ? 'Buy it to rate it or write a review.'
+          : 'Take it to rate it or write a review. It is free.'}
+      </p>
+    )
   }
 
   return (
