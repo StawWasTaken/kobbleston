@@ -304,9 +304,9 @@ export default function Profile() {
         </div>
 
         {tab === 'About' && (
-          <div className="mt-6 space-y-8">
-            <div className="grid gap-5 lg:grid-cols-[1fr_18rem] lg:items-start">
-              <div className="min-w-0">
+          <div className="mt-6 grid gap-6 lg:grid-cols-[1fr_18rem] lg:items-start">
+            <div className="min-w-0 space-y-8">
+              <div>
                 {user.bio ? (
                   <>
                     <p
@@ -332,29 +332,6 @@ export default function Profile() {
                   </p>
                 )}
               </div>
-
-              <Card className="divide-y divide-ink-line">
-                <Fact
-                  icon={faClock}
-                  label="Joined"
-                  value={new Date(user.created_at).toLocaleDateString('en-GB', {
-                    day: 'numeric', month: 'short', year: 'numeric',
-                  })}
-                />
-                <Fact
-                  icon={faCubes}
-                  label="Spaces"
-                  value={formatCount(spaces.data?.length ?? 0)}
-                />
-                <Fact
-                  icon={faEye}
-                  label="Visits to their Spaces"
-                  value={formatCount(
-                    (spaces.data ?? []).reduce((sum, space) => sum + (space.visit_count ?? 0), 0),
-                  )}
-                />
-              </Card>
-            </div>
 
             <section>
               <h2 className="mb-3 flex items-center gap-2 font-display text-xl font-extrabold">
@@ -457,6 +434,32 @@ export default function Profile() {
                 </div>
               )}
             </section>
+            </div>
+
+            {/* The facts sit beside everything else rather than floating on
+                their own beside an empty paragraph. */}
+            <Card className="divide-y divide-ink-line lg:sticky lg:top-20">
+              <Fact
+                icon={faClock}
+                label="Joined"
+                value={new Date(user.created_at).toLocaleDateString('en-GB', {
+                  day: 'numeric', month: 'short', year: 'numeric',
+                })}
+              />
+              <Fact icon={faCubes} label="Spaces" value={formatCount(spaces.data?.length ?? 0)} />
+              <Fact
+                icon={faEye}
+                label="Visits to their Spaces"
+                value={formatCount(
+                  (spaces.data ?? []).reduce((sum, space) => sum + (space.visit_count ?? 0), 0),
+                )}
+              />
+              <Fact
+                icon={faUserGroup}
+                label="Communities"
+                value={formatCount(communities.data?.length ?? 0)}
+              />
+            </Card>
           </div>
         )}
 

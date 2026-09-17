@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { faStar, faPenToSquare, faPlus } from '@fortawesome/free-solid-svg-icons'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { Page } from '@/components/layout/AppShell'
 import { Button } from '@/components/ui/Button'
 import { Card, SectionHeading } from '@/components/ui/Card'
@@ -112,17 +113,15 @@ export default function Library() {
         {!!published.length && (
           <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
             {published.map((space) => (
-              <div key={space.id} className="space-y-2">
+              <div key={space.id} className="group/tile relative">
                 <SpaceCard space={space} />
-                <Button
-                  size="sm"
-                  variant="subtle"
-                  block
-                  icon={faPenToSquare}
+                <button
                   onClick={() => setUpdating(space)}
+                  aria-label={`Post an update about ${space.name}`}
+                  className="absolute right-2 top-2 grid h-8 w-8 place-items-center rounded-lg bg-ink/80 text-white/80 opacity-0 backdrop-blur transition-opacity hover:text-white group-hover/tile:opacity-100 focus-visible:opacity-100"
                 >
-                  Post an update
-                </Button>
+                  <FontAwesomeIcon icon={faPenToSquare} />
+                </button>
               </div>
             ))}
           </div>
