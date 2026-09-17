@@ -1,14 +1,14 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Link, Outlet, useOutletContext, useSearchParams } from 'react-router-dom'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import {
   faUpload, faPlus, faMagnifyingGlass, faClock, faCircleCheck, faCircleXmark,
-  faEye, faHandPointUp, faBoxOpen, faLock,
+  faEye, faHandPointUp, faBoxOpen, faLock, faXmark,
 } from '@fortawesome/free-solid-svg-icons'
 import type { IconDefinition } from '@fortawesome/fontawesome-svg-core'
 import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
-import { Input } from '@/components/ui/Input'
+import { Select } from '@/components/ui/Select'
 import { EmptyState, ErrorState, Skeleton } from '@/components/ui/States'
 import { GuestGate } from '@/components/ui/GuestGate'
 import { AssetTile, contentTag, kindIcons, kindLabels } from '@/components/create/AssetTile'
@@ -338,94 +338,253 @@ export function CreateMarketplace() {
   const { openUpload } = useHub()
   const [params, setParams] = useSearchParams()
   const [kind, setKind] = useState<AssetKind | 'all'>('all')
+  const [sort, setSort] = useState<AssetSort>('new')
   const [term, setTerm] = useState(params.get('q') ?? '')
   const [debounced, setDebounced] = useState(term)
+  // Who made it is a filter of its own: anybody by name, or Kobbleston in
+  // one click, because the official shelf is the one people want most.
+  const [maker, setMaker] = useState(params.get('by') ?? '')
+  const [makerDraft, setMakerDraft] = useState(params.get('by') ?? '')
+  const field = useRef<HTMLInputElement>(null)
 
   // Searching from the bar at the top lands here with the words already in
   // the box, and from then on this search is the one you are using.
   useEffect(() => {
     const timer = window.setTimeout(() => {
       setDebounced(term)
-      setParams(term.trim() ? { q: term.trim() } : {}, { replace: true })
+      const next: Record<string, string> = {}
+      if (term.trim()) next.q = term.trim()
+      if (maker.trim()) next.by = maker.trim()
+      setParams(next, { replace: true })
     }, 250)
     return () => window.clearTimeout(timer)
-  }, [term, setParams])
+  }, [term, maker, setParams])
 
-  const [sort, setSort] = useState<AssetSort>('new')
+  // A slash puts the cursor in the box, the way search boxes work.
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      const tag = (e.target as HTMLElement | null)?.tagName
+      if (e.key === '/' && tag !== 'INPUT' && tag !== 'TEXTAREA') {
+        e.preventDefault()
+        field.current?.focus()
+      }
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [])
 
   const market = useAsync(
-    () => listAssets({ kind, search: debounced, limit: 48, sort }),
-    [kind, debounced, sort],
+    () => listAssets({ kind, search: debounced, limit: 48, sort, creator: maker.trim() || undefined }),
+    [kind, debounced, sort, maker],
+  )
+  // The official shelf leads the page when nothing has been asked for.
+  const official = useAsync(
+    async () => (!debounced && !maker && kind === 'all'
+      ? listAssets({ creator: 'kobbleston', limit: 12, sort: 'used' })
+      : []),
+    [debounced, maker, kind],
   )
 
+  const filtering = !!debounced || !!maker || kind !== 'all'
+  const clearAll = () => {
+    setTerm('')
+    setMaker('')
+    setMakerDraft('')
+    setKind('all')
+  }
+
   return (
-    <div className="space-y-5">
-      <header className="flex flex-wrap items-end justify-between gap-4">
-        <div>
-          <h1 className="font-display text-2xl font-extrabold sm:text-3xl">Marketplace</h1>
-          <p className="mt-1 text-sm text-muted">
-            Take what you need, free or for Kubes. It lands in your inventory and you paste its
-            id into a Space. The file itself never changes hands.
+    <div className="space-y-6">
+      {/* The search is the page, so it opens the page rather than sitting in
+          a corner of it. */}
+      <section className="relative overflow-hidden rounded-3xl border border-ink-line bg-ink-card px-5 py-7 sm:px-8 sm:py-9">
+        <span
+          aria-hidden="true"
+          className="pointer-events-none absolute -right-20 -top-24 h-64 w-64 rounded-full bg-brand/20 blur-3xl"
+        />
+        <span
+          aria-hidden="true"
+          className="pointer-events-none absolute -bottom-28 -left-16 h-64 w-64 rounded-full bg-space/10 blur-3xl"
+        />
+
+        <div className="relative">
+          <h1 className="font-display text-3xl font-extrabold sm:text-4xl">Creator Marketplace</h1>
+          <p className="mt-1.5 max-w-xl text-sm text-muted">
+            Pictures, sounds, video, fonts and models, made by people here. Take what you need and
+            paste its id into a Space.
           </p>
+
+          <div className="mt-5 flex flex-col gap-3 lg:flex-row">
+            <div className="relative flex-1">
+              <FontAwesomeIcon
+                icon={faMagnifyingGlass}
+                className="pointer-events-none absolute left-5 top-1/2 -translate-y-1/2 text-white/35"
+              />
+              <input
+                ref={field}
+                value={term}
+                onChange={(e) => setTerm(e.target.value)}
+                placeholder="Search by name, by what it is, or by who made it"
+                aria-label="Search the marketplace"
+                className="h-14 w-full rounded-2xl border border-ink-line bg-ink-raised pl-12 pr-24 text-base font-semibold shadow-card transition-colors placeholder:font-normal placeholder:text-white/30 focus:border-brand-bright focus:outline-none"
+              />
+              {term ? (
+                <button
+                  onClick={() => setTerm('')}
+                  aria-label="Clear the search"
+                  className="absolute right-4 top-1/2 grid h-8 w-8 -translate-y-1/2 place-items-center rounded-lg text-white/45 transition-colors hover:bg-ink-hover hover:text-white"
+                >
+                  <FontAwesomeIcon icon={faXmark} />
+                </button>
+              ) : (
+                <kbd className="absolute right-4 top-1/2 hidden -translate-y-1/2 rounded-md border border-ink-line px-2 py-0.5 text-[11px] font-bold text-white/35 sm:block">
+                  /
+                </kbd>
+              )}
+            </div>
+
+            <GuestGate action="upload">
+              <Button size="lg" icon={faUpload} onClick={openUpload} disabled={!profile}>
+                Upload
+              </Button>
+            </GuestGate>
+          </div>
+
+          {/* Who made it */}
+          <div className="mt-4 flex flex-wrap items-center gap-2">
+            <span className="text-xs font-bold uppercase tracking-wide text-muted">Made by</span>
+
+            <button
+              onClick={() => { setMaker(''); setMakerDraft('') }}
+              aria-pressed={!maker}
+              className={cn(
+                'h-8 rounded-lg px-3 text-xs font-bold transition-colors',
+                !maker ? 'bg-brand text-onbrand' : 'bg-ink-hover text-white/65 hover:text-white',
+              )}
+            >
+              Anybody
+            </button>
+
+            <button
+              onClick={() => { setMaker('kobbleston'); setMakerDraft('kobbleston') }}
+              aria-pressed={maker.toLowerCase() === 'kobbleston'}
+              className={cn(
+                'inline-flex h-8 items-center gap-1.5 rounded-lg px-3 text-xs font-bold transition-colors',
+                maker.toLowerCase() === 'kobbleston'
+                  ? 'bg-brand text-onbrand'
+                  : 'bg-ink-hover text-white/65 hover:text-white',
+              )}
+            >
+              <FontAwesomeIcon icon={faCircleCheck} className="text-[#4d68ff]" />
+              Kobbleston
+            </button>
+
+            <form
+              onSubmit={(e) => { e.preventDefault(); setMaker(makerDraft.trim()) }}
+              className="flex items-center gap-1.5"
+            >
+              <span className="text-xs text-muted">@</span>
+              <input
+                value={makerDraft}
+                onChange={(e) => setMakerDraft(e.target.value)}
+                onBlur={() => setMaker(makerDraft.trim())}
+                placeholder="somebody"
+                aria-label="Made by which person"
+                className="h-8 w-32 rounded-lg border border-ink-line bg-ink-raised px-2.5 text-xs font-semibold placeholder:text-white/30 focus:border-brand-bright focus:outline-none"
+              />
+            </form>
+          </div>
         </div>
-        <GuestGate action="upload">
-          <Button icon={faUpload} onClick={openUpload} disabled={!profile}>Upload</Button>
-        </GuestGate>
-      </header>
+      </section>
 
-      <Input
-        icon={faMagnifyingGlass}
-        value={term}
-        onChange={(e) => setTerm(e.target.value)}
-        placeholder="Search by name, by what it is, or by who made it"
-        aria-label="Search the marketplace"
-      />
-
-      <div className="flex flex-wrap items-center gap-2">
-        <span className="text-xs font-bold uppercase tracking-wide text-muted">Sort</span>
-        {([
-          { value: 'new', label: 'Newest' },
-          { value: 'used', label: 'Most used' },
-          { value: 'rated', label: 'Best rated' },
-          { value: 'cheap', label: 'Cheapest' },
-        ] as const).map((option) => (
-          <button
-            key={option.value}
-            onClick={() => setSort(option.value)}
-            aria-pressed={sort === option.value}
-            className={cn(
-              'h-8 rounded-lg px-3 text-xs font-bold transition-colors',
-              sort === option.value
-                ? 'bg-brand text-onbrand'
-                : 'bg-ink-card text-white/60 hover:bg-ink-hover hover:text-white',
-            )}
-          >
-            {option.label}
-          </button>
-        ))}
-      </div>
-
-      <div className="flex gap-2 overflow-x-auto pb-1 kob-scroll">
+      {/* What kind of thing, and in what order */}
+      <div className="sticky top-14 z-20 -mx-4 flex flex-wrap items-center gap-2 bg-ink/90 px-4 py-3 backdrop-blur sm:-mx-6 sm:px-6">
         {kinds.map((k) => (
           <button
             key={k}
             onClick={() => setKind(k)}
             aria-pressed={kind === k}
             className={cn(
-              'h-9 shrink-0 rounded-lg border px-3.5 text-sm font-bold transition-colors',
+              'inline-flex h-9 shrink-0 items-center gap-2 rounded-xl border px-3.5 text-sm font-bold transition-colors',
               kind === k
                 ? 'border-brand-bright bg-brand text-onbrand'
                 : 'border-ink-line bg-ink-card text-white/60 hover:bg-ink-hover hover:text-white',
             )}
           >
+            {k !== 'all' && <FontAwesomeIcon icon={kindIcons[k]} className="text-xs" />}
             {k === 'all' ? 'Everything' : kindLabels[k]}
           </button>
         ))}
+
+        <div className="ml-auto flex items-center gap-2">
+          <Select
+            label="Sort the marketplace"
+            value={sort}
+            onChange={(next) => setSort(next as AssetSort)}
+            className="w-40"
+            align="right"
+            options={[
+              { value: 'new', label: 'Newest' },
+              { value: 'used', label: 'Most used' },
+              { value: 'rated', label: 'Best rated' },
+              { value: 'cheap', label: 'Cheapest' },
+            ]}
+          />
+        </div>
       </div>
+
+      {/* What you asked for, and a way back out of it */}
+      {filtering && (
+        <div className="flex flex-wrap items-center gap-2 text-sm">
+          <span className="text-muted">
+            {market.loading
+              ? 'Looking'
+              : `${formatCount(market.data?.length ?? 0)} ${market.data?.length === 1 ? 'result' : 'results'}`}
+          </span>
+          {debounced && <Chip onClear={() => setTerm('')}>&ldquo;{debounced}&rdquo;</Chip>}
+          {maker && <Chip onClear={() => { setMaker(''); setMakerDraft('') }}>by @{maker}</Chip>}
+          {kind !== 'all' && <Chip onClear={() => setKind('all')}>{kindLabels[kind]}</Chip>}
+          <button onClick={clearAll} className="text-xs font-bold text-link hover:underline">
+            Clear all
+          </button>
+        </div>
+      )}
+
+      {/* Kobbleston's own shelf, when nothing has been asked for */}
+      {!filtering && !!official.data?.length && (
+        <section>
+          <h2 className="mb-3 flex items-center gap-2 font-display text-xl font-extrabold">
+            <FontAwesomeIcon icon={faCircleCheck} className="text-base text-[#4d68ff]" />
+            Made by Kobbleston
+            <button
+              onClick={() => { setMaker('kobbleston'); setMakerDraft('kobbleston') }}
+              className="ml-1 text-xs font-bold text-link hover:underline"
+            >
+              See all
+            </button>
+          </h2>
+          <div className="-mx-4 flex gap-3 overflow-x-auto px-4 pb-2 sm:mx-0 sm:px-0 kob-scroll">
+            {official.data.map((item) => (
+              <div key={item.id} className="w-40 shrink-0 sm:w-44">
+                <AssetTile item={item} />
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {!filtering && (
+        <h2 className="font-display text-xl font-extrabold">
+          {sort === 'new' ? 'Just uploaded'
+            : sort === 'used' ? 'Used the most'
+              : sort === 'rated' ? 'Rated the best'
+                : 'Cheapest first'}
+        </h2>
+      )}
 
       {market.loading && (
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 xl:grid-cols-5">
-          {[0, 1, 2, 3, 4, 5, 6, 7].map((i) => <Skeleton key={i} className="aspect-[4/5]" />)}
+          {[0, 1, 2, 3, 4, 5, 6, 7, 8, 9].map((i) => <Skeleton key={i} className="aspect-[4/5]" />)}
         </div>
       )}
 
@@ -434,13 +593,16 @@ export function CreateMarketplace() {
       {!market.loading && !market.error && !market.data?.length && (
         <Card>
           <EmptyState
-            mood={debounced ? 'noResults' : 'emptyBox'}
-            title={debounced ? 'Kobby could not find anything' : 'Nothing here yet'}
+            mood={filtering ? 'noResults' : 'emptyBox'}
+            title={filtering ? 'Kobby could not find anything' : 'Nothing here yet'}
             body={
-              debounced
-                ? `Nothing in Create matches "${debounced}".`
+              filtering
+                ? 'Nothing matches all of that. Try fewer words, or clear a filter.'
                 : 'Be the first to upload something people can build with.'
             }
+            action={filtering
+              ? <Button variant="subtle" onClick={clearAll}>Clear the filters</Button>
+              : undefined}
           />
         </Card>
       )}
@@ -451,6 +613,18 @@ export function CreateMarketplace() {
         </div>
       )}
     </div>
+  )
+}
+
+/** One thing you have asked for, with a way to take it back off. */
+function Chip({ children, onClear }: { children: React.ReactNode; onClear: () => void }) {
+  return (
+    <span className="inline-flex h-7 items-center gap-1.5 rounded-lg bg-ink-hover px-2.5 text-xs font-bold">
+      {children}
+      <button onClick={onClear} aria-label="Remove this filter" className="text-white/45 hover:text-white">
+        <FontAwesomeIcon icon={faXmark} />
+      </button>
+    </span>
   )
 }
 

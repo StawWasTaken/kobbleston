@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import {
-  faCubes, faRightFromBracket, faUser, faLock, faShieldHalved, faPen, faCheck, faPalette,
+  faCube, faRightFromBracket, faUser, faLock, faShieldHalved, faPen, faCheck, faPalette,
   faMoon, faSun, faDesktop,
 } from '@fortawesome/free-solid-svg-icons'
 import type { IconDefinition } from '@fortawesome/fontawesome-svg-core'
@@ -24,6 +24,7 @@ import { supabase } from '@/lib/supabase'
 import { formatCount, timeAgo } from '@/lib/format'
 import { cn } from '@/lib/cn'
 import { useTitle } from '@/hooks/useTitle'
+import { Kube } from '@/components/brand/Kube'
 
 type Section = 'Account info' | 'Security' | 'Appearance' | 'Kubes' | 'Safety'
 
@@ -31,7 +32,7 @@ const sections: { name: Section; icon: IconDefinition }[] = [
   { name: 'Account info', icon: faUser },
   { name: 'Security', icon: faLock },
   { name: 'Appearance', icon: faPalette },
-  { name: 'Kubes', icon: faCubes },
+  { name: 'Kubes', icon: faCube },
   { name: 'Safety', icon: faShieldHalved },
 ]
 
@@ -359,7 +360,7 @@ function Kubes() {
   return (
     <Card className="overflow-hidden">
       <div className="flex items-center gap-3 border-b border-ink-line px-5 py-4">
-        <FontAwesomeIcon icon={faCubes} className="text-lg text-link" />
+        <Kube className="text-lg text-link" />
         <p className="font-display text-2xl font-extrabold tabular-nums">
           {formatCount(profile?.pixels ?? 0)}
         </p>

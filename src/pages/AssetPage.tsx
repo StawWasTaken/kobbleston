@@ -4,7 +4,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import {
   faCopy, faCircleCheck, faLock, faLockOpen, faPen, faTrash, faShieldHalved,
   faTriangleExclamation, faClock, faEllipsis,
-  faThumbsUp, faThumbsDown, faComment, faChevronRight, faCube, faTag, faBagShopping,
+  faThumbsUp, faThumbsDown, faComment, faChevronRight, faTag, faBagShopping,
 } from '@fortawesome/free-solid-svg-icons'
 import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
@@ -31,6 +31,7 @@ import { formatCount } from '@/lib/format'
 import { cn } from '@/lib/cn'
 import type { AssetDay, AssetPageItem } from '@/types/db'
 import { timeAgo } from '@/lib/format'
+import { Kube } from '@/components/brand/Kube'
 
 const prefixes: Record<string, string> = {
   IMG: 'image', SND: 'audio', VID: 'video', FNT: 'font', MDL: 'model',
@@ -119,7 +120,7 @@ function UsePanel({ asset, onChanged }: { asset: AssetPageItem; onChanged: () =>
     <div className="space-y-2">
       <Button
         block
-        icon={paid ? faCube : faBagShopping}
+        icon={paid ? undefined : faBagShopping}
         loading={pending}
         disabled={!profile || profile.is_guest}
         onClick={async () => {
@@ -138,7 +139,9 @@ function UsePanel({ asset, onChanged }: { asset: AssetPageItem; onChanged: () =>
           }
         }}
       >
-        {paid ? `Buy for ${formatCount(asset.price)} Kubes` : 'Get'}
+        {paid ? (
+          <>Buy for <Kube className="mx-0.5" />{formatCount(asset.price)}</>
+        ) : 'Get'}
       </Button>
       <p className="text-xs leading-relaxed text-muted">
         {paid
@@ -428,7 +431,9 @@ export default function AssetPage() {
               { label: 'Size', value: sizeText },
               {
                 label: 'Price',
-                value: asset.price > 0 ? `${formatCount(asset.price)} Kubes` : 'Free',
+                value: asset.price > 0
+                  ? <span className="inline-flex items-center gap-1.5"><Kube className="text-link" />{formatCount(asset.price)}</span>
+                  : 'Free',
               },
             ].map((fact) => (
               <div key={fact.label}>

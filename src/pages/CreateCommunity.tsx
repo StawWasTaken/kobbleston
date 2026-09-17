@@ -13,6 +13,7 @@ import { createCommunityFull, uploadCommunityImage } from '@/lib/api'
 import { slugify } from '@/lib/format'
 import { cn } from '@/lib/cn'
 import { useTitle } from '@/hooks/useTitle'
+import { Kube } from '@/components/brand/Kube'
 
 const COST = 100
 
@@ -150,7 +151,7 @@ export default function CreateCommunity() {
         <div className="flex flex-wrap items-center justify-end gap-3">
           {!affordable && (
             <p className="mr-auto text-sm text-red-400">
-              You need {COST} Kubes. You have {profile?.pixels ?? 0}.
+              You need <Kube className="text-link" /> {COST}. You have {profile?.pixels ?? 0}.
             </p>
           )}
           <Button type="button" variant="ghost" onClick={() => navigate(-1)}>Cancel</Button>

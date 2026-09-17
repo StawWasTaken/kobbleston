@@ -8,6 +8,7 @@ import { useSignedUrl } from '@/hooks/useSignedUrl'
 import { formatCount } from '@/lib/format'
 import type { AssetKind, MarketAsset } from '@/types/db'
 import { Tooltip } from '@/components/ui/Tooltip'
+import { Kube } from '@/components/brand/Kube'
 
 export const kindIcons: Record<AssetKind, IconDefinition> = {
   image: faImage,
@@ -95,7 +96,7 @@ export function AssetTile({ item, owned }: { item: MarketAsset; owned?: boolean 
           )}
           {item.price ? (
             <span className="inline-flex items-center gap-1 font-bold text-link">
-              <FontAwesomeIcon icon={faCube} />
+              <Kube />
               {formatCount(item.price)}
             </span>
           ) : (
