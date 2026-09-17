@@ -19,6 +19,7 @@ import {
   sendFriendRequest, startConversation,
 } from '@/lib/api'
 import type { Profile } from '@/types/db'
+import { avatarOf } from '@/lib/avatars'
 
 function PersonRow({
   person, children,
@@ -29,7 +30,7 @@ function PersonRow({
   return (
     <li className="flex items-center gap-3 border-b border-ink-line/70 px-4 py-3 last:border-0">
       <Link to={`/u/${person.username}`} className="relative shrink-0">
-        <Avatar src={person.avatar_url} name={person.display_name} size="md" />
+        <Avatar src={avatarOf(person)} name={person.display_name} size="md" />
         <span className="absolute -bottom-0.5 -right-0.5">
           <StatusDot presence={presenceOf(person)} size="sm" ring />
         </span>

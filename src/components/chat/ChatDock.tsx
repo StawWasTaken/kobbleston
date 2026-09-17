@@ -25,6 +25,7 @@ import { supabase } from '@/lib/supabase'
 import { timeAgo } from '@/lib/format'
 import { cn } from '@/lib/cn'
 import type { Conversation, Message } from '@/types/db'
+import { avatarOf } from '@/lib/avatars'
 
 type ChatValue = { openConversation: (id: string) => void }
 const ChatContext = createContext<ChatValue>({ openConversation: () => {} })
@@ -171,7 +172,7 @@ function Window({
             <span className="relative shrink-0">
               {solo ? (
                 <>
-                  <Avatar src={solo.avatar_url} name={solo.display_name} size="xs" />
+                  <Avatar src={avatarOf(solo)} name={solo.display_name} size="xs" />
                   <span className="absolute -bottom-0.5 -right-0.5">
                     <StatusDot presence={presenceOf(solo)} size="sm" ring />
                   </span>
@@ -216,7 +217,7 @@ function Window({
                   to={`/u/${member.username}`}
                   className="flex items-center gap-2.5 rounded-lg p-2 transition-colors hover:bg-ink-hover"
                 >
-                  <Avatar src={member.avatar_url} name={member.display_name} size="sm" />
+                  <Avatar src={avatarOf(member)} name={member.display_name} size="sm" />
                   <span className="min-w-0 flex-1">
                     <span className="block truncate text-sm font-bold">{member.display_name}</span>
                     <PresenceLabel presence={presenceOf(member)} />
@@ -277,6 +278,7 @@ function Window({
                             username: profile.username,
                             display_name: profile.display_name,
                             avatar_url: profile.avatar_url,
+                            is_guest: profile.is_guest,
                             is_online: profile.is_online,
                             in_space_id: profile.in_space_id,
                           }
@@ -430,7 +432,7 @@ function List({
                   <span className="relative shrink-0">
                     {solo ? (
                       <>
-                        <Avatar src={solo.avatar_url} name={solo.display_name} size="sm" />
+                        <Avatar src={avatarOf(solo)} name={solo.display_name} size="sm" />
                         <span className="absolute -bottom-0.5 -right-0.5">
                           <StatusDot presence={presenceOf(solo)} size="sm" ring />
                         </span>
@@ -510,7 +512,7 @@ export function ChatDock({ children }: { children: ReactNode }) {
       {children}
 
       {profile && !profile.is_guest && (
-        <div className="pointer-events-none fixed bottom-0 right-0 z-40 hidden items-end gap-2 px-3 md:flex">
+        <div className="pointer-events-none fixed bottom-0 right-0 z-40 hidden items-end gap-2 px-6 md:flex">
           {making && (
             <NewGroupDialog
               onClose={() => setMaking(false)}

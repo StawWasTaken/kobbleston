@@ -7,6 +7,7 @@ import { formatCount, timeAgo } from '@/lib/format'
 import { cn } from '@/lib/cn'
 import type { Space, SpaceCategory } from '@/types/db'
 import { asset } from '@/lib/asset'
+import { avatarOf } from '@/lib/avatars'
 
 export const categoryLabels: Record<SpaceCategory, string> = {
   personal: 'Personal',
@@ -68,7 +69,7 @@ export function SpaceCard({ space, className }: { space: Space; className?: stri
             to={`/u/${owner.username}`}
             className="relative z-10 mt-1.5 inline-flex w-fit items-center gap-2 text-xs text-muted transition-colors hover:text-white"
           >
-            <Avatar src={owner.avatar_url} name={owner.display_name} size="xs" />
+            <Avatar src={avatarOf(owner)} name={owner.display_name} size="xs" />
             <span className="truncate">{owner.display_name}</span>
           </Link>
         )}

@@ -13,6 +13,7 @@ import { listNotifications, markNotificationsRead } from '@/lib/api'
 import { timeAgo } from '@/lib/format'
 import type { Notification } from '@/types/db'
 import { asset } from '@/lib/asset'
+import { avatarOf } from '@/lib/avatars'
 
 const icons: Record<Notification['kind'], IconDefinition> = {
   friend_request: faUserPlus,
@@ -108,7 +109,7 @@ export function NotificationsPanel({
               className="flex items-start gap-3 border-b border-ink-line/70 px-4 py-3 transition-colors last:border-0 hover:bg-ink-hover"
             >
               <span className="relative">
-                <Avatar src={n.actor?.avatar_url} name={n.actor?.display_name ?? 'K'} size="sm" />
+                <Avatar src={avatarOf(n.actor)} name={n.actor?.display_name ?? 'K'} size="sm" />
                 <span className="absolute -bottom-1 -right-1 grid h-4 w-4 place-items-center rounded-full bg-brand text-[9px] text-white ring-2 ring-ink-card">
                   <FontAwesomeIcon icon={icons[n.kind]} />
                 </span>

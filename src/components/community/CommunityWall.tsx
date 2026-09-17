@@ -13,6 +13,7 @@ import { useAuth } from '@/hooks/useAuth'
 import { useAsync } from '@/hooks/useAsync'
 import { listCommunityPosts, postToCommunity, removeCommunityPost } from '@/lib/api'
 import type { CommunityOverview } from '@/types/db'
+import { avatarOf } from '@/lib/avatars'
 
 /** A wall post carries who said it, their rank at the time, and when. */
 function stamp(at: string) {
@@ -118,7 +119,7 @@ export function CommunityWall({
             <div className="flex items-start gap-3">
               <Link to={`/u/${post.author?.username ?? ''}`} className="shrink-0">
                 <Avatar
-                  src={post.author?.avatar_url}
+                  src={avatarOf(post.author)}
                   name={post.author?.display_name ?? 'K'}
                   size="lg"
                   className="rounded-xl"

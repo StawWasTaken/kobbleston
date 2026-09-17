@@ -14,6 +14,7 @@ import { useAuth } from '@/hooks/useAuth'
 import { supabase } from '@/lib/supabase'
 import { asset } from '@/lib/asset'
 import { cn } from '@/lib/cn'
+import { avatarOf } from '@/lib/avatars'
 
 export function AppTopbar({ onOpenNav }: { onOpenNav: () => void }) {
   const { profile } = useAuth()
@@ -98,7 +99,7 @@ export function AppTopbar({ onOpenNav }: { onOpenNav: () => void }) {
                 to={`/u/${profile.username}`}
                 className="hidden items-center gap-2 rounded-lg px-2 py-1 transition-colors hover:bg-white/15 sm:flex"
               >
-                <Avatar src={profile.avatar_url} name={profile.display_name} size="xs" />
+                <Avatar src={avatarOf(profile)} name={profile.display_name} size="xs" />
                 <span className="max-w-24 truncate text-sm font-bold text-white">
                   {profile.display_name}
                 </span>

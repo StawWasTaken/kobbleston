@@ -85,6 +85,37 @@ export type MarketAsset = {
   creator_is_admin: boolean
 }
 
+export type AssetPageItem = MarketAsset & {
+  byte_size: number
+  status: ModerationStatus
+  is_public: boolean
+  review_note: string | null
+  updated_at: string
+  creator_id: string
+}
+
+export type AssetDay = { day: string; views: number; downloads: number }
+
+export type CreatorAssetRow = {
+  asset_id: string
+  name: string
+  kind: AssetKind
+  content_id: number | null
+  status: ModerationStatus
+  is_public: boolean
+  views: number
+  downloads: number
+  created_at: string
+}
+
+export type Collaborator = {
+  user_id: string
+  username: string
+  display_name: string
+  avatar_url: string | null
+  created_at: string
+}
+
 export type OwnAsset = {
   id: string
   kind: AssetKind
@@ -96,6 +127,7 @@ export type OwnAsset = {
   content_id: number | null
   byte_size: number
   download_count: number
+  is_public: boolean
   created_at: string
 }
 
@@ -266,8 +298,9 @@ export type SpaceMessage = {
 }
 
 export type ConversationMember = Pick<
-  Profile, 'id' | 'username' | 'display_name' | 'avatar_url' | 'is_online' | 'in_space_id'
->
+  Profile,
+  'id' | 'username' | 'display_name' | 'avatar_url' | 'is_online' | 'in_space_id'
+> & { is_guest?: boolean }
 
 export type Conversation = {
   id: string

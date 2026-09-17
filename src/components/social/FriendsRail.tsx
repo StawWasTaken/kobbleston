@@ -7,6 +7,7 @@ import { Skeleton } from '@/components/ui/States'
 import { useAuth } from '@/hooks/useAuth'
 import { useAsync } from '@/hooks/useAsync'
 import { listFriendships } from '@/lib/api'
+import { avatarOf } from '@/lib/avatars'
 
 /** Friends across the top of the home page, online ones first. */
 export function FriendsRail() {
@@ -53,7 +54,7 @@ export function FriendsRail() {
             className="flex w-20 shrink-0 flex-col items-center gap-2 text-center"
           >
             <span className="relative">
-              <Avatar src={friend.avatar_url} name={friend.display_name} size="lg" className="h-16 w-16" />
+              <Avatar src={avatarOf(friend)} name={friend.display_name} size="lg" className="h-16 w-16" />
               <span className="absolute bottom-0.5 right-0.5">
                 <StatusDot presence={presenceOf(friend)} size="lg" ring />
               </span>

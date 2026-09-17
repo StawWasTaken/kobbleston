@@ -15,6 +15,7 @@ import NotFound from '@/pages/NotFound'
 // Everything behind the front door loads on demand.
 const SpacePage = lazy(() => import('@/pages/SpacePage'))
 const Create = lazy(() => import('@/pages/Create'))
+const AssetPage = lazy(() => import('@/pages/AssetPage'))
 const Search = lazy(() => import('@/pages/Search'))
 const Communities = lazy(() => import('@/pages/Communities'))
 const CommunityPage = lazy(() => import('@/pages/CommunityPage'))
@@ -72,6 +73,7 @@ export default function App() {
                 {/* open to guests so a shared link works logged out */}
                 <Route path="/discover" element={<Discover />} />
                 <Route path="/create" element={<Create />} />
+                <Route path="/create/:tag" element={<AssetPage />} />
                 <Route path="/search" element={<Search />} />
                 <Route element={<CommunityShell />}>
                   <Route path="/communities" element={<Communities />} />

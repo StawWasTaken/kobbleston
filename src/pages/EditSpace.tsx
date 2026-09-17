@@ -9,6 +9,7 @@ import { ErrorState, Skeleton } from '@/components/ui/States'
 import { useToast } from '@/components/ui/Toast'
 import { ImageDrop } from '@/components/community/ImageDrop'
 import { ChatSettings } from '@/components/spaces/ChatSettings'
+import { Collaborators } from '@/components/spaces/Collaborators'
 import { categoryLabels } from '@/components/spaces/SpaceCard'
 import { useAuth } from '@/hooks/useAuth'
 import { useAsync } from '@/hooks/useAsync'
@@ -109,7 +110,7 @@ export default function EditSpace() {
       <div>
         <h1 className="font-display text-3xl font-extrabold sm:text-4xl">Configure Space</h1>
         <p className="mt-1.5 text-muted">
-          {space.data.name} · SPC-{space.data.content_id ?? '—'}
+          {space.data.name}{space.data.content_id ? ` · SPC-${space.data.content_id}` : ''}
         </p>
       </div>
 
@@ -229,6 +230,15 @@ export default function EditSpace() {
       <section>
         <SectionHeading title="Chat" />
         <ChatSettings space={space.data} onSaved={space.reload} />
+      </section>
+
+      <section className="mt-8">
+        <SectionHeading title="Team" />
+        <Collaborators
+          spaceId={space.data.id}
+          ownerId={space.data.owner_id}
+          viewerId={profile?.id}
+        />
       </section>
     </Page>
   )

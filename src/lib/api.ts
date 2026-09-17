@@ -5,6 +5,7 @@ import type {
   ProfileOverview, Space, SpaceBadge, SpaceCategory, SpaceMessage, SpaceStats, Conversation,
   CommunityMember, CommunityOverview, CommunityPost, CommunityRank, CommunityRequest,
   CommunityRelation, CommunityBan, CommunityAuditEntry,
+  AssetPageItem, AssetDay, CreatorAssetRow, Collaborator,
 } from '@/types/db'
 
 const SPACE_FIELDS =
@@ -12,7 +13,7 @@ const SPACE_FIELDS =
   'like_count, favorite_count, dislike_count, update_count, published_at, created_at, updated_at, ' +
   'emblem_url, thumbnail_urls, genre, content_id, ' +
   'chat_enabled, chat_greeting, chat_slowmode_seconds, ' +
-  'owner:profiles!spaces_owner_id_fkey (id, username, display_name, avatar_url, is_online, is_admin)'
+  'owner:profiles!spaces_owner_id_fkey (id, username, display_name, avatar_url, is_online, is_admin, is_guest)'
 
 function unwrap<T>(result: { data: T | null; error: { message: string } | null }): T {
   if (result.error) throw new Error(result.error.message)
@@ -264,7 +265,7 @@ export async function markConversationRead(conversationId: string, userId: strin
 
 export async function listNotifications(userId: string): Promise<Notification[]> {
   return (unwrap(await supabase.from('notifications')
-    .select('*, actor:profiles!notifications_actor_id_fkey (username, display_name, avatar_url), ' +
+    .select('*, actor:profiles!notifications_actor_id_fkey (username, display_name, avatar_url, is_guest), ' +
       'space:spaces!notifications_space_id_fkey (name, slug)')
     .eq('user_id', userId).order('created_at', { ascending: false }).limit(40)) as unknown as Notification[]) ?? []
 }
@@ -314,9 +315,64 @@ export async function listAssets(options: {
 
 export async function listOwnAssets(userId: string): Promise<OwnAsset[]> {
   return (unwrap(await supabase.from('assets')
-    .select('id, kind, name, description, file_path, status, review_note, byte_size, download_count, content_id, created_at')
+    .select('id, kind, name, description, file_path, status, review_note, byte_size, download_count, content_id, is_public, created_at')
     .eq('creator_id', userId)
     .order('created_at', { ascending: false })) as unknown as OwnAsset[]) ?? []
+}
+
+/** One upload with its creator, looked up by the number it carries. */
+export async function getAsset(contentId: number): Promise<AssetPageItem | null> {
+  const rows = unwrap(await supabase.rpc('get_asset', { target_content_id: contentId })) as AssetPageItem[]
+  return rows?.[0] ?? null
+}
+
+/**
+ * A view or a download. Counts, never who: the creator needs to know their
+ * work is being used, not who looked at it.
+ */
+export async function recordAssetEvent(assetId: string, kind: 'view' | 'download') {
+  await supabase.rpc('record_asset_event', { target: assetId, event_kind: kind })
+}
+
+export async function assetAnalytics(assetId: string): Promise<AssetDay[]> {
+  return (unwrap(await supabase.rpc('asset_analytics', { target: assetId })) as AssetDay[]) ?? []
+}
+
+export async function creatorAnalytics(userId: string): Promise<CreatorAssetRow[]> {
+  return (unwrap(await supabase.rpc('creator_analytics', { target: userId })) as CreatorAssetRow[]) ?? []
+}
+
+/**
+ * A creator may rename, re-describe and unlist their own upload. Everything
+ * else on the row is pinned by the database, so this cannot publish anything.
+ */
+export async function updateAsset(id: string, patch: {
+  name?: string
+  description?: string | null
+  is_public?: boolean
+}) {
+  unwrap(await supabase.from('assets').update(patch).eq('id', id).select('id').single())
+}
+
+// ------------------------------------------------------- Space collaborators
+
+export async function listCollaborators(spaceId: string): Promise<Collaborator[]> {
+  return (unwrap(await supabase.rpc('space_collaborators_list', { target: spaceId })) as Collaborator[]) ?? []
+}
+
+export async function addCollaborator(spaceId: string, userId: string) {
+  unwrap(await supabase.from('space_collaborators')
+    .insert({ space_id: spaceId, user_id: userId }).select('space_id').single())
+}
+
+export async function removeCollaborator(spaceId: string, userId: string) {
+  unwrap(await supabase.from('space_collaborators').delete()
+    .eq('space_id', spaceId).eq('user_id', userId).select('space_id'))
+}
+
+/** Spaces somebody else owns that you have been asked to work on. */
+export async function listSharedSpaces(): Promise<Space[]> {
+  return (unwrap(await supabase.rpc('spaces_shared_with_me')) as Space[]) ?? []
 }
 
 /**
@@ -347,7 +403,7 @@ export async function uploadAsset(input: {
       description: input.description.trim() || null,
       file_path: path,
       byte_size: input.file.size,
-    }).select('id, kind, name, description, file_path, status, review_note, byte_size, download_count, content_id, created_at')
+    }).select('id, kind, name, description, file_path, status, review_note, byte_size, download_count, content_id, is_public, created_at')
       .single()) as unknown as OwnAsset
   } catch (err) {
     // Never leave a file in storage with no row pointing at it.
@@ -495,7 +551,7 @@ export async function listPixelTransactions(userId: string): Promise<PixelTransa
 export async function listSpaceMessages(spaceId: string): Promise<SpaceMessage[]> {
   const rows = unwrap(await supabase.from('space_messages')
     .select('id, space_id, sender_id, body, created_at, ' +
-      'sender:profiles!space_messages_sender_id_fkey (username, display_name, avatar_url, is_admin)')
+      'sender:profiles!space_messages_sender_id_fkey (username, display_name, avatar_url, is_admin, is_guest)')
     .eq('space_id', spaceId)
     .order('created_at', { ascending: false }).limit(50)) as unknown as SpaceMessage[]
   return (rows ?? []).reverse()

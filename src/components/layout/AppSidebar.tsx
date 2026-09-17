@@ -7,6 +7,7 @@ import { useAuth } from '@/hooks/useAuth'
 import { supabase } from '@/lib/supabase'
 import { cn } from '@/lib/cn'
 import { sideNav } from './nav'
+import { avatarOf } from '@/lib/avatars'
 
 /** Pending friend requests waiting on an answer from this person. */
 function useFriendRequestCount() {
@@ -91,7 +92,7 @@ export function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
           className="flex items-center gap-3 border-t border-white/10 p-3 transition-colors hover:bg-white/10"
         >
           <span className="relative">
-            <Avatar src={profile.avatar_url} name={profile.display_name} size="sm" />
+            <Avatar src={avatarOf(profile)} name={profile.display_name} size="sm" />
             <span className="absolute -bottom-0.5 -right-0.5">
               <StatusDot presence={presenceOf(profile)} size="sm" ring />
             </span>

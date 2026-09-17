@@ -14,6 +14,7 @@ import { searchScopes } from '@/components/layout/SearchBar'
 import { useAsync } from '@/hooks/useAsync'
 import { listAssets, listCommunities, listSpaces, searchProfiles } from '@/lib/api'
 import { cn } from '@/lib/cn'
+import { avatarOf } from '@/lib/avatars'
 
 export default function Search() {
   const [params, setParams] = useSearchParams()
@@ -116,7 +117,7 @@ export default function Search() {
                     className="flex items-center gap-3 border-b border-ink-line/70 px-4 py-3 last:border-0"
                   >
                     <Link to={`/u/${person.username}`} className="shrink-0">
-                      <Avatar src={person.avatar_url} name={person.display_name} size="md" />
+                      <Avatar src={avatarOf(person)} name={person.display_name} size="md" />
                     </Link>
                     <div className="min-w-0 flex-1">
                       <Link

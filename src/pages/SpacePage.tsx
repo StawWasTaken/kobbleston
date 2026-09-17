@@ -25,6 +25,7 @@ import {
 } from '@/lib/api'
 import { formatCount, timeAgo } from '@/lib/format'
 import { cn } from '@/lib/cn'
+import { avatarOf } from '@/lib/avatars'
 
 const tabs = ['About', 'Badges'] as const
 type Tab = (typeof tabs)[number]
@@ -159,7 +160,7 @@ export default function SpacePage() {
                     className="mt-1 inline-flex items-center gap-2 text-sm text-white/70 transition-colors hover:text-white"
                   >
                     <span className="relative">
-                      <Avatar src={owner.avatar_url} name={owner.display_name} size="xs" />
+                      <Avatar src={avatarOf(owner)} name={owner.display_name} size="xs" />
                       <span className="absolute -bottom-0.5 -right-0.5">
                         <StatusDot presence={presenceOf(owner)} size="sm" ring />
                       </span>
@@ -176,7 +177,7 @@ export default function SpacePage() {
             <div className="mt-3 flex flex-wrap items-center gap-2">
               <Badge tone="brand">{categoryLabels[space.category]}</Badge>
               {!space.is_published && <Badge tone="warm">Draft</Badge>}
-              <Badge tone="neutral">SPC-{space.content_id ?? '—'}</Badge>
+              {space.content_id && <Badge tone="neutral">SPC-{space.content_id}</Badge>}
             </div>
 
             <div className="mt-auto pt-8">

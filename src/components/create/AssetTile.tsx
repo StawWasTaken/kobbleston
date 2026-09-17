@@ -34,9 +34,12 @@ export const contentTag = (kind: AssetKind, id: number | null) =>
 
 export function AssetTile({ item }: { item: MarketAsset }) {
   const preview = item.thumbnail_path ?? (item.kind === 'image' ? item.file_path : null)
+  const tag = contentTag(item.kind, item.content_id)
 
   return (
-    <article className="overflow-hidden rounded-xl border border-ink-line bg-ink-card transition-colors hover:border-brand/60">
+    <Link
+      to={tag ? `/create/${tag}` : '/create'}
+      className="block overflow-hidden rounded-xl border border-ink-line bg-ink-card transition-colors hover:border-brand/60">
       <div className="relative grid aspect-square place-items-center overflow-hidden bg-brand-ink">
         {preview ? (
           <img
@@ -55,10 +58,7 @@ export function AssetTile({ item }: { item: MarketAsset }) {
 
       <div className="p-3">
         <h3 className="truncate text-sm font-bold">{item.name}</h3>
-        <Link
-          to={`/u/${item.creator_username}`}
-          className="mt-1 flex items-center gap-1.5 text-xs text-muted hover:text-white"
-        >
+        <span className="mt-1 flex items-center gap-1.5 text-xs text-muted">
           <span className="truncate">{item.creator_display_name}</span>
           {item.creator_is_admin && (
             <FontAwesomeIcon
@@ -68,15 +68,15 @@ export function AssetTile({ item }: { item: MarketAsset }) {
               aria-label="Verified"
             />
           )}
-        </Link>
+        </span>
         <p className="mt-2 flex items-center justify-between gap-2 text-[11px] text-white/40">
           <span className="inline-flex items-center gap-1.5">
             <FontAwesomeIcon icon={faDownload} />
             {formatCount(item.download_count)}
           </span>
-          <span className="font-mono">{contentTag(item.kind, item.content_id)}</span>
+          <span className="font-mono">{tag}</span>
         </p>
       </div>
-    </article>
+    </Link>
   )
 }

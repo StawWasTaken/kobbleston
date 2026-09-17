@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { Link } from 'react-router-dom'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import {
   faUpload, faMagnifyingGlass, faClock, faCircleCheck, faCircleXmark, faTrash, faPlus,
@@ -10,11 +11,13 @@ import { Input } from '@/components/ui/Input'
 import { EmptyState, ErrorState, Skeleton } from '@/components/ui/States'
 import { useToast } from '@/components/ui/Toast'
 import { GuestGate } from '@/components/ui/GuestGate'
-import { AssetTile, kindIcons, kindLabels } from '@/components/create/AssetTile'
+import { AssetTile, contentTag, kindIcons, kindLabels } from '@/components/create/AssetTile'
 import { UploadDialog } from '@/components/create/UploadDialog'
 import { useAuth } from '@/hooks/useAuth'
 import { useAsync } from '@/hooks/useAsync'
-import { deleteAsset, listAssets, listOwnAssets, listSpacesByOwner } from '@/lib/api'
+import {
+  deleteAsset, listAssets, listOwnAssets, listSharedSpaces, listSpacesByOwner,
+} from '@/lib/api'
 import { timeAgo } from '@/lib/format'
 import { cn } from '@/lib/cn'
 import type { AssetKind, OwnAsset } from '@/types/db'
@@ -40,17 +43,25 @@ function OwnUpload({ item, onDeleted }: { item: OwnAsset; onDeleted: () => void 
     }
   }
 
+  const tag = contentTag(item.kind, item.content_id)
+
   return (
     <li className="flex items-center gap-3 border-b border-ink-line/70 px-4 py-3 last:border-0">
       <span className="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-ink-hover text-white/60">
         <FontAwesomeIcon icon={kindIcons[item.kind]} />
       </span>
       <div className="min-w-0 flex-1">
-        <p className="truncate text-sm font-bold">{item.name}</p>
+        <Link
+          to={tag ? `/create/${tag}` : '/create'}
+          className="block truncate text-sm font-bold hover:text-[#9fadff]"
+        >
+          {item.name}
+        </Link>
         <p className={cn('flex items-center gap-1.5 text-xs', look.tone)}>
           <FontAwesomeIcon icon={look.icon} />
           {look.label}
           <span className="text-muted">· {timeAgo(item.created_at)}</span>
+          {!item.is_public && <span className="text-muted">· Unlisted</span>}
         </p>
         {item.status === 'rejected' && item.review_note && (
           <p className="mt-1 text-xs text-white/50">{item.review_note}</p>
@@ -86,6 +97,10 @@ export default function Create() {
   )
   const spaces = useAsync(
     async () => (profile ? listSpacesByOwner(profile.id, true) : []),
+    [profile?.id],
+  )
+  const shared = useAsync(
+    async () => (profile ? listSharedSpaces() : []),
     [profile?.id],
   )
 
@@ -227,7 +242,7 @@ export default function Create() {
                   <span className="min-w-0 flex-1">
                     <span className="block truncate text-sm font-bold">{space.name}</span>
                     <span className="block text-xs text-muted">
-                      SPC-{space.content_id ?? '—'}{space.is_published ? '' : ' · draft'}
+                      {space.content_id ? `SPC-${space.content_id}` : 'No number yet'}{space.is_published ? '' : ' · draft'}
                     </span>
                   </span>
                   <Button size="sm" variant="subtle" to={`/spaces/${space.id}/edit`}>Configure</Button>
@@ -236,6 +251,31 @@ export default function Create() {
             </ul>
           )}
         </Card>
+
+        {/* Spaces somebody else owns that you have been asked to work on. */}
+        {!!shared.data?.length && (
+          <Card className="overflow-hidden">
+            <div className="border-b border-ink-line px-4 py-3.5">
+              <h2 className="text-sm font-extrabold">Shared With Me</h2>
+            </div>
+            <ul>
+              {shared.data.map((space) => (
+                <li
+                  key={space.id}
+                  className="flex items-center gap-3 border-b border-ink-line/70 px-4 py-2.5 last:border-0"
+                >
+                  <span className="grid h-9 w-9 shrink-0 place-items-center overflow-hidden rounded-lg bg-brand-ink text-xs">
+                    {space.emblem_url
+                      ? <img src={space.emblem_url} alt="" className="h-full w-full object-cover" />
+                      : space.name.slice(0, 2).toUpperCase()}
+                  </span>
+                  <span className="min-w-0 flex-1 truncate text-sm font-bold">{space.name}</span>
+                  <Button size="sm" variant="subtle" to={`/spaces/${space.id}/edit`}>Open</Button>
+                </li>
+              ))}
+            </ul>
+          </Card>
+        )}
       </aside>
 
       <UploadDialog

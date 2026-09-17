@@ -4,6 +4,7 @@ import { faBan, faFlag } from '@fortawesome/free-solid-svg-icons'
 import { Avatar } from '@/components/ui/Avatar'
 import { cn } from '@/lib/cn'
 import type { ConversationMember } from '@/types/db'
+import { avatarOf } from '@/lib/avatars'
 
 /**
  * Opens every conversation and stays at the top of its history, so the
@@ -20,7 +21,7 @@ export function SafetyNote({
   return (
     <div className={cn('rounded-xl border border-ink-line bg-ink-raised p-3', className)}>
       <Link to={`/u/${person.username}`} className="flex items-center gap-2">
-        <Avatar src={person.avatar_url} name={person.display_name} size="sm" />
+        <Avatar src={avatarOf(person)} name={person.display_name} size="sm" />
         <span className="min-w-0">
           <span className="block truncate text-sm font-bold">{person.display_name}</span>
           <span className="block truncate text-xs text-muted">@{person.username}</span>

@@ -9,6 +9,7 @@ import { listSpaceMessages, sendSpaceMessage } from '@/lib/api'
 import { supabase } from '@/lib/supabase'
 import { cn } from '@/lib/cn'
 import type { Space, SpaceMessage } from '@/types/db'
+import { avatarOf } from '@/lib/avatars'
 
 /**
  * The chat that comes with every Space. The owner decides whether it is on,
@@ -101,7 +102,7 @@ export function SpaceChat({ space }: { space: Space }) {
         {messages.map((message) => (
           <div key={message.id} className="flex gap-2.5">
             <Avatar
-              src={message.sender?.avatar_url}
+              src={avatarOf(message.sender)}
               name={message.sender?.display_name ?? 'K'}
               size="xs"
               className="mt-0.5"

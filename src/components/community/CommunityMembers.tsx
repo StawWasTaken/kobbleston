@@ -16,6 +16,7 @@ import {
 } from '@/lib/api'
 import { timeAgo } from '@/lib/format'
 import type { CommunityOverview } from '@/types/db'
+import { avatarOf } from '@/lib/avatars'
 
 export function CommunityMembers({
   communityId, ownerId, rights, onChanged,
@@ -58,7 +59,7 @@ export function CommunityMembers({
                   key={person.id}
                   className="flex items-center gap-3 border-b border-ink-line/70 px-4 py-3 last:border-0"
                 >
-                  <Avatar src={person.avatar_url} name={person.display_name} size="md" />
+                  <Avatar src={avatarOf(person)} name={person.display_name} size="md" />
                   <div className="min-w-0 flex-1">
                     <Link to={`/u/${person.username}`} className="block truncate font-bold hover:underline">
                       {person.display_name}
@@ -104,7 +105,7 @@ export function CommunityMembers({
                   className="flex flex-wrap items-center gap-3 border-b border-ink-line/70 px-4 py-3 last:border-0"
                 >
                   <Link to={`/u/${member.username}`} className="shrink-0">
-                    <Avatar src={member.avatar_url} name={member.display_name} size="md" />
+                    <Avatar src={avatarOf(member)} name={member.display_name} size="md" />
                   </Link>
                   <div className="min-w-0 flex-1">
                     <Link

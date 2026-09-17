@@ -6,6 +6,7 @@ import { Avatar } from '@/components/ui/Avatar'
 import { Tooltip } from '@/components/ui/Tooltip'
 import { cn } from '@/lib/cn'
 import type { ConversationMember, Message } from '@/types/db'
+import { avatarOf } from '@/lib/avatars'
 
 /**
  * One message, with its sender's picture beside it. Your own can be changed
@@ -66,7 +67,7 @@ export function MessageRow({
           className="shrink-0"
           aria-label={sender?.display_name ?? 'Profile'}
         >
-          <Avatar src={sender?.avatar_url} name={sender?.display_name ?? 'K'} size="xs" />
+          <Avatar src={avatarOf(sender)} name={sender?.display_name ?? 'K'} size="xs" />
         </Link>
       )}
 

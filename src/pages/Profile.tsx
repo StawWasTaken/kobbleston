@@ -25,6 +25,7 @@ import {
 import { formatCount } from '@/lib/format'
 import { asset } from '@/lib/asset'
 import { cn } from '@/lib/cn'
+import { avatarOf } from '@/lib/avatars'
 
 const tabs = ['About', 'Creations'] as const
 type Tab = (typeof tabs)[number]
@@ -158,7 +159,7 @@ export default function Profile() {
       <Page className="-mt-14">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-end">
           <Avatar
-            src={user.avatar_url}
+            src={avatarOf(user)}
             name={user.display_name}
             size="xl"
             className="rounded-2xl ring-4 ring-ink"
