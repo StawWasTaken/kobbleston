@@ -489,7 +489,7 @@ export default function AssetPage() {
               {
                 label: 'Price',
                 value: asset.price > 0
-                  ? <span className="inline-flex items-center gap-1.5"><Kube className="text-link" />{formatCount(asset.price)}</span>
+                  ? <span className="inline-flex items-center gap-1.5"><Kube />{formatCount(asset.price)}</span>
                   : 'Free',
               },
             ].map((fact) => (

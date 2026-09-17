@@ -118,7 +118,7 @@ export default function ConfigureCommunity() {
           <p className="mt-0.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted">
             <span>{formatCount(group.member_count)} members</span>
             <span className="inline-flex items-center gap-1.5">
-              <Kube className="text-link" />
+              <Kube />
               {formatCount(group.funds ?? 0)} in funds
             </span>
             {group.is_removed && <Badge tone="warm">Closed</Badge>}

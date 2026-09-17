@@ -360,7 +360,7 @@ function Kubes() {
   return (
     <Card className="overflow-hidden">
       <div className="flex items-center gap-3 border-b border-ink-line px-5 py-4">
-        <Kube className="text-lg text-link" />
+        <Kube className="text-lg" />
         <p className="font-display text-2xl font-extrabold tabular-nums">
           {formatCount(profile?.pixels ?? 0)}
         </p>

@@ -12,7 +12,7 @@ export function KubeBalance({ amount }: { amount: number }) {
         className="hidden items-center gap-1.5 rounded-lg px-2 py-1.5 text-sm font-bold text-onbrand transition-colors hover:bg-onbrand/15 sm:flex"
         aria-label={`${amount} Kubes`}
       >
-        <Kube className="text-link" />
+        <Kube />
         {formatCount(amount)}
       </Link>
     </Tooltip>

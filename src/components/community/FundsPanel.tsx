@@ -67,7 +67,7 @@ export function FundsPanel({
         </div>
 
         <p className="flex items-center gap-2 font-display text-3xl font-extrabold tabular-nums">
-          <Kube className="text-link" />
+          <Kube />
           {formatCount(group.funds ?? 0)}
         </p>
 
@@ -117,7 +117,7 @@ export function FundsPanel({
                 )}
               >
                 {row.amount > 0 ? '+' : ''}{row.amount}
-                <Kube className="text-xs opacity-70" />
+                <Kube className="text-xs" />
               </span>
             </li>
           ))}

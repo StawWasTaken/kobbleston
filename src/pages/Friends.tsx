@@ -2,69 +2,124 @@ import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import {
-  faCheck, faComment, faMagnifyingGlass, faUserMinus, faUserPlus, faXmark,
+  faCheck, faComment, faEllipsis, faFilter, faInbox, faUserGroup, faUserMinus, faUserPlus,
+  faUsers, faXmark, faHeart, faStar,
 } from '@fortawesome/free-solid-svg-icons'
+import type { IconDefinition } from '@fortawesome/fontawesome-svg-core'
 import { Page } from '@/components/layout/AppShell'
 import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
 import { Input } from '@/components/ui/Input'
+import { Menu } from '@/components/ui/Menu'
 import { Avatar } from '@/components/ui/Avatar'
 import { StatusDot, presenceOf } from '@/components/ui/StatusDot'
 import { EmptyState, ErrorState, Skeleton } from '@/components/ui/States'
-import { Tooltip } from '@/components/ui/Tooltip'
 import { useToast } from '@/components/ui/Toast'
 import { useChatDock } from '@/components/chat/ChatDock'
 import { useAuth } from '@/hooks/useAuth'
 import { useAsync } from '@/hooks/useAsync'
+import { useTitle } from '@/hooks/useTitle'
 import {
-  listFollows, listFriendships, removeFriendship, respondToFriendRequest, searchProfiles,
-  sendFriendRequest, startConversation,
+  listFollows, listFriendships, removeFriendship, respondToFriendRequest, startConversation,
 } from '@/lib/api'
 import { avatarOf } from '@/lib/avatars'
+import { profileLink } from '@/lib/links'
+import { timeAgo } from '@/lib/format'
 import { cn } from '@/lib/cn'
 import type { Profile } from '@/types/db'
-import { profileLink } from '@/lib/links'
-import { useTitle } from '@/hooks/useTitle'
 import { Verified, isVerified } from '@/components/brand/Verified'
 
-const tabs = ['Friends', 'Requests', 'Following', 'Followers'] as const
-type Tab = (typeof tabs)[number]
+const tabs = [
+  { name: 'Friends', icon: faUserGroup },
+  { name: 'Requests', icon: faInbox },
+  { name: 'Following', icon: faHeart },
+  { name: 'Followers', icon: faStar },
+] as const
+type Tab = (typeof tabs)[number]['name']
+
+const presenceWord: Record<ReturnType<typeof presenceOf>, string> = {
+  'in-space': 'In a Space',
+  online: 'Online',
+  offline: 'Offline',
+}
 
 /**
- * One person as a tile: the picture is the thing you recognise, the actions
- * sit under it. A page of these reads as people, not as a spreadsheet.
+ * A person in one of your lists: the picture, whether they are about, and
+ * what you can do with them, on a single line you can run your eye down.
  */
-function PersonTile({ person, actions }: { person: Profile; actions?: React.ReactNode }) {
+function PersonRow({
+  person, note, actions, menu,
+}: {
+  person: Profile
+  note?: string
+  actions?: React.ReactNode
+  menu?: React.ReactNode
+}) {
   const presence = presenceOf(person)
 
   return (
-    <article className="flex flex-col items-center rounded-2xl border border-ink-line bg-ink-card p-3 text-center transition-colors hover:border-brand/60">
-      <Link to={profileLink(person)} className="relative">
-        <Avatar src={avatarOf(person)} name={person.display_name} size="xl" className="rounded-2xl" />
-        <span className="absolute bottom-0 right-0">
+    <li className="flex items-center gap-3 rounded-2xl border border-ink-line bg-ink-card p-3 transition-colors hover:border-brand/60">
+      <Link to={profileLink(person)} className="relative shrink-0">
+        <Avatar src={avatarOf(person)} name={person.display_name} size="md" className="rounded-xl" />
+        <span className="absolute -bottom-0.5 -right-0.5">
           <StatusDot presence={presence} ring />
         </span>
       </Link>
 
-      <Link
-        to={profileLink(person)}
-        className="mt-2.5 flex w-full items-center justify-center gap-1 text-sm font-bold hover:text-link"
-      >
-        <span className="truncate">{person.display_name}</span>
-        {isVerified(person) && <Verified className="text-[11px]" />}
-      </Link>
-      <span className="w-full truncate text-xs text-muted">@{person.username}</span>
+      <div className="min-w-0 flex-1">
+        <Link to={profileLink(person)} className="flex items-center gap-1.5 hover:text-link">
+          <span className="truncate text-sm font-bold">{person.display_name}</span>
+          {isVerified(person) && <Verified className="text-[11px]" />}
+        </Link>
+        <p className="truncate text-xs text-muted">
+          @{person.username}
+          <span className={cn(presence === 'in-space' && 'text-space-bright')}>
+            {' · '}{note ?? presenceWord[presence]}
+          </span>
+        </p>
+      </div>
 
-      {actions && <div className="mt-3 flex w-full items-center justify-center gap-1.5">{actions}</div>}
-    </article>
+      {actions && <div className="flex shrink-0 items-center gap-1.5">{actions}</div>}
+      {menu}
+    </li>
   )
 }
 
-function Grid({ children }: { children: React.ReactNode }) {
+function List({ children }: { children: React.ReactNode }) {
+  return <ul className="grid gap-2.5 sm:grid-cols-2 xl:grid-cols-3">{children}</ul>
+}
+
+function Loading() {
+  return <List>{[0, 1, 2, 3, 4, 5].map((i) => <Skeleton key={i} className="h-[4.75rem] rounded-2xl" />)}</List>
+}
+
+/** A count that is a real number from a real list, never a guess. */
+function Count({ icon, value, label, active, onClick }: {
+  icon: IconDefinition
+  value: number | null
+  label: string
+  active: boolean
+  onClick: () => void
+}) {
   return (
-    <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6">
-      {children}
-    </div>
+    <button
+      onClick={onClick}
+      aria-pressed={active}
+      className={cn(
+        'flex items-center gap-3 rounded-2xl border px-4 py-3 text-left transition-colors',
+        active
+          ? 'border-brand-bright bg-brand/15'
+          : 'border-ink-line bg-ink-card hover:bg-ink-hover',
+      )}
+    >
+      <FontAwesomeIcon icon={icon} className="text-base" />
+      <span className="min-w-0">
+        <span className="block font-display text-xl font-extrabold tabular-nums leading-none">
+          {value ?? '·'}
+        </span>
+        <span className="block text-xs text-muted">{label}</span>
+      </span>
+    </button>
   )
 }
 
@@ -76,11 +131,10 @@ export default function Friends() {
 
   const [tab, setTab] = useState<Tab>('Friends')
   const [term, setTerm] = useState('')
-  const [debounced, setDebounced] = useState('')
-  const [sent, setSent] = useState<string[]>([])
+  const [filter, setFilter] = useState('')
 
   useEffect(() => {
-    const timer = window.setTimeout(() => setDebounced(term.trim()), 250)
+    const timer = window.setTimeout(() => setFilter(term.trim().toLowerCase()), 200)
     return () => window.clearTimeout(timer)
   }, [term])
 
@@ -88,34 +142,37 @@ export default function Friends() {
     async () => (profile ? listFriendships(profile.id) : []),
     [profile?.id],
   )
+  // Both sides of following are asked for at once, so the counts on the page
+  // are the lists themselves rather than a separate number to go stale.
   const following = useAsync(
-    async () => (profile && tab === 'Following' ? listFollows(profile.id, 'following') : []),
-    [profile?.id, tab],
+    async () => (profile ? listFollows(profile.id, 'following') : []),
+    [profile?.id],
   )
   const followers = useAsync(
-    async () => (profile && tab === 'Followers' ? listFollows(profile.id, 'followers') : []),
-    [profile?.id, tab],
-  )
-  // Searching looks outward: the same box finds people you have not met.
-  const found = useAsync(
-    async () => (debounced ? searchProfiles(debounced, profile?.id, 24) : []),
-    [debounced, profile?.id],
+    async () => (profile ? listFollows(profile.id, 'followers') : []),
+    [profile?.id],
   )
 
   const edges = data ?? []
-  const friends = edges.filter((e) => e.friendship.status === 'accepted')
+  const friends = edges
+    .filter((e) => e.friendship.status === 'accepted')
+    .sort((a, b) => Number(b.profile.is_online) - Number(a.profile.is_online))
   const incoming = edges.filter(
     (e) => e.friendship.status === 'pending' && e.friendship.addressee_id === profile?.id,
   )
   const outgoing = edges.filter(
     (e) => e.friendship.status === 'pending' && e.friendship.requester_id === profile?.id,
   )
-  const known = new Set(edges.map((e) => e.profile.id))
+  const online = friends.filter((f) => f.profile.is_online).length
 
-  const shownFriends = friends.filter(({ profile: person }) =>
-    !debounced
-    || person.display_name.toLowerCase().includes(debounced.toLowerCase())
-    || person.username.toLowerCase().includes(debounced.toLowerCase()))
+  const matches = (person: Profile) =>
+    !filter
+    || person.display_name.toLowerCase().includes(filter)
+    || person.username.toLowerCase().includes(filter)
+
+  const shownFriends = friends.filter((f) => matches(f.profile))
+  const shownFollowing = (following.data ?? []).filter(matches)
+  const shownFollowers = (followers.data ?? []).filter(matches)
 
   const respond = async (id: string, accept: boolean) => {
     try {
@@ -127,27 +184,7 @@ export default function Friends() {
     }
   }
 
-  const add = async (person: Profile) => {
-    if (!profile) return
-    try {
-      await sendFriendRequest(profile.id, person.id)
-      setSent((all) => [...all, person.id])
-      toast(`Friend request sent to ${person.display_name}.`, 'success')
-      reload()
-    } catch (err) {
-      const message = err instanceof Error ? err.message : 'That did not send.'
-      toast(
-        message.includes('row-level security')
-          ? 'Guests cannot add friends. Make an account and you can.'
-          : message.includes('duplicate')
-            ? 'You already asked this person.'
-            : message,
-        'error',
-      )
-    }
-  }
-
-  const message = async (otherId: string) => {
+  const chat = async (otherId: string) => {
     try {
       openConversation(await startConversation(otherId))
     } catch (err) {
@@ -155,12 +192,17 @@ export default function Friends() {
     }
   }
 
-  const counts: Record<Tab, number | null> = {
-    Friends: friends.length,
-    Requests: incoming.length,
-    Following: null,
-    Followers: null,
+  const drop = async (id: string, name: string) => {
+    try {
+      await removeFriendship(id)
+      toast(`${name} is no longer a friend.`, 'info')
+      reload()
+    } catch (err) {
+      toast(err instanceof Error ? err.message : 'That did not work.', 'error')
+    }
   }
+
+  const waiting = incoming.length
 
   return (
     <Page className="space-y-5">
@@ -169,85 +211,112 @@ export default function Friends() {
           <h1 className="font-display text-3xl font-extrabold sm:text-4xl">Friends</h1>
           <p className="mt-1.5 text-sm text-muted">
             {friends.length
-              ? `${friends.length} ${friends.length === 1 ? 'person' : 'people'}, ${friends.filter((f) => f.profile.is_online).length} online.`
-              : 'Nobody yet. Search for somebody to get started.'}
+              ? `${friends.length} ${friends.length === 1 ? 'friend' : 'friends'}, ${online} online.`
+              : 'Nobody yet. People is where you find somebody.'}
           </p>
         </div>
+
+        <Button variant="subtle" icon={faUsers} to="/people">Find people</Button>
       </header>
 
-      <Input
-        icon={faMagnifyingGlass}
-        value={term}
-        onChange={(e) => setTerm(e.target.value)}
-        placeholder="Search your friends, or find somebody new"
-        aria-label="Search people"
-      />
-
-      <div className="flex overflow-x-auto border-b border-ink-line kob-scroll" role="tablist">
-        {tabs.map((name) => (
-          <button
-            key={name}
-            role="tab"
-            aria-selected={tab === name}
-            onClick={() => setTab(name)}
-            className={cn(
-              'shrink-0 border-b-2 px-5 py-3 text-sm font-bold transition-colors sm:px-8',
-              tab === name
-                ? 'border-white text-white'
-                : 'border-transparent text-white/50 hover:text-white',
-            )}
-          >
-            {name}
-            {!!counts[name] && <span className="ml-1.5 text-link">({counts[name]})</span>}
-          </button>
-        ))}
+      {/* The four numbers are the four lists, and each one is the way in. */}
+      <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-4">
+        <Count
+          icon={faUserGroup}
+          value={loading ? null : friends.length}
+          label="Friends"
+          active={tab === 'Friends'}
+          onClick={() => setTab('Friends')}
+        />
+        <Count
+          icon={faInbox}
+          value={loading ? null : waiting}
+          label={waiting === 1 ? 'Request' : 'Requests'}
+          active={tab === 'Requests'}
+          onClick={() => setTab('Requests')}
+        />
+        <Count
+          icon={faHeart}
+          value={following.loading ? null : following.data?.length ?? 0}
+          label="Following"
+          active={tab === 'Following'}
+          onClick={() => setTab('Following')}
+        />
+        <Count
+          icon={faStar}
+          value={followers.loading ? null : followers.data?.length ?? 0}
+          label="Followers"
+          active={tab === 'Followers'}
+          onClick={() => setTab('Followers')}
+        />
       </div>
+
+      {tab !== 'Requests' && (
+        <Input
+          icon={faFilter}
+          value={term}
+          onChange={(e) => setTerm(e.target.value)}
+          placeholder={`Filter your ${tab.toLowerCase()}`}
+          aria-label={`Filter your ${tab.toLowerCase()}`}
+        />
+      )}
 
       {error && <ErrorState message={error} onRetry={reload} />}
 
       {tab === 'Friends' && (
         <>
-          {loading && (
-            <Grid>{[0, 1, 2, 3, 4, 5].map((i) => <Skeleton key={i} className="h-48 rounded-2xl" />)}</Grid>
-          )}
+          {loading && <Loading />}
 
           {!loading && !shownFriends.length && (
             <Card>
               <EmptyState
-                mood={debounced ? 'noResults' : 'emptyBox'}
-                title={debounced ? 'None of your friends match' : 'No friends yet'}
+                mood={filter ? 'noResults' : 'emptyBox'}
+                title={filter ? 'None of your friends match' : 'No friends yet'}
                 body={
-                  debounced
-                    ? 'Anyone new matching that is below.'
-                    : 'Find somebody by name and send them a request.'
+                  filter
+                    ? 'Try fewer letters.'
+                    : 'People is everybody on Kobbleston. Send somebody a request and they turn up here.'
+                }
+                action={
+                  filter
+                    ? <Button variant="subtle" onClick={() => setTerm('')}>Clear the filter</Button>
+                    : <Button icon={faUsers} to="/people">Find people</Button>
                 }
               />
             </Card>
           )}
 
           {!!shownFriends.length && (
-            <Grid>
+            <List>
               {shownFriends.map(({ friendship, profile: person }) => (
-                <PersonTile
+                <PersonRow
                   key={friendship.id}
                   person={person}
                   actions={
-                    <>
-                      <Button size="sm" icon={faComment} onClick={() => message(person.id)}>Chat</Button>
-                      <Tooltip label={`Remove ${person.display_name}`} side="top">
-                        <Button
-                          size="sm"
-                          variant="ghost"
-                          icon={faUserMinus}
-                          aria-label={`Remove ${person.display_name}`}
-                          onClick={async () => { await removeFriendship(friendship.id); reload() }}
-                        />
-                      </Tooltip>
-                    </>
+                    <Button size="sm" icon={faComment} onClick={() => chat(person.id)}>Chat</Button>
+                  }
+                  menu={
+                    <Menu
+                      label={`Options for ${person.display_name}`}
+                      trigger={
+                        <span className="grid h-8 w-8 place-items-center rounded-lg text-white/45 transition-colors hover:bg-ink-hover hover:text-white">
+                          <FontAwesomeIcon icon={faEllipsis} />
+                        </span>
+                      }
+                      items={[
+                        { label: 'Open profile', icon: faUserGroup, to: profileLink(person) },
+                        {
+                          label: 'Remove friend',
+                          icon: faUserMinus,
+                          danger: true,
+                          onSelect: () => drop(friendship.id, person.display_name),
+                        },
+                      ]}
+                    />
                   }
                 />
               ))}
-            </Grid>
+            </List>
           )}
         </>
       )}
@@ -255,17 +324,21 @@ export default function Friends() {
       {tab === 'Requests' && (
         <div className="space-y-6">
           <section>
-            <h2 className="mb-3 text-sm font-extrabold uppercase tracking-wide text-muted">
+            <h2 className="mb-3 flex items-center gap-2 text-sm font-extrabold uppercase tracking-wide text-muted">
+              <FontAwesomeIcon icon={faInbox} />
               Waiting on you
             </h2>
-            {!incoming.length ? (
+            {loading && <Loading />}
+            {!loading && !incoming.length && (
               <p className="text-sm text-muted">Nobody has asked.</p>
-            ) : (
-              <Grid>
+            )}
+            {!!incoming.length && (
+              <List>
                 {incoming.map(({ friendship, profile: person }) => (
-                  <PersonTile
+                  <PersonRow
                     key={friendship.id}
                     person={person}
+                    note={`Asked ${timeAgo(friendship.created_at)}`}
                     actions={
                       <>
                         <Button size="sm" icon={faCheck} onClick={() => respond(friendship.id, true)}>
@@ -282,34 +355,36 @@ export default function Friends() {
                     }
                   />
                 ))}
-              </Grid>
+              </List>
             )}
           </section>
 
           <section>
-            <h2 className="mb-3 text-sm font-extrabold uppercase tracking-wide text-muted">
+            <h2 className="mb-3 flex items-center gap-2 text-sm font-extrabold uppercase tracking-wide text-muted">
+              <FontAwesomeIcon icon={faUserPlus} />
               You asked
             </h2>
             {!outgoing.length ? (
               <p className="text-sm text-muted">You have not asked anybody.</p>
             ) : (
-              <Grid>
+              <List>
                 {outgoing.map(({ friendship, profile: person }) => (
-                  <PersonTile
+                  <PersonRow
                     key={friendship.id}
                     person={person}
+                    note={`Sent ${timeAgo(friendship.created_at)}`}
                     actions={
                       <Button
                         size="sm"
                         variant="subtle"
-                        onClick={async () => { await removeFriendship(friendship.id); reload() }}
+                        onClick={() => drop(friendship.id, person.display_name)}
                       >
                         Cancel
                       </Button>
                     }
                   />
                 ))}
-              </Grid>
+              </List>
             )}
           </section>
         </div>
@@ -317,62 +392,58 @@ export default function Friends() {
 
       {(tab === 'Following' || tab === 'Followers') && (() => {
         const source = tab === 'Following' ? following : followers
+        const shown = tab === 'Following' ? shownFollowing : shownFollowers
+
         return (
           <>
-            {source.loading && (
-              <Grid>{[0, 1, 2, 3].map((i) => <Skeleton key={i} className="h-48 rounded-2xl" />)}</Grid>
-            )}
-            {!source.loading && !source.data?.length && (
+            {source.loading && <Loading />}
+            {source.error && <ErrorState message={source.error} onRetry={source.reload} />}
+
+            {!source.loading && !shown.length && (
               <Card>
                 <EmptyState
-                  mood="emptyBox"
-                  title={tab === 'Following' ? 'Not following anybody' : 'No followers yet'}
+                  mood={filter ? 'noResults' : 'emptyBox'}
+                  title={
+                    filter
+                      ? 'Nobody here matches'
+                      : tab === 'Following' ? 'Not following anybody' : 'No followers yet'
+                  }
                   body={
-                    tab === 'Following'
-                      ? 'Following somebody puts their new Spaces in front of you.'
-                      : 'Publish something and people will start following you.'
+                    filter
+                      ? 'Try fewer letters.'
+                      : tab === 'Following'
+                        ? 'Following somebody puts their new Spaces in front of you.'
+                        : 'Publish something and people will start following you.'
+                  }
+                  action={
+                    filter
+                      ? <Button variant="subtle" onClick={() => setTerm('')}>Clear the filter</Button>
+                      : tab === 'Following'
+                        ? <Button icon={faUsers} to="/people">Find people</Button>
+                        : <Button to="/create/spaces">Make a Space</Button>
                   }
                 />
               </Card>
             )}
-            {!!source.data?.length && (
-              <Grid>
-                {source.data.map((person) => <PersonTile key={person.id} person={person} />)}
-              </Grid>
+
+            {!!shown.length && (
+              <List>
+                {shown.map((person) => (
+                  <PersonRow
+                    key={person.id}
+                    person={person}
+                    actions={
+                      <Button size="sm" variant="ghost" icon={faComment} onClick={() => chat(person.id)}>
+                        Chat
+                      </Button>
+                    }
+                  />
+                ))}
+              </List>
             )}
           </>
         )
       })()}
-
-      {/* Searching always offers people you do not know yet, whatever tab you
-          are on, so finding somebody never means going somewhere else. */}
-      {!!debounced && !!found.data?.filter((p) => !known.has(p.id)).length && (
-        <section>
-          <h2 className="mb-3 flex items-center gap-2 text-sm font-extrabold uppercase tracking-wide text-muted">
-            <FontAwesomeIcon icon={faUserPlus} />
-            People matching &ldquo;{debounced}&rdquo;
-          </h2>
-          <Grid>
-            {found.data.filter((p) => !known.has(p.id)).map((person) => (
-              <PersonTile
-                key={person.id}
-                person={person}
-                actions={
-                  <Button
-                    size="sm"
-                    variant={sent.includes(person.id) ? 'subtle' : 'primary'}
-                    icon={sent.includes(person.id) ? faCheck : faUserPlus}
-                    disabled={sent.includes(person.id)}
-                    onClick={() => add(person)}
-                  >
-                    {sent.includes(person.id) ? 'Sent' : 'Add'}
-                  </Button>
-                }
-              />
-            ))}
-          </Grid>
-        </section>
-      )}
     </Page>
   )
 }

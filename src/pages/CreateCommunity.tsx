@@ -152,7 +152,7 @@ export default function CreateCommunity() {
         <div className="flex flex-wrap items-center justify-end gap-3">
           {!affordable && (
             <p className="mr-auto text-sm text-danger">
-              You need <Kube className="text-link" /> {COST}. You have {profile?.pixels ?? 0}.
+              You need <Kube /> {COST}. You have {profile?.pixels ?? 0}.
             </p>
           )}
           <Button type="button" variant="ghost" onClick={() => navigate(-1)}>Cancel</Button>
