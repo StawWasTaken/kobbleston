@@ -24,6 +24,10 @@ export default {
          * the way the rest of the interface flips.
          */
         chrome: 'rgb(var(--chrome) / <alpha-value>)',
+        /* What a picture or a player sits on before it has loaded. */
+        media: 'rgb(var(--media) / <alpha-value>)',
+        /* The search field that sits on the chrome. */
+        field: 'rgb(var(--field) / <alpha-value>)',
         onbrand: 'rgb(var(--on-chrome) / <alpha-value>)',
         brand: {
           DEFAULT: '#1B34E8',

@@ -17,7 +17,7 @@ export function Carousel({ images, alt }: { images: string[]; alt: string }) {
 
   return (
     <div>
-      <div className="group relative aspect-[16/9] overflow-hidden rounded-xl border border-ink-line bg-brand-ink">
+      <div className="group relative aspect-[16/9] overflow-hidden rounded-xl border border-ink-line bg-media">
         {images.map((url, i) => (
           <span
             key={url}

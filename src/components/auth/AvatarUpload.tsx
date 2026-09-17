@@ -67,7 +67,7 @@ export function AvatarUpload({
           {preview ? (
             <>
               <img src={preview} alt="" className="h-full w-full object-cover" />
-              <span className="absolute inset-0 grid place-items-center bg-black/55 text-white opacity-0 transition-opacity group-hover:opacity-100">
+              <span className="absolute inset-0 grid place-items-center bg-black/55 text-[#fff] opacity-0 transition-opacity group-hover:opacity-100">
                 <FontAwesomeIcon icon={faCamera} />
               </span>
             </>

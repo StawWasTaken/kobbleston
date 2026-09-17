@@ -30,10 +30,19 @@ export function SearchBar({ className }: { className?: string }) {
     return () => document.removeEventListener('pointerdown', onPointer)
   }, [])
 
+  /*
+   * Create has its own search on its own pages, so picking the marketplace
+   * hands you over to it rather than showing a thin copy of it here.
+   */
   const go = (tab: string) => {
-    if (!term.trim()) return
+    const query = term.trim()
+    if (!query) return
     setOpen(false)
-    navigate(`/search?q=${encodeURIComponent(term.trim())}&tab=${tab}`)
+    navigate(
+      tab === 'create'
+        ? `/create/marketplace?q=${encodeURIComponent(query)}`
+        : `/search?q=${encodeURIComponent(query)}&tab=${tab}`,
+    )
   }
 
   const onKeyDown = (e: React.KeyboardEvent) => {
@@ -67,7 +76,7 @@ export function SearchBar({ className }: { className?: string }) {
           role="combobox"
           aria-expanded={showing}
           aria-controls="search-scopes"
-          className="h-9 w-full rounded-lg border border-onbrand/20 bg-black/30 pl-9 pr-9 text-sm text-onbrand placeholder:text-onbrand/45 focus:border-onbrand/50 focus:bg-black/45"
+          className="h-9 w-full rounded-lg border border-onbrand/15 bg-field pl-9 pr-9 text-sm text-onbrand placeholder:text-onbrand/45 transition-colors focus:border-brand-bright"
         />
         {term && (
           <button

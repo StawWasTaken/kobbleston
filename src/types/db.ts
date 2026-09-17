@@ -145,15 +145,8 @@ export type AssetReview = {
   up: boolean | null
 }
 
-export type UsableAsset = {
-  id: string
-  kind: AssetKind
-  name: string
-  file_path: string
-  thumbnail_path: string | null
-  content_id: number | null
-  creator_username: string
-  source: 'yours' | 'verified' | 'granted'
+export type OwnedAsset = MarketAsset & {
+  source: 'yours' | 'verified' | 'collected'
 }
 
 export type CreatorAssetRow = {

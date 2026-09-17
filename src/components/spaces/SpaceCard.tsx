@@ -61,7 +61,7 @@ export function SpaceCard({ space, className }: { space: Space; className?: stri
       >
       <Link
         to={href}
-        className="relative block aspect-square overflow-hidden rounded-xl bg-brand-ink ring-1 ring-ink-line transition-[transform,box-shadow] duration-200 group-hover:-translate-y-0.5 group-hover:ring-brand/70"
+        className="relative block aspect-square overflow-hidden rounded-xl bg-media ring-1 ring-ink-line transition-[transform,box-shadow] duration-200 group-hover:-translate-y-0.5 group-hover:ring-brand/70"
       >
         <img
           src={picture}

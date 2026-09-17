@@ -6,7 +6,7 @@ import type {
   CommunityMember, CommunityOverview, CommunityPost, CommunityRank, CommunityRequest,
   CommunityRelation, CommunityBan, CommunityAuditEntry,
   AssetPageItem, AssetDay, CreatorAssetRow, Collaborator, UsernameRecord,
-  AssetRequest, UsableAsset, AssetReview, CreatorPage,
+  AssetRequest, OwnedAsset, AssetReview, CreatorPage,
 } from '@/types/db'
 
 const SPACE_FIELDS =
@@ -431,9 +431,11 @@ export async function listAssetRequests(): Promise<AssetRequest[]> {
   return (unwrap(await supabase.rpc('asset_requests_for_me')) as AssetRequest[]) ?? []
 }
 
-/** Everything you are allowed to use by ID. */
-export async function listUsableAssets(): Promise<UsableAsset[]> {
-  return (unwrap(await supabase.rpc('assets_i_can_use')) as UsableAsset[]) ?? []
+/** Everything in your inventory: your own, verified, and what you have taken. */
+export async function listInventory(kind?: AssetKind): Promise<OwnedAsset[]> {
+  return (unwrap(await supabase.rpc('my_inventory', {
+    kind_filter: kind ?? null,
+  })) as OwnedAsset[]) ?? []
 }
 
 export type AssetSort = 'new' | 'used' | 'rated' | 'cheap'

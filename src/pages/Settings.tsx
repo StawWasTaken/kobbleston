@@ -25,13 +25,13 @@ import { formatCount, timeAgo } from '@/lib/format'
 import { cn } from '@/lib/cn'
 import { useTitle } from '@/hooks/useTitle'
 
-type Section = 'Account info' | 'Security' | 'Appearance' | 'Pixels' | 'Safety'
+type Section = 'Account info' | 'Security' | 'Appearance' | 'Kubes' | 'Safety'
 
 const sections: { name: Section; icon: IconDefinition }[] = [
   { name: 'Account info', icon: faUser },
   { name: 'Security', icon: faLock },
   { name: 'Appearance', icon: faPalette },
-  { name: 'Pixels', icon: faCubes },
+  { name: 'Kubes', icon: faCubes },
   { name: 'Safety', icon: faShieldHalved },
 ]
 
@@ -191,7 +191,7 @@ function AccountInfo() {
         open={renaming}
         onClose={() => setRenaming(false)}
         title="Change your username"
-        description={`It costs ${USERNAME_CHANGE_COST} Pixels, and your old names stay on your profile.`}
+        description={`It costs ${USERNAME_CHANGE_COST} Kubes, and your old names stay on your profile.`}
         footer={
           <>
             <Button variant="ghost" onClick={() => setRenaming(false)}>Cancel</Button>
@@ -200,7 +200,7 @@ function AccountInfo() {
               disabled={!affordable || newName.trim().length < 3}
               onClick={rename}
             >
-              Pay {USERNAME_CHANGE_COST} Pixels
+              Pay {USERNAME_CHANGE_COST} Kubes
             </Button>
           </>
         }
@@ -214,7 +214,7 @@ function AccountInfo() {
           hint="3 to 16 letters, numbers or underscores."
         />
         <p className={cn('mt-3 text-sm', affordable ? 'text-muted' : 'text-red-300')}>
-          You have {formatCount(profile.pixels)} Pixels.
+          You have {formatCount(profile.pixels)} Kubes.
           {!affordable && ` You need ${USERNAME_CHANGE_COST}.`}
         </p>
       </Dialog>
@@ -349,7 +349,7 @@ function Appearance() {
 
 /* ----------------------------------------------------------------- pixels */
 
-function Pixels() {
+function Kubes() {
   const { profile } = useAuth()
   const ledger = useAsync(
     async () => (profile ? listPixelTransactions(profile.id) : []),
@@ -363,7 +363,7 @@ function Pixels() {
         <p className="font-display text-2xl font-extrabold tabular-nums">
           {formatCount(profile?.pixels ?? 0)}
         </p>
-        <p className="text-sm text-muted">Pixels</p>
+        <p className="text-sm text-muted">Kubes</p>
       </div>
 
       {ledger.loading && (
@@ -455,7 +455,7 @@ export default function Settings() {
           {section === 'Account info' && <AccountInfo />}
           {section === 'Security' && <Security />}
           {section === 'Appearance' && <Appearance />}
-          {section === 'Pixels' && <Pixels />}
+          {section === 'Kubes' && <Kubes />}
           {section === 'Safety' && <Safety />}
         </div>
       </div>

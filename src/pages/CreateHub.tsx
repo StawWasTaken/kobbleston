@@ -1,18 +1,16 @@
 import { useEffect, useState } from 'react'
-import { Link, Outlet, useOutletContext } from 'react-router-dom'
+import { Link, Outlet, useOutletContext, useSearchParams } from 'react-router-dom'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import {
   faUpload, faPlus, faMagnifyingGlass, faClock, faCircleCheck, faCircleXmark,
-  faEye, faHandPointUp, faInbox, faCheck, faXmark, faLock,
+  faEye, faHandPointUp, faBoxOpen, faLock,
 } from '@fortawesome/free-solid-svg-icons'
 import type { IconDefinition } from '@fortawesome/fontawesome-svg-core'
 import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
 import { Input } from '@/components/ui/Input'
-import { Avatar } from '@/components/ui/Avatar'
 import { EmptyState, ErrorState, Skeleton } from '@/components/ui/States'
 import { GuestGate } from '@/components/ui/GuestGate'
-import { useToast } from '@/components/ui/Toast'
 import { AssetTile, contentTag, kindIcons, kindLabels } from '@/components/create/AssetTile'
 import { CreateRail } from '@/components/create/CreateRail'
 import { UploadDialog } from '@/components/create/UploadDialog'
@@ -20,17 +18,17 @@ import { useAuth } from '@/hooks/useAuth'
 import { useAsync } from '@/hooks/useAsync'
 import { useTitle } from '@/hooks/useTitle'
 import {
-  answerAssetRequest, creatorAnalytics, listAssetRequests, listAssets, listOwnAssets,
-  listSharedSpaces, listSpacesByOwner,
+  creatorAnalytics, listAssets, listInventory, listOwnAssets, listSharedSpaces, listSpacesByOwner,
 } from '@/lib/api'
 import type { AssetSort } from '@/lib/api'
-import { avatarOf } from '@/lib/avatars'
 import { formatCount, timeAgo } from '@/lib/format'
 import { cn } from '@/lib/cn'
 import type { AssetKind, OwnAsset } from '@/types/db'
-import { profileLink } from '@/lib/links'
 
-type HubContext = { openUpload: () => void; requests: ReturnType<typeof useAsync<Awaited<ReturnType<typeof listAssetRequests>>>> }
+type HubContext = {
+  openUpload: () => void
+  inventory: ReturnType<typeof useAsync<Awaited<ReturnType<typeof listInventory>>>>
+}
 
 export const useHub = () => useOutletContext<HubContext>()
 
@@ -47,17 +45,17 @@ export default function CreateHub() {
   useTitle('Kobbleston Create')
   const [uploading, setUploading] = useState(false)
 
-  const requests = useAsync(
-    async () => (profile ? listAssetRequests() : []),
+  const inventory = useAsync(
+    async () => (profile ? listInventory() : []),
     [profile?.id],
   )
 
   return (
     <div className="flex items-start">
-      <CreateRail requestCount={requests.data?.length ?? 0} />
+      <CreateRail ownedCount={inventory.data?.length ?? 0} />
 
       <div className="min-w-0 flex-1 px-4 py-6 sm:px-6">
-        <Outlet context={{ openUpload: () => setUploading(true), requests } satisfies HubContext} />
+        <Outlet context={{ openUpload: () => setUploading(true), inventory } satisfies HubContext} />
       </div>
 
       <UploadDialog
@@ -91,7 +89,7 @@ function Tile({ icon, label, value, to }: {
 
 export function CreateOverview() {
   const { profile } = useAuth()
-  const { openUpload, requests } = useHub()
+  const { openUpload, inventory } = useHub()
 
   const mine = useAsync(async () => (profile ? listOwnAssets(profile.id) : []), [profile?.id])
   const spaces = useAsync(
@@ -132,7 +130,7 @@ export function CreateOverview() {
         <Tile icon={faUpload} label="Uploads" value={formatCount(mine.data?.length ?? 0)} to="/create/uploads" />
         <Tile icon={faEye} label="Visits to your Spaces" value={formatCount(visits)} />
         <Tile icon={faHandPointUp} label="Uses of your content" value={formatCount(uses)} to="/create/analytics" />
-        <Tile icon={faInbox} label="Requests waiting" value={formatCount(requests.data?.length ?? 0)} to="/create/requests" />
+        <Tile icon={faBoxOpen} label="In your inventory" value={formatCount(inventory.data?.length ?? 0)} to="/create/inventory" />
       </div>
 
       <div className="grid gap-5 lg:grid-cols-2">
@@ -338,14 +336,20 @@ const kinds: (AssetKind | 'all')[] = ['all', 'image', 'audio', 'video', 'font', 
 export function CreateMarketplace() {
   const { profile } = useAuth()
   const { openUpload } = useHub()
+  const [params, setParams] = useSearchParams()
   const [kind, setKind] = useState<AssetKind | 'all'>('all')
-  const [term, setTerm] = useState('')
-  const [debounced, setDebounced] = useState('')
+  const [term, setTerm] = useState(params.get('q') ?? '')
+  const [debounced, setDebounced] = useState(term)
 
+  // Searching from the bar at the top lands here with the words already in
+  // the box, and from then on this search is the one you are using.
   useEffect(() => {
-    const timer = window.setTimeout(() => setDebounced(term), 250)
+    const timer = window.setTimeout(() => {
+      setDebounced(term)
+      setParams(term.trim() ? { q: term.trim() } : {}, { replace: true })
+    }, 250)
     return () => window.clearTimeout(timer)
-  }, [term])
+  }, [term, setParams])
 
   const [sort, setSort] = useState<AssetSort>('new')
 
@@ -450,88 +454,63 @@ export function CreateMarketplace() {
   )
 }
 
-/* --------------------------------------------------------------- requests */
+/* -------------------------------------------------------------- inventory */
 
-export function CreateRequests() {
-  const { requests } = useHub()
-  const toast = useToast()
+export function CreateInventory() {
+  const { inventory } = useHub()
+  const [kind, setKind] = useState<AssetKind | 'all'>('all')
 
-  const answer = async (assetId: string, userId: string, accept: boolean, name: string) => {
-    try {
-      await answerAssetRequest(assetId, userId, accept)
-      toast(accept ? `${name} can use it now.` : 'Turned down.', accept ? 'success' : 'info')
-      requests.reload()
-    } catch (err) {
-      toast(err instanceof Error ? err.message : 'That did not work.', 'error')
-    }
-  }
+  const shown = (inventory.data ?? []).filter((item) => kind === 'all' || item.kind === kind)
 
   return (
     <div className="space-y-5">
       <header>
-        <h1 className="font-display text-2xl font-extrabold sm:text-3xl">Requests</h1>
-        <p className="mt-1 text-sm text-muted">People asking to use your content in their Spaces.</p>
+        <h1 className="font-display text-2xl font-extrabold sm:text-3xl">Inventory</h1>
+        <p className="mt-1 text-sm text-muted">
+          Your own work, everything Kobbleston publishes, and everything you have taken from the
+          marketplace. Copy an id and paste it into a Space.
+        </p>
       </header>
 
-      {requests.loading && <Skeleton className="h-24" />}
+      <div className="flex gap-2 overflow-x-auto pb-1 kob-scroll">
+        {kinds.map((k) => (
+          <button
+            key={k}
+            onClick={() => setKind(k)}
+            aria-pressed={kind === k}
+            className={cn(
+              'h-9 shrink-0 rounded-lg border px-3.5 text-sm font-bold transition-colors',
+              kind === k
+                ? 'border-brand-bright bg-brand text-onbrand'
+                : 'border-ink-line bg-ink-card text-white/60 hover:bg-ink-hover hover:text-white',
+            )}
+          >
+            {k === 'all' ? 'Everything' : kindLabels[k]}
+          </button>
+        ))}
+      </div>
 
-      {!requests.loading && !requests.data?.length && (
+      {inventory.loading && (
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 xl:grid-cols-5">
+          {[0, 1, 2, 3, 4].map((i) => <Skeleton key={i} className="aspect-[4/5]" />)}
+        </div>
+      )}
+
+      {!inventory.loading && !shown.length && (
         <Card>
           <EmptyState
             mood="emptyBox"
-            title="Nobody is waiting"
-            body="When somebody asks to use one of your uploads, it lands here."
+            title="Nothing here yet"
+            body="Take something from the marketplace and it lands here, free or paid."
+            action={<Button to="/create/marketplace">Open the marketplace</Button>}
           />
         </Card>
       )}
 
-      {!!requests.data?.length && (
-        <Card className="overflow-hidden">
-          <ul>
-            {requests.data.map((request) => (
-              <li
-                key={`${request.asset_id}-${request.user_id}`}
-                className="flex items-start gap-3 border-b border-ink-line/70 p-4 last:border-0"
-              >
-                <Avatar src={avatarOf(request)} name={request.display_name} size="md" />
-                <div className="min-w-0 flex-1">
-                  <p className="text-sm">
-                    <Link to={profileLink(request)} className="font-bold hover:underline">
-                      {request.display_name}
-                    </Link>
-                    <span className="text-muted"> wants to use </span>
-                    <Link
-                      to={`/create/${contentTag(request.kind, request.content_id)}`}
-                      className="font-bold text-link hover:underline"
-                    >
-                      {request.asset_name}
-                    </Link>
-                  </p>
-                  {request.note && (
-                    <p className="mt-1 text-xs leading-relaxed text-white/60">{request.note}</p>
-                  )}
-                  <p className="mt-1 text-xs text-muted">{timeAgo(request.requested_at)}</p>
-                </div>
-                <div className="flex gap-1.5">
-                  <Button
-                    size="sm"
-                    icon={faCheck}
-                    onClick={() => answer(request.asset_id, request.user_id, true, request.display_name)}
-                  >
-                    Allow
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    icon={faXmark}
-                    aria-label={`Turn down ${request.display_name}`}
-                    onClick={() => answer(request.asset_id, request.user_id, false, request.display_name)}
-                  />
-                </div>
-              </li>
-            ))}
-          </ul>
-        </Card>
+      {!!shown.length && (
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 xl:grid-cols-5">
+          {shown.map((item) => <AssetTile key={item.id} item={item} owned />)}
+        </div>
       )}
     </div>
   )

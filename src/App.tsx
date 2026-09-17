@@ -21,7 +21,7 @@ const CreateOverview = lazy(() => import('@/pages/CreateHub').then((m) => ({ def
 const CreateSpaces = lazy(() => import('@/pages/CreateHub').then((m) => ({ default: m.CreateSpaces })))
 const CreateUploads = lazy(() => import('@/pages/CreateHub').then((m) => ({ default: m.CreateUploads })))
 const CreateMarketplace = lazy(() => import('@/pages/CreateHub').then((m) => ({ default: m.CreateMarketplace })))
-const CreateRequests = lazy(() => import('@/pages/CreateHub').then((m) => ({ default: m.CreateRequests })))
+const CreateInventory = lazy(() => import('@/pages/CreateHub').then((m) => ({ default: m.CreateInventory })))
 const CreateAnalytics = lazy(() => import('@/pages/CreateHub').then((m) => ({ default: m.CreateAnalytics })))
 const CreatorPage = lazy(() => import('@/pages/CreatorPage'))
 const Search = lazy(() => import('@/pages/Search'))
@@ -86,7 +86,7 @@ export default function App() {
                   <Route path="spaces" element={<CreateSpaces />} />
                   <Route path="uploads" element={<CreateUploads />} />
                   <Route path="marketplace" element={<CreateMarketplace />} />
-                  <Route path="requests" element={<CreateRequests />} />
+                  <Route path="inventory" element={<CreateInventory />} />
                   <Route path="analytics" element={<CreateAnalytics />} />
                   <Route path="creator/:username" element={<CreatorPage />} />
                   <Route path=":tag" element={<AssetPage />} />

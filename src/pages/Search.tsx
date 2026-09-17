@@ -8,11 +8,10 @@ import { Avatar } from '@/components/ui/Avatar'
 import { PresenceLabel, presenceOf } from '@/components/ui/StatusDot'
 import { EmptyState, ErrorState, Skeleton, SpaceCardSkeleton } from '@/components/ui/States'
 import { SpaceCard } from '@/components/spaces/SpaceCard'
-import { AssetTile } from '@/components/create/AssetTile'
 import { CommunityCard } from '@/components/community/CommunityCard'
 import { searchScopes } from '@/components/layout/SearchBar'
 import { useAsync } from '@/hooks/useAsync'
-import { listAssets, listCommunities, listSpaces, searchProfiles } from '@/lib/api'
+import { listCommunities, listSpaces, searchProfiles } from '@/lib/api'
 import { cn } from '@/lib/cn'
 import { avatarOf } from '@/lib/avatars'
 import { profileLink } from '@/lib/links'
@@ -31,12 +30,6 @@ export default function Search() {
     async () => (tab === 'people' && term ? searchProfiles(term, undefined, 30) : []),
     [tab, term],
   )
-  const assets = useAsync(
-    // The same search the marketplace itself runs: name, description, and
-    // who made it.
-    async () => (tab === 'create' && term ? listAssets({ search: term, limit: 36 }) : []),
-    [tab, term],
-  )
 
   const communities = useAsync(
     async () => (tab === 'communities' && term ? listCommunities(term) : []),
@@ -44,9 +37,8 @@ export default function Search() {
   )
 
   const current = tab === 'people' ? people
-    : tab === 'create' ? assets
-      : tab === 'communities' ? communities
-        : spaces
+    : tab === 'communities' ? communities
+      : spaces
   const nothing = !current.loading && !current.error && current.data?.length === 0
 
   return (
@@ -167,20 +159,6 @@ export default function Search() {
         </>
       )}
 
-      {tab === 'create' && (
-        <>
-          {assets.loading && (
-            <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 xl:grid-cols-6">
-              {[0, 1, 2, 3, 4, 5].map((i) => <Skeleton key={i} className="aspect-[4/5]" />)}
-            </div>
-          )}
-          {!!assets.data?.length && (
-            <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 xl:grid-cols-6">
-              {assets.data.map((item) => <AssetTile key={item.id} item={item} />)}
-            </div>
-          )}
-        </>
-      )}
     </Page>
   )
 }

@@ -28,7 +28,7 @@ export function SpaceViewer({ space, onLeave }: { space: Space; onLeave: () => v
 
   return (
     <div className="fixed inset-0 z-50 flex flex-col bg-ink">
-      <header className="flex h-12 shrink-0 items-center gap-3 border-b-2 border-brand-ink bg-brand-deep px-3">
+      <header className="flex h-12 shrink-0 items-center gap-3 border-b-2 border-brand-ink/40 bg-chrome px-3">
         {space.emblem_url && (
           <img
             src={space.emblem_url}
@@ -41,7 +41,7 @@ export function SpaceViewer({ space, onLeave }: { space: Space; onLeave: () => v
         <button
           onClick={() => document.documentElement.requestFullscreen?.()}
           aria-label="Fullscreen"
-          className="grid h-8 w-8 place-items-center rounded-lg text-white/70 transition-colors hover:bg-white/15 hover:text-white"
+          className="grid h-8 w-8 place-items-center rounded-lg text-onbrand/70 transition-colors hover:bg-onbrand/15 hover:text-onbrand"
         >
           <FontAwesomeIcon icon={faExpand} />
         </button>

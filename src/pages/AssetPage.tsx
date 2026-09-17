@@ -3,14 +3,13 @@ import { Link, useParams } from 'react-router-dom'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import {
   faCopy, faCircleCheck, faLock, faLockOpen, faPen, faTrash, faShieldHalved,
-  faTriangleExclamation, faClock, faHandPointUp, faCheck, faXmark, faEllipsis,
-  faThumbsUp, faThumbsDown, faComment, faChevronRight, faCubes, faTag,
+  faTriangleExclamation, faClock, faEllipsis,
+  faThumbsUp, faThumbsDown, faComment, faChevronRight, faCube, faTag, faBagShopping,
 } from '@fortawesome/free-solid-svg-icons'
 import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
 import { Avatar } from '@/components/ui/Avatar'
 import { Input, Textarea } from '@/components/ui/Input'
-import { Dialog } from '@/components/ui/Dialog'
 import { EmptyState, ErrorState, Skeleton } from '@/components/ui/States'
 import { Tooltip } from '@/components/ui/Tooltip'
 import { useToast } from '@/components/ui/Toast'
@@ -22,10 +21,8 @@ import { Menu } from '@/components/ui/Menu'
 import { useAuth } from '@/hooks/useAuth'
 import { useAsync } from '@/hooks/useAsync'
 import {
-  answerAssetRequest, assetAnalytics, deleteAsset, getAsset, listAssetRequests,
-  listAssetReviews, listAssetsByCreator, rateAsset, recordAssetEvent, removeAssetReview,
-  requestAssetUse, updateAsset, withdrawAssetRequest, writeAssetReview, buyAsset,
-  priceCeilings,
+  assetAnalytics, deleteAsset, getAsset, listAssetReviews, listAssetsByCreator, rateAsset,
+  recordAssetEvent, removeAssetReview, updateAsset, writeAssetReview, buyAsset, priceCeilings,
 } from '@/lib/api'
 import { useSignedUrl } from '@/hooks/useSignedUrl'
 import { useTitle } from '@/hooks/useTitle'
@@ -34,7 +31,6 @@ import { formatCount } from '@/lib/format'
 import { cn } from '@/lib/cn'
 import type { AssetDay, AssetPageItem } from '@/types/db'
 import { timeAgo } from '@/lib/format'
-import { profileLink } from '@/lib/links'
 
 const prefixes: Record<string, string> = {
   IMG: 'image', SND: 'audio', VID: 'video', FNT: 'font', MDL: 'model',
@@ -77,14 +73,13 @@ function UseChart({ days }: { days: AssetDay[] }) {
 
 
 /**
- * Content is used by its ID, never downloaded. The Kobbleston account's work
- * is verified and open to everybody; anything else needs its creator to agree.
+ * How you come to own something: free or paid, you take it and it lands in
+ * your inventory. After that the ID is yours to paste. The file is never
+ * handed over either way.
  */
 function UsePanel({ asset, onChanged }: { asset: AssetPageItem; onChanged: () => void }) {
   const { profile } = useAuth()
   const toast = useToast()
-  const [asking, setAsking] = useState(false)
-  const [note, setNote] = useState('')
   const [pending, setPending] = useState(false)
 
   const tag = contentTag(asset.kind, asset.content_id)
@@ -110,113 +105,46 @@ function UsePanel({ asset, onChanged }: { asset: AssetPageItem; onChanged: () =>
             {mine
               ? 'Yours, so you can use it anywhere.'
               : asset.creator_is_admin
-                ? 'Verified, so anyone may use it.'
-                : 'The creator let you use this.'}
+                ? 'Verified, so it is in everybody\'s inventory.'
+                : 'In your inventory.'}
           </span>
         </p>
       </div>
     )
   }
 
-  if (asset.price > 0) {
-    return (
-      <div className="space-y-2">
-        <Button
-          block
-          icon={faCubes}
-          loading={pending}
-          disabled={!profile || profile.is_guest}
-          onClick={async () => {
-            setPending(true)
-            try {
-              await buyAsset(asset.id)
-              toast(`Bought. ${tag} is yours to use.`, 'success')
-              onChanged()
-            } catch (err) {
-              toast(err instanceof Error ? err.message : 'That did not go through.', 'error')
-            } finally {
-              setPending(false)
-            }
-          }}
-        >
-          Buy for {formatCount(asset.price)} Pixels
-        </Button>
-        <p className="text-xs leading-relaxed text-muted">
-          Paying gives you the right to use {tag}. The file stays where it is.
-        </p>
-      </div>
-    )
-  }
-
-  if (asset.i_asked) {
-    return (
-      <div className="space-y-2">
-        <Button block variant="subtle" icon={faClock} disabled>Waiting on the creator</Button>
-        <button
-          onClick={async () => {
-            await withdrawAssetRequest(asset.id)
-            toast('Request withdrawn.', 'info')
-            onChanged()
-          }}
-          className="text-xs text-muted hover:text-white"
-        >
-          Withdraw the request
-        </button>
-      </div>
-    )
-  }
+  const paid = asset.price > 0
 
   return (
     <div className="space-y-2">
       <Button
         block
-        icon={faHandPointUp}
+        icon={paid ? faCube : faBagShopping}
+        loading={pending}
         disabled={!profile || profile.is_guest}
-        onClick={() => setAsking(true)}
+        onClick={async () => {
+          setPending(true)
+          try {
+            await buyAsset(asset.id)
+            toast(
+              paid ? `Bought. ${tag} is in your inventory.` : `${tag} is in your inventory.`,
+              'success',
+            )
+            onChanged()
+          } catch (err) {
+            toast(err instanceof Error ? err.message : 'That did not go through.', 'error')
+          } finally {
+            setPending(false)
+          }
+        }}
       >
-        Ask to use this
+        {paid ? `Buy for ${formatCount(asset.price)} Kubes` : 'Get'}
       </Button>
-      <p className="text-xs text-muted">
-        You cannot take the file. {asset.creator_display_name} decides who may use {tag}.
+      <p className="text-xs leading-relaxed text-muted">
+        {paid
+          ? `The Kubes go to ${asset.creator_display_name}. You get the right to use ${tag}, not the file.`
+          : `Free. It lands in your inventory and ${tag} is yours to paste.`}
       </p>
-
-      <Dialog
-        open={asking}
-        onClose={() => setAsking(false)}
-        title={`Ask to use ${asset.name}`}
-        description={`${asset.creator_display_name} will see your name and what you say here.`}
-        footer={
-          <>
-            <Button variant="ghost" onClick={() => setAsking(false)}>Cancel</Button>
-            <Button
-              loading={pending}
-              onClick={async () => {
-                setPending(true)
-                try {
-                  await requestAssetUse(asset.id, note)
-                  toast('Asked.', 'success')
-                  setAsking(false)
-                  onChanged()
-                } catch (err) {
-                  toast(err instanceof Error ? err.message : 'That did not send.', 'error')
-                } finally {
-                  setPending(false)
-                }
-              }}
-            >
-              Send
-            </Button>
-          </>
-        }
-      >
-        <Textarea
-          label="What is it for?"
-          value={note}
-          onChange={(e) => setNote(e.target.value)}
-          maxLength={300}
-          placeholder="I am building a Space about..."
-        />
-      </Dialog>
     </div>
   )
 }
@@ -230,7 +158,7 @@ export default function AssetPage() {
   const [description, setDescription] = useState('')
   const [price, setPrice] = useState('0')
   const [pending, setPending] = useState(false)
-  const [panel, setPanel] = useState<'Description' | 'Reviews' | 'Requests' | 'Numbers'>('Description')
+  const [panel, setPanel] = useState<'Description' | 'Reviews' | 'Numbers'>('Description')
   // The picture tells us its own proportions once it loads.
   const [shape, setShape] = useState<{ w: number; h: number } | null>(null)
 
@@ -248,10 +176,6 @@ export default function AssetPage() {
 
   const stats = useAsync(
     async () => (mine && asset ? assetAnalytics(asset.id) : []),
-    [mine, asset?.id],
-  )
-  const requests = useAsync(
-    async () => (mine ? (await listAssetRequests()).filter((r) => r.asset_id === asset?.id) : []),
     [mine, asset?.id],
   )
 
@@ -316,7 +240,7 @@ export default function AssetPage() {
     try {
       const asked = Math.max(0, Math.round(Number(price) || 0))
       if (asked > priceCeilings[asset.kind]) {
-        toast(`The most you can charge is ${priceCeilings[asset.kind]} Pixels.`, 'error')
+        toast(`The most you can charge is ${priceCeilings[asset.kind]} Kubes.`, 'error')
         return
       }
       await updateAsset(asset.id, {
@@ -504,7 +428,7 @@ export default function AssetPage() {
               { label: 'Size', value: sizeText },
               {
                 label: 'Price',
-                value: asset.price > 0 ? `${formatCount(asset.price)} Pixels` : 'Free',
+                value: asset.price > 0 ? `${formatCount(asset.price)} Kubes` : 'Free',
               },
             ].map((fact) => (
               <div key={fact.label}>
@@ -516,7 +440,7 @@ export default function AssetPage() {
 
           <div>
             <div className="flex border-b border-ink-line" role="tablist">
-              {(['Description', 'Reviews', ...(mine ? ['Requests', 'Numbers'] as const : [])] as const).map((name) => (
+              {(['Description', 'Reviews', ...(mine ? ['Numbers'] as const : [])] as const).map((name) => (
                 <button
                   key={name}
                   role="tab"
@@ -530,9 +454,6 @@ export default function AssetPage() {
                   )}
                 >
                   {name}
-                  {name === 'Requests' && !!requests.data?.length && (
-                    <span className="ml-1.5 text-link">({requests.data.length})</span>
-                  )}
                   {name === 'Reviews' && !!asset.review_count && (
                     <span className="ml-1.5 text-muted">({asset.review_count})</span>
                   )}
@@ -551,14 +472,14 @@ export default function AssetPage() {
                       maxLength={400}
                     />
                     <Input
-                      label="Price in Pixels"
+                      label="Price in Kubes"
                       type="number"
                       min={0}
                       max={priceCeilings[asset.kind]}
                       value={price}
                       onChange={(e) => setPrice(e.target.value)}
                       icon={faTag}
-                      hint={`0 means free. The most you can charge for ${kindLabels[asset.kind].toLowerCase()} is ${priceCeilings[asset.kind]} Pixels.`}
+                      hint={`0 means free. The most you can charge for ${kindLabels[asset.kind].toLowerCase()} is ${priceCeilings[asset.kind]} Kubes.`}
                       className="max-w-xs"
                     />
                     <div className="flex gap-2">
@@ -632,47 +553,6 @@ export default function AssetPage() {
                     </li>
                   ))}
                 </ul>
-              </div>
-            )}
-
-            {panel === 'Requests' && (
-              <div className="space-y-3 pt-4">
-                {!requests.data?.length && (
-                  <p className="text-sm text-muted">Nobody is asking to use this.</p>
-                )}
-                {requests.data?.map((request) => (
-                  <div key={request.user_id} className="flex items-start gap-2.5">
-                    <Avatar src={avatarOf(request)} name={request.display_name} size="sm" />
-                    <div className="min-w-0 flex-1">
-                      <Link to={profileLink(request)} className="block truncate text-sm font-bold hover:underline">
-                        {request.display_name}
-                      </Link>
-                      {request.note && (
-                        <p className="text-xs leading-relaxed text-white/60">{request.note}</p>
-                      )}
-                    </div>
-                    <Button
-                      size="sm"
-                      icon={faCheck}
-                      onClick={async () => {
-                        await answerAssetRequest(asset.id, request.user_id, true)
-                        requests.reload()
-                      }}
-                    >
-                      Allow
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      icon={faXmark}
-                      aria-label={`Turn down ${request.display_name}`}
-                      onClick={async () => {
-                        await answerAssetRequest(asset.id, request.user_id, false)
-                        requests.reload()
-                      }}
-                    />
-                  </div>
-                ))}
               </div>
             )}
 

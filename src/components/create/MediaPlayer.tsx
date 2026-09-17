@@ -168,7 +168,7 @@ export function MediaPlayer({
         onClick={toggle}
         disabled={!src}
         aria-label={playing ? 'Pause' : 'Play'}
-        className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-brand text-onbrand transition-colors hover:bg-brand-bright disabled:opacity-40"
+        className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-brand text-[#fff] transition-colors hover:bg-brand-bright disabled:opacity-40"
       >
         <FontAwesomeIcon
           icon={ended ? faRotateRight : playing ? faPause : faPlay}
@@ -223,7 +223,7 @@ export function MediaPlayer({
             aria-label="Play"
             className="absolute inset-0 grid place-items-center bg-black/30 transition-colors hover:bg-black/20"
           >
-            <span className="grid h-16 w-16 place-items-center rounded-full bg-brand text-onbrand shadow-pop">
+            <span className="grid h-16 w-16 place-items-center rounded-full bg-brand text-[#fff] shadow-pop">
               <FontAwesomeIcon icon={ended ? faRotateRight : faPlay} className="text-xl" />
             </span>
           </button>
