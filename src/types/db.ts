@@ -79,6 +79,9 @@ export type MarketAsset = {
   thumbnail_path: string | null
   download_count: number
   content_id: number | null
+  price?: number
+  score?: number | null
+  votes?: number
   created_at: string
   creator_username: string
   creator_display_name: string
@@ -87,6 +90,7 @@ export type MarketAsset = {
 }
 
 export type AssetPageItem = MarketAsset & {
+  price: number
   i_can_use: boolean
   i_asked: boolean
   votes: number
@@ -114,6 +118,19 @@ export type AssetRequest = {
   avatar_url: string | null
   note: string | null
   requested_at: string
+}
+
+export type CreatorPage = {
+  user_id: string
+  username: string
+  display_name: string
+  avatar_url: string | null
+  bio: string | null
+  is_admin: boolean
+  content_id: number | null
+  items: number
+  uses: number
+  joined: string
 }
 
 export type AssetReview = {

@@ -50,7 +50,7 @@ export function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
   const requests = useFriendRequestCount()
 
   return (
-    <div className="flex h-full flex-col border-r border-onbrand/10 bg-brand-deep">
+    <div className="flex h-full flex-col border-r border-onbrand/10 bg-chrome">
       <nav className="flex-1 space-y-1.5 overflow-y-auto p-3 pt-4 kob-scroll" aria-label="Main">
         {sideNav.map((item) => {
           // Profile only makes sense once we know whose it is.
@@ -69,8 +69,8 @@ export function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
                 cn(
                   'flex items-center gap-3.5 rounded-xl px-3.5 py-3 text-sm font-bold transition-colors',
                   isActive
-                    ? 'bg-onbrand/20 text-onbrand'
-                    : 'text-onbrand/70 hover:bg-onbrand/10 hover:text-onbrand',
+                    ? 'bg-brand text-white'
+                    : 'text-onbrand/75 hover:bg-onbrand/10 hover:text-onbrand',
                 )
               }
             >

@@ -1,4 +1,5 @@
 import { useEffect } from 'react'
+import { useExactTitle, useFavicon } from '@/hooks/useTitle'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faDoorClosed, faExpand } from '@fortawesome/free-solid-svg-icons'
 import { Button } from '@/components/ui/Button'
@@ -14,6 +15,11 @@ import type { Space } from '@/types/db'
  * faking a website. The editor that fills it is planned in docs/editor.md.
  */
 export function SpaceViewer({ space, onLeave }: { space: Space; onLeave: () => void }) {
+  // Inside a Space the tab belongs to that Space: its name, and its emblem
+  // as the icon. A Space without one keeps ours.
+  useExactTitle(space.name)
+  useFavicon(space.emblem_url)
+
   useEffect(() => {
     const previous = document.body.style.overflow
     document.body.style.overflow = 'hidden'

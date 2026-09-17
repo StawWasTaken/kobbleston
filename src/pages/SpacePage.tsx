@@ -22,6 +22,7 @@ import { RefImage } from '@/components/create/RefImage'
 import { profileLink, spaceLink } from '@/lib/links'
 import { useAuth } from '@/hooks/useAuth'
 import { useAsync } from '@/hooks/useAsync'
+import { useExactTitle } from '@/hooks/useTitle'
 import {
   enterSpace, getSpace, getSpaceStats, leaveSpace, listSpaceBadges, spaceById, toggleSpaceFlag,
 } from '@/lib/api'
@@ -55,6 +56,8 @@ export default function SpacePage() {
     async () => (username && slug ? getSpace(username, slug) : null),
     [username, slug],
   )
+
+  useExactTitle(space ? `${space.name} - Visit on Kobbleston` : null)
 
   // The old owner/slug address still works, and hands you the numbered one.
   useEffect(() => {

@@ -67,7 +67,7 @@ export function CommunityRail() {
 
   return (
     <aside
-      className="sticky top-14 hidden max-h-[calc(100dvh-3.5rem)] w-72 shrink-0 flex-col overflow-y-auto border-r border-ink-line px-3 pb-6 pt-4 lg:flex kob-scroll"
+      className="sticky top-14 hidden h-[calc(100dvh-3.5rem)] w-72 shrink-0 flex-col overflow-y-auto border-r border-ink-line px-3 pb-6 pt-4 lg:flex kob-scroll"
       aria-label="My Communities"
     >
       <div className="mb-2 flex items-baseline justify-between px-1">

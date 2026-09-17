@@ -22,6 +22,7 @@ import {
   answerAssetRequest, creatorAnalytics, listAssetRequests, listAssets, listOwnAssets,
   listSharedSpaces, listSpacesByOwner,
 } from '@/lib/api'
+import type { AssetSort } from '@/lib/api'
 import { avatarOf } from '@/lib/avatars'
 import { formatCount, timeAgo } from '@/lib/format'
 import { cn } from '@/lib/cn'
@@ -344,7 +345,12 @@ export function CreateMarketplace() {
     return () => window.clearTimeout(timer)
   }, [term])
 
-  const market = useAsync(() => listAssets({ kind, search: debounced, limit: 48 }), [kind, debounced])
+  const [sort, setSort] = useState<AssetSort>('new')
+
+  const market = useAsync(
+    () => listAssets({ kind, search: debounced, limit: 48, sort }),
+    [kind, debounced, sort],
+  )
 
   return (
     <div className="space-y-5">
@@ -365,9 +371,33 @@ export function CreateMarketplace() {
         icon={faMagnifyingGlass}
         value={term}
         onChange={(e) => setTerm(e.target.value)}
-        placeholder="Search Create"
-        aria-label="Search Create"
+        placeholder="Search by name, by what it is, or by who made it"
+        aria-label="Search the marketplace"
       />
+
+      <div className="flex flex-wrap items-center gap-2">
+        <span className="text-xs font-bold uppercase tracking-wide text-muted">Sort</span>
+        {([
+          { value: 'new', label: 'Newest' },
+          { value: 'used', label: 'Most used' },
+          { value: 'rated', label: 'Best rated' },
+          { value: 'cheap', label: 'Cheapest' },
+        ] as const).map((option) => (
+          <button
+            key={option.value}
+            onClick={() => setSort(option.value)}
+            aria-pressed={sort === option.value}
+            className={cn(
+              'h-8 rounded-lg px-3 text-xs font-bold transition-colors',
+              sort === option.value
+                ? 'bg-brand text-onbrand'
+                : 'bg-ink-card text-white/60 hover:bg-ink-hover hover:text-white',
+            )}
+          >
+            {option.label}
+          </button>
+        ))}
+      </div>
 
       <div className="flex gap-2 overflow-x-auto pb-1 kob-scroll">
         {kinds.map((k) => (

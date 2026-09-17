@@ -15,6 +15,7 @@ import { CommunityMembers } from '@/components/community/CommunityMembers'
 import { AffiliateGrid } from '@/components/community/AffiliateGrid'
 import { useAuth } from '@/hooks/useAuth'
 import { useAsync } from '@/hooks/useAsync'
+import { useTitle } from '@/hooks/useTitle'
 import {
   communitySlugById, getCommunity, getCommunityOverview, joinCommunity, leaveCommunity,
   listCommunityPosts, listCommunitySpaces, listRelations,
@@ -61,6 +62,8 @@ export default function CommunityPage() {
   )
   const allies = useAsync(async () => (group ? listRelations(group.id, 'ally') : []), [group?.id])
   const enemies = useAsync(async () => (group ? listRelations(group.id, 'enemy') : []), [group?.id])
+
+  useTitle(group?.name ?? 'Community')
 
   // A name-only community link answers, then swaps itself for the numbered one.
   useEffect(() => {

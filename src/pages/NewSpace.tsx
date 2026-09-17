@@ -15,10 +15,12 @@ import { slugify } from '@/lib/format'
 import { cn } from '@/lib/cn'
 import type { SpaceCategory } from '@/types/db'
 import { spaceLink } from '@/lib/links'
+import { useTitle } from '@/hooks/useTitle'
 
 const categories = Object.keys(categoryLabels) as SpaceCategory[]
 
 export default function CreateSpace() {
+  useTitle('New Space')
   const { profile } = useAuth()
   const navigate = useNavigate()
   const toast = useToast()

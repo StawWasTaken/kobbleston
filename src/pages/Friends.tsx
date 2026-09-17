@@ -24,6 +24,7 @@ import { avatarOf } from '@/lib/avatars'
 import { cn } from '@/lib/cn'
 import type { Profile } from '@/types/db'
 import { profileLink } from '@/lib/links'
+import { useTitle } from '@/hooks/useTitle'
 
 const tabs = ['Friends', 'Requests', 'Following', 'Followers'] as const
 type Tab = (typeof tabs)[number]
@@ -66,6 +67,7 @@ function Grid({ children }: { children: React.ReactNode }) {
 }
 
 export default function Friends() {
+  useTitle('Friends')
   const { profile } = useAuth()
   const { openConversation } = useChatDock()
   const toast = useToast()
@@ -132,7 +134,14 @@ export default function Friends() {
       reload()
     } catch (err) {
       const message = err instanceof Error ? err.message : 'That did not send.'
-      toast(message.includes('duplicate') ? 'You already asked this person.' : message, 'error')
+      toast(
+        message.includes('row-level security')
+          ? 'Guests cannot add friends. Make an account and you can.'
+          : message.includes('duplicate')
+            ? 'You already asked this person.'
+            : message,
+        'error',
+      )
     }
   }
 

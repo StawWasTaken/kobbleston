@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import {
   faCubes, faRightFromBracket, faUser, faLock, faShieldHalved, faPen, faCheck, faPalette,
-  faMoon, faSun,
+  faMoon, faSun, faDesktop,
 } from '@fortawesome/free-solid-svg-icons'
 import type { IconDefinition } from '@fortawesome/fontawesome-svg-core'
 import { Page } from '@/components/layout/AppShell'
@@ -23,6 +23,7 @@ import {
 import { supabase } from '@/lib/supabase'
 import { formatCount, timeAgo } from '@/lib/format'
 import { cn } from '@/lib/cn'
+import { useTitle } from '@/hooks/useTitle'
 
 type Section = 'Account info' | 'Security' | 'Appearance' | 'Pixels' | 'Safety'
 
@@ -292,6 +293,12 @@ function Appearance() {
   const modes = [
     { value: 'dark' as const, label: 'Dark', icon: faMoon, note: 'The way Kobbleston is built.' },
     { value: 'light' as const, label: 'Light', icon: faSun, note: 'The same interface in daylight.' },
+    {
+      value: 'system' as const,
+      label: 'System',
+      icon: faDesktop,
+      note: 'Follows whatever this machine is set to.',
+    },
   ]
 
   return (
@@ -301,7 +308,7 @@ function Appearance() {
         Kept on this device, so your other machines are not affected.
       </p>
 
-      <div className="mt-4 grid gap-3 sm:grid-cols-2">
+      <div className="mt-4 grid gap-3 sm:grid-cols-3">
         {modes.map((mode) => (
           <button
             key={mode.value}
@@ -317,7 +324,11 @@ function Appearance() {
             <span
               className={cn(
                 'grid h-10 w-10 shrink-0 place-items-center rounded-lg',
-                mode.value === 'dark' ? 'bg-[#101012] text-white' : 'bg-[#f2f3f7] text-[#101012]',
+                mode.value === 'dark'
+                  ? 'bg-[#101012] text-white'
+                  : mode.value === 'light'
+                    ? 'bg-[#f2f3f7] text-[#101012]'
+                    : 'bg-gradient-to-br from-[#101012] to-[#f2f3f7] text-white',
               )}
             >
               <FontAwesomeIcon icon={mode.icon} />
@@ -413,6 +424,7 @@ function Safety() {
 /* ------------------------------------------------------------------- page */
 
 export default function Settings() {
+  useTitle('Settings')
   const [section, setSection] = useState<Section>('Account info')
 
   return (

@@ -15,6 +15,8 @@
     --muted: 139 139 153;
     --link: 159 173 255;
     --bubble: 38 38 47;
+    --chrome: 22 35 130;
+    --on-chrome: 255 255 255;
   }
 
   /* The same interface in daylight. Brand blue and Space green are
@@ -30,6 +32,8 @@
     --muted: 92 97 112;
     --link: 27 52 232;
     --bubble: 32 33 40;
+    --chrome: 214 230 255;
+    --on-chrome: 16 22 64;
   }
 
   html {
@@ -76,6 +80,9 @@
   /* the wordmark art is black, so it is inverted on a dark interface only */
   .kob-mark-light { filter: invert(1) brightness(1.6); }
   :root[data-theme='light'] .kob-mark-light { filter: none; }
+
+  /* The sunburst art behind the bar is painted for the dark interface. */
+  :root[data-theme='light'] .dark-only { display: none; }
 }
 
 @media (prefers-reduced-motion: reduce) {

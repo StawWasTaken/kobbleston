@@ -11,8 +11,10 @@ import { listMemberCommunities, listSpaces, listSpacesByOwner } from '@/lib/api'
 import { Link } from 'react-router-dom'
 import { formatCount } from '@/lib/format'
 import { communityLink } from '@/lib/links'
+import { useTitle } from '@/hooks/useTitle'
 
 export default function Home() {
+  useTitle('Home')
   const { profile } = useAuth()
 
   const mine = useAsync(

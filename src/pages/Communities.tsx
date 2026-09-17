@@ -10,8 +10,10 @@ import { useAuth } from '@/hooks/useAuth'
 import { useAsync } from '@/hooks/useAsync'
 import { listCommunities } from '@/lib/api'
 import { cn } from '@/lib/cn'
+import { useTitle } from '@/hooks/useTitle'
 
 export default function Communities() {
+  useTitle('Communities')
   const { profile } = useAuth()
   const [term, setTerm] = useState('')
   const [debounced, setDebounced] = useState('')

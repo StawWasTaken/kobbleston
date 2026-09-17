@@ -1,12 +1,13 @@
 import { Link } from 'react-router-dom'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import {
-  faImage, faMusic, faVideo, faFont, faCube, faCircleCheck, faDownload,
+  faImage, faMusic, faVideo, faFont, faCube, faCircleCheck, faThumbsUp, faHandPointUp, faCubes,
 } from '@fortawesome/free-solid-svg-icons'
 import type { IconDefinition } from '@fortawesome/fontawesome-svg-core'
 import { useSignedUrl } from '@/hooks/useSignedUrl'
 import { formatCount } from '@/lib/format'
 import type { AssetKind, MarketAsset } from '@/types/db'
+import { Tooltip } from '@/components/ui/Tooltip'
 
 export const kindIcons: Record<AssetKind, IconDefinition> = {
   image: faImage,
@@ -37,6 +38,10 @@ export function AssetTile({ item }: { item: MarketAsset }) {
   const tag = contentTag(item.kind, item.content_id)
 
   return (
+    <Tooltip
+      label={item.price ? `${item.name} · ${item.price} Pixels` : `${item.name} · ${tag}`}
+      side="top"
+    >
     <Link
       to={tag ? `/create/${tag}` : '/create'}
       className="block overflow-hidden rounded-xl border border-ink-line bg-ink-card transition-colors hover:border-brand/60">
@@ -72,13 +77,28 @@ export function AssetTile({ item }: { item: MarketAsset }) {
           )}
         </span>
         <p className="mt-2 flex items-center justify-between gap-2 text-[11px] text-white/40">
-          <span className="inline-flex items-center gap-1.5">
-            <FontAwesomeIcon icon={faDownload} />
-            {formatCount(item.download_count)}
-          </span>
-          <span className="font-mono">{tag}</span>
+          {typeof item.score === 'number' && item.score !== null ? (
+            <span className="inline-flex items-center gap-1.5">
+              <FontAwesomeIcon icon={faThumbsUp} />
+              {item.score}%
+            </span>
+          ) : (
+            <span className="inline-flex items-center gap-1.5">
+              <FontAwesomeIcon icon={faHandPointUp} />
+              {formatCount(item.download_count)}
+            </span>
+          )}
+          {item.price ? (
+            <span className="inline-flex items-center gap-1 font-bold text-link">
+              <FontAwesomeIcon icon={faCubes} />
+              {formatCount(item.price)}
+            </span>
+          ) : (
+            <span className="font-mono">{tag}</span>
+          )}
         </p>
       </div>
     </Link>
+    </Tooltip>
   )
 }

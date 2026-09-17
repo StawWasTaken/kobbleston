@@ -32,6 +32,8 @@ export default function Search() {
     [tab, term],
   )
   const assets = useAsync(
+    // The same search the marketplace itself runs: name, description, and
+    // who made it.
     async () => (tab === 'create' && term ? listAssets({ search: term, limit: 36 }) : []),
     [tab, term],
   )

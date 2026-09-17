@@ -4,7 +4,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import {
   faCopy, faCircleCheck, faLock, faLockOpen, faPen, faTrash, faShieldHalved,
   faTriangleExclamation, faClock, faHandPointUp, faCheck, faXmark, faEllipsis,
-  faThumbsUp, faThumbsDown, faComment, faChevronRight,
+  faThumbsUp, faThumbsDown, faComment, faChevronRight, faCubes, faTag,
 } from '@fortawesome/free-solid-svg-icons'
 import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
@@ -24,9 +24,11 @@ import { useAsync } from '@/hooks/useAsync'
 import {
   answerAssetRequest, assetAnalytics, deleteAsset, getAsset, listAssetRequests,
   listAssetReviews, listAssetsByCreator, rateAsset, recordAssetEvent, removeAssetReview,
-  requestAssetUse, updateAsset, withdrawAssetRequest, writeAssetReview,
+  requestAssetUse, updateAsset, withdrawAssetRequest, writeAssetReview, buyAsset,
+  priceCeilings,
 } from '@/lib/api'
 import { useSignedUrl } from '@/hooks/useSignedUrl'
+import { useTitle } from '@/hooks/useTitle'
 import { avatarOf } from '@/lib/avatars'
 import { formatCount } from '@/lib/format'
 import { cn } from '@/lib/cn'
@@ -116,6 +118,36 @@ function UsePanel({ asset, onChanged }: { asset: AssetPageItem; onChanged: () =>
     )
   }
 
+  if (asset.price > 0) {
+    return (
+      <div className="space-y-2">
+        <Button
+          block
+          icon={faCubes}
+          loading={pending}
+          disabled={!profile || profile.is_guest}
+          onClick={async () => {
+            setPending(true)
+            try {
+              await buyAsset(asset.id)
+              toast(`Bought. ${tag} is yours to use.`, 'success')
+              onChanged()
+            } catch (err) {
+              toast(err instanceof Error ? err.message : 'That did not go through.', 'error')
+            } finally {
+              setPending(false)
+            }
+          }}
+        >
+          Buy for {formatCount(asset.price)} Pixels
+        </Button>
+        <p className="text-xs leading-relaxed text-muted">
+          Paying gives you the right to use {tag}. The file stays where it is.
+        </p>
+      </div>
+    )
+  }
+
   if (asset.i_asked) {
     return (
       <div className="space-y-2">
@@ -196,8 +228,11 @@ export default function AssetPage() {
   const [editing, setEditing] = useState(false)
   const [name, setName] = useState('')
   const [description, setDescription] = useState('')
+  const [price, setPrice] = useState('0')
   const [pending, setPending] = useState(false)
   const [panel, setPanel] = useState<'Description' | 'Reviews' | 'Requests' | 'Numbers'>('Description')
+  // The picture tells us its own proportions once it loads.
+  const [shape, setShape] = useState<{ w: number; h: number } | null>(null)
 
   const [prefix, number] = useMemo(() => {
     const match = tag.toUpperCase().match(/^([A-Z]{3})-(\d+)$/)
@@ -240,6 +275,8 @@ export default function AssetPage() {
       : null,
   )
 
+  useTitle(asset ? `${asset.name} - Kobbleston Create` : 'Kobbleston Create')
+
   // A view is recorded once the page has actually opened the item.
   useEffect(() => {
     if (asset) void recordAssetEvent(asset.id, 'view')
@@ -248,6 +285,7 @@ export default function AssetPage() {
   useEffect(() => {
     setName(asset?.name ?? '')
     setDescription(asset?.description ?? '')
+    setPrice(String(asset?.price ?? 0))
   }, [asset?.id])
 
   if (item.loading) {
@@ -276,7 +314,16 @@ export default function AssetPage() {
     if (!name.trim()) { toast('It needs a name.', 'error'); return }
     setPending(true)
     try {
-      await updateAsset(asset.id, { name: name.trim(), description: description.trim() || null })
+      const asked = Math.max(0, Math.round(Number(price) || 0))
+      if (asked > priceCeilings[asset.kind]) {
+        toast(`The most you can charge is ${priceCeilings[asset.kind]} Pixels.`, 'error')
+        return
+      }
+      await updateAsset(asset.id, {
+        name: name.trim(),
+        description: description.trim() || null,
+        price: asked,
+      })
       toast('Saved.', 'success')
       setEditing(false)
       item.reload()
@@ -321,7 +368,10 @@ export default function AssetPage() {
           )}
 
           <div className="mt-1.5 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-muted">
-            <Link to={`/u/${asset.creator_username}`} className="inline-flex items-center gap-1.5 hover:text-white">
+            <Link
+              to={`/create/creator/${asset.creator_username}`}
+              className="inline-flex items-center gap-1.5 hover:text-white"
+            >
               By @{asset.creator_username}
               {asset.creator_is_admin && (
                 <FontAwesomeIcon icon={faCircleCheck} className="text-xs text-[#4d68ff]" />
@@ -346,8 +396,8 @@ export default function AssetPage() {
           </div>
         </div>
 
-        <div className="flex items-center gap-2">
-          <div className="w-52">
+        <div className="flex items-start gap-2">
+          <div className="w-56">
             <UsePanel asset={asset} onChanged={item.reload} />
           </div>
           {mine && (
@@ -355,7 +405,7 @@ export default function AssetPage() {
               label="More"
               align="right"
               trigger={
-                <span className="grid h-10 w-10 place-items-center rounded-xl border border-ink-line bg-ink-card text-white/70 transition-colors hover:bg-ink-hover hover:text-white">
+                <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl border border-ink-line bg-ink-card text-white/70 transition-colors hover:bg-ink-hover hover:text-white">
                   <FontAwesomeIcon icon={faEllipsis} />
                 </span>
               }
@@ -401,21 +451,33 @@ export default function AssetPage() {
 
       <div className="grid gap-5 sm:grid-cols-[14rem_1fr] sm:items-start">
         <div>
-          <div className="grid aspect-square place-items-center overflow-hidden rounded-2xl border border-ink-line bg-ink-raised">
+          {/* The frame takes the shape of the picture rather than posting it
+              into a square with bars either side. */}
+          <div
+            className={cn(
+              'grid place-items-center overflow-hidden rounded-2xl border border-ink-line bg-ink-raised',
+              previewUrl ? '' : 'aspect-square',
+            )}
+            style={shape ? { aspectRatio: `${shape.w} / ${shape.h}` } : undefined}
+          >
             {previewUrl ? (
               <img
                 src={previewUrl}
                 alt={asset.name}
                 draggable={false}
+                onLoad={(e) => setShape({
+                  w: e.currentTarget.naturalWidth,
+                  h: e.currentTarget.naturalHeight,
+                })}
                 onContextMenu={(e) => e.preventDefault()}
-                className="h-full w-full select-none object-contain"
+                className="h-full w-full select-none object-cover"
               />
             ) : (
               <FontAwesomeIcon icon={kindIcons[asset.kind]} className="text-5xl text-white/25" />
             )}
           </div>
           <Link
-            to={`/u/${asset.creator_username}`}
+            to={`/create/creator/${asset.creator_username}`}
             className="mt-2 flex items-center gap-2 text-sm font-bold hover:text-link"
           >
             <Avatar
@@ -440,6 +502,10 @@ export default function AssetPage() {
               { label: 'Created', value: stamp(asset.created_at) },
               { label: 'Updated', value: stamp(asset.updated_at) },
               { label: 'Size', value: sizeText },
+              {
+                label: 'Price',
+                value: asset.price > 0 ? `${formatCount(asset.price)} Pixels` : 'Free',
+              },
             ].map((fact) => (
               <div key={fact.label}>
                 <p className="text-xs text-muted">{fact.label}</p>
@@ -483,6 +549,17 @@ export default function AssetPage() {
                       value={description}
                       onChange={(e) => setDescription(e.target.value)}
                       maxLength={400}
+                    />
+                    <Input
+                      label="Price in Pixels"
+                      type="number"
+                      min={0}
+                      max={priceCeilings[asset.kind]}
+                      value={price}
+                      onChange={(e) => setPrice(e.target.value)}
+                      icon={faTag}
+                      hint={`0 means free. The most you can charge for ${kindLabels[asset.kind].toLowerCase()} is ${priceCeilings[asset.kind]} Pixels.`}
+                      className="max-w-xs"
                     />
                     <div className="flex gap-2">
                       <Button loading={pending} onClick={save}>Save</Button>
@@ -616,7 +693,7 @@ export default function AssetPage() {
           <h2 className="mb-3 flex items-center gap-2 font-display text-xl font-extrabold">
             More from {asset.creator_display_name}
             <Link
-              to={`/u/${asset.creator_username}`}
+              to={`/create/creator/${asset.creator_username}`}
               aria-label={`Everything by ${asset.creator_display_name}`}
               className="text-sm text-white/40 transition-colors hover:text-white"
             >

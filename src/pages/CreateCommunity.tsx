@@ -12,6 +12,7 @@ import { useAuth } from '@/hooks/useAuth'
 import { createCommunityFull, uploadCommunityImage } from '@/lib/api'
 import { slugify } from '@/lib/format'
 import { cn } from '@/lib/cn'
+import { useTitle } from '@/hooks/useTitle'
 
 const COST = 100
 
@@ -21,6 +22,7 @@ const policies = [
 ] as const
 
 export default function CreateCommunity() {
+  useTitle('New Community')
   const { profile, refreshProfile } = useAuth()
   const navigate = useNavigate()
   const toast = useToast()

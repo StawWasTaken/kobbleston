@@ -23,6 +23,7 @@ const CreateUploads = lazy(() => import('@/pages/CreateHub').then((m) => ({ defa
 const CreateMarketplace = lazy(() => import('@/pages/CreateHub').then((m) => ({ default: m.CreateMarketplace })))
 const CreateRequests = lazy(() => import('@/pages/CreateHub').then((m) => ({ default: m.CreateRequests })))
 const CreateAnalytics = lazy(() => import('@/pages/CreateHub').then((m) => ({ default: m.CreateAnalytics })))
+const CreatorPage = lazy(() => import('@/pages/CreatorPage'))
 const Search = lazy(() => import('@/pages/Search'))
 const Communities = lazy(() => import('@/pages/Communities'))
 const CommunityPage = lazy(() => import('@/pages/CommunityPage'))
@@ -87,6 +88,7 @@ export default function App() {
                   <Route path="marketplace" element={<CreateMarketplace />} />
                   <Route path="requests" element={<CreateRequests />} />
                   <Route path="analytics" element={<CreateAnalytics />} />
+                  <Route path="creator/:username" element={<CreatorPage />} />
                   <Route path=":tag" element={<AssetPage />} />
                 </Route>
                 <Route path="/search" element={<Search />} />

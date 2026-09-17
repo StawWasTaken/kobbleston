@@ -16,6 +16,7 @@ import { asset } from '@/lib/asset'
 import { cn } from '@/lib/cn'
 import { avatarOf } from '@/lib/avatars'
 import { profileLink } from '@/lib/links'
+import { Tooltip } from '@/components/ui/Tooltip'
 
 export function AppTopbar({ onOpenNav }: { onOpenNav: () => void }) {
   const { profile } = useAuth()
@@ -52,16 +53,16 @@ export function AppTopbar({ onOpenNav }: { onOpenNav: () => void }) {
   return (
     <header className="fixed inset-x-0 top-0 z-40 h-14">
       {/* the brand sunburst runs the full width of the bar, sidebar included */}
-      <div className="absolute inset-0 -z-10 bg-brand-deep">
+      <div className="absolute inset-0 -z-10 bg-chrome">
         <img
           src={asset('/brand/topbar.png')}
           alt=""
           aria-hidden="true"
-          className="h-full w-full object-cover object-center opacity-90"
+          className="h-full w-full object-cover object-center opacity-90 dark-only"
         />
       </div>
 
-      <div className="flex h-14 items-center gap-2 border-b-2 border-brand-ink px-3 sm:gap-4 sm:px-4">
+      <div className="flex h-14 items-center gap-2 border-b-2 border-brand-ink/40 px-3 sm:gap-4 sm:px-4">
         <button
           onClick={onOpenNav}
           aria-label="Open navigation"
@@ -96,17 +97,20 @@ export function AppTopbar({ onOpenNav }: { onOpenNav: () => void }) {
             <>
               {!profile.is_guest && <PixelBalance amount={profile.pixels} />}
 
-              <Link
-                to={profileLink(profile)}
-                className="hidden items-center gap-2 rounded-lg px-2 py-1 transition-colors hover:bg-onbrand/15 sm:flex"
-              >
+              <Tooltip label="Your profile" side="bottom">
+                <Link
+                  to={profileLink(profile)}
+                  className="hidden items-center gap-2 rounded-lg px-2 py-1 transition-colors hover:bg-onbrand/15 sm:flex"
+                >
                 <Avatar src={avatarOf(profile)} name={profile.display_name} size="xs" />
-                <span className="max-w-24 truncate text-sm font-bold text-onbrand">
-                  {profile.display_name}
-                </span>
-              </Link>
+                  <span className="max-w-24 truncate text-sm font-bold text-onbrand">
+                    {profile.display_name}
+                  </span>
+                </Link>
+              </Tooltip>
 
-              <button
+              <Tooltip label={unread ? `${unread} unread` : 'Notifications'} side="bottom">
+                <button
                 onClick={() => setNotificationsOpen((v) => !v)}
                 aria-label={unread ? `Notifications, ${unread} unread` : 'Notifications'}
                 aria-expanded={notificationsOpen}
@@ -118,7 +122,8 @@ export function AppTopbar({ onOpenNav }: { onOpenNav: () => void }) {
                     {unread > 9 ? '9+' : unread}
                   </span>
                 )}
-              </button>
+                </button>
+              </Tooltip>
             </>
           ) : (
             <Button size="sm" to="/signup">Sign Up</Button>

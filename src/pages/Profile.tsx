@@ -19,8 +19,10 @@ import { BadgeTile } from '@/components/spaces/BadgeGrid'
 import { useChatDock } from '@/components/chat/ChatDock'
 import { Menu } from '@/components/ui/Menu'
 import { Tooltip } from '@/components/ui/Tooltip'
+import { GuestGate } from '@/components/ui/GuestGate'
 import { useAuth } from '@/hooks/useAuth'
 import { useAsync } from '@/hooks/useAsync'
+import { useTitle } from '@/hooks/useTitle'
 import {
   getProfileByUsername, getProfileOverview, isFollowing, listEarnedBadges, listFriendships,
   listMemberCommunities, listSpacesByOwner, sendFriendRequest, setFollowing, startConversation,
@@ -141,6 +143,8 @@ export default function Profile() {
     [me?.id, user?.id, isMe],
   )
 
+  useTitle(user ? `${user.display_name} (@${user.username})` : 'Profile')
+
   useEffect(() => {
     if (!me || !user || isMe) return
     isFollowing(me.id, user.id).then(setFollowingState)
@@ -173,7 +177,15 @@ export default function Profile() {
       toast('Friend request sent.', 'success')
       relationship.reload()
     } catch (err) {
-      toast(err instanceof Error ? err.message : 'That did not send.', 'error')
+      const message = err instanceof Error ? err.message : 'That did not send.'
+      toast(
+        message.includes('row-level security')
+          ? 'Guests cannot add friends. Make an account and you can.'
+          : message.includes('duplicate')
+            ? 'You already asked this person.'
+            : message,
+        'error',
+      )
     }
   }
 
@@ -276,7 +288,9 @@ export default function Profile() {
                 ) : edge?.friendship.status === 'pending' ? (
                   <Button variant="subtle" icon={faClock} disabled>Request pending</Button>
                 ) : (
-                  <Button icon={faUserPlus} onClick={addFriend} disabled={!me}>Add Friend</Button>
+                  <GuestGate action="add friends">
+                    <Button icon={faUserPlus} onClick={addFriend} disabled={!me}>Add Friend</Button>
+                  </GuestGate>
                 )}
                 <Button
                   variant={following ? 'primary' : 'subtle'}

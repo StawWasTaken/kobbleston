@@ -11,7 +11,7 @@ import { cn } from '@/lib/cn'
 export const searchScopes: { tab: string; label: string; icon: IconDefinition }[] = [
   { tab: 'spaces', label: 'Spaces', icon: faLayerGroup },
   { tab: 'people', label: 'People', icon: faUser },
-  { tab: 'create', label: 'Create', icon: faShapes },
+  { tab: 'create', label: 'Creator Marketplace', icon: faShapes },
   { tab: 'communities', label: 'Communities', icon: faUsers },
 ]
 

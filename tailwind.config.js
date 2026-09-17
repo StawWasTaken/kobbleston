@@ -18,8 +18,13 @@ export default {
         },
         white: 'rgb(var(--fg) / <alpha-value>)',
         link: 'rgb(var(--link) / <alpha-value>)',
-        /* Chrome that is always blue keeps white text in both themes. */
-        onbrand: 'rgb(255 255 255 / <alpha-value>)',
+        /*
+         * The bar and the rail. In the dark they are deep Kobbleston blue
+         * with white on top; in daylight they are a pale blue with dark text,
+         * the way the rest of the interface flips.
+         */
+        chrome: 'rgb(var(--chrome) / <alpha-value>)',
+        onbrand: 'rgb(var(--on-chrome) / <alpha-value>)',
         brand: {
           DEFAULT: '#1B34E8',
           bright: '#3A50FF',

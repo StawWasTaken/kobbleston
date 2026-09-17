@@ -13,6 +13,7 @@ import { useAuth } from '@/hooks/useAuth'
 import { useAsync } from '@/hooks/useAsync'
 import { listFavoriteSpaces, listSpacesByOwner, logSpaceUpdate } from '@/lib/api'
 import type { Space } from '@/types/db'
+import { useTitle } from '@/hooks/useTitle'
 
 function UpdateDialog({
   space, onClose, onLogged,
@@ -66,6 +67,7 @@ function UpdateDialog({
 }
 
 export default function Library() {
+  useTitle('Library')
   const { profile } = useAuth()
   const [updating, setUpdating] = useState<Space | null>(null)
 

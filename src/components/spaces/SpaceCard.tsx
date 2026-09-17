@@ -8,6 +8,7 @@ import type { Space, SpaceCategory } from '@/types/db'
 import { asset } from '@/lib/asset'
 import { useAssetRef } from '@/hooks/useSignedUrl'
 import { spaceLink } from '@/lib/links'
+import { Tooltip } from '@/components/ui/Tooltip'
 
 export const categoryLabels: Record<SpaceCategory, string> = {
   personal: 'Personal',
@@ -54,6 +55,10 @@ export function SpaceCard({ space, className }: { space: Space; className?: stri
 
   return (
     <article className={cn('group relative min-w-0', className)}>
+      <Tooltip
+        label={owner ? `${space.name} by ${owner.display_name}` : space.name}
+        side="top"
+      >
       <Link
         to={href}
         className="relative block aspect-square overflow-hidden rounded-xl bg-brand-ink ring-1 ring-ink-line transition-[transform,box-shadow] duration-200 group-hover:-translate-y-0.5 group-hover:ring-brand/70"
@@ -71,6 +76,7 @@ export function SpaceCard({ space, className }: { space: Space; className?: stri
           </span>
         )}
       </Link>
+      </Tooltip>
 
       <h3 className="mt-2 truncate text-sm font-bold">
         <Link to={href} className="outline-none hover:text-link">{space.name}</Link>

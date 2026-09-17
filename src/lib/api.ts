@@ -6,7 +6,7 @@ import type {
   CommunityMember, CommunityOverview, CommunityPost, CommunityRank, CommunityRequest,
   CommunityRelation, CommunityBan, CommunityAuditEntry,
   AssetPageItem, AssetDay, CreatorAssetRow, Collaborator, UsernameRecord,
-  AssetRequest, UsableAsset, AssetReview,
+  AssetRequest, UsableAsset, AssetReview, CreatorPage,
 } from '@/types/db'
 
 const SPACE_FIELDS =
@@ -436,17 +436,37 @@ export async function listUsableAssets(): Promise<UsableAsset[]> {
   return (unwrap(await supabase.rpc('assets_i_can_use')) as UsableAsset[]) ?? []
 }
 
+export type AssetSort = 'new' | 'used' | 'rated' | 'cheap'
+
 export async function listAssets(options: {
   kind?: AssetKind | 'all'
   search?: string
   limit?: number
+  sort?: AssetSort
+  creator?: string
 } = {}): Promise<MarketAsset[]> {
-  const { kind = 'all', search, limit = 24 } = options
+  const { kind = 'all', search, limit = 24, sort = 'new', creator } = options
   return unwrap(await supabase.rpc('list_assets', {
     kind_filter: kind === 'all' ? null : kind,
     search: search?.trim() || null,
     limit_count: limit,
+    sort,
+    creator: creator ?? null,
   })) ?? []
+}
+
+/** The most somebody may charge for each kind of thing. */
+export const priceCeilings: Record<AssetKind, number> = {
+  image: 100, audio: 250, video: 500, font: 300, model: 750,
+}
+
+export async function buyAsset(assetId: string) {
+  unwrap(await supabase.rpc('buy_asset', { target: assetId }))
+}
+
+export async function getCreatorPage(username: string): Promise<CreatorPage | null> {
+  const rows = unwrap(await supabase.rpc('creator_page', { target: username })) as CreatorPage[]
+  return rows?.[0] ?? null
 }
 
 export async function listOwnAssets(userId: string): Promise<OwnAsset[]> {
@@ -486,6 +506,7 @@ export async function updateAsset(id: string, patch: {
   name?: string
   description?: string | null
   is_public?: boolean
+  price?: number
 }) {
   unwrap(await supabase.from('assets').update(patch).eq('id', id).select('id').single())
 }

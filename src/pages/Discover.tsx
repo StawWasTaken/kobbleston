@@ -12,6 +12,7 @@ import { listSpaces } from '@/lib/api'
 import type { SpaceSort } from '@/lib/api'
 import type { SpaceCategory } from '@/types/db'
 import { cn } from '@/lib/cn'
+import { useTitle } from '@/hooks/useTitle'
 
 const sorts: { value: SpaceSort; label: string }[] = [
   { value: 'trending', label: 'Trending' },
@@ -46,6 +47,7 @@ function Chip({
 }
 
 export default function Discover() {
+  useTitle('Discover')
   const [params, setParams] = useSearchParams()
   const [term, setTerm] = useState(params.get('q') ?? '')
   const [debounced, setDebounced] = useState(term)
