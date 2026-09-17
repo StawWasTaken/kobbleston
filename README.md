@@ -111,6 +111,12 @@ is wired and what still needs deploying.
 - **Group chats** of up to five friends, in a dock that remembers whether you
   left it open.
 
+## The editor
+
+Not built. The plan for it is in [`docs/editor.md`](docs/editor.md), including
+how a Space gets served from its own origin in a sandboxed frame so somebody
+else's markup cannot reach a signed in session.
+
 ## Not built yet
 
 The Kobbleston editor (building the inside of a Space) is deliberately out of

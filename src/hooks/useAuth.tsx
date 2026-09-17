@@ -4,7 +4,7 @@ import type { Session } from '@supabase/supabase-js'
 import { supabase } from '@/lib/supabase'
 import { signInWithUsername, uploadAvatar } from '@/lib/api'
 import { randomAvatar } from '@/lib/avatars'
-import { clearAccountSession, rememberAccount } from '@/lib/accounts'
+import { clearAccountSession, rememberAccount, updateAccountSession } from '@/lib/accounts'
 import type { Profile } from '@/types/db'
 
 type AuthValue = {
@@ -85,6 +85,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (!next) {
         setProfile(null)
         setLoading(false)
+        return
+      }
+
+      // Supabase rotates the refresh token as it goes, so the copy the
+      // switcher holds has to follow it. Capturing it only at sign in left a
+      // stale token behind, which is why switching kept asking for the
+      // password again.
+      if (next.user.email && !next.user.is_anonymous) {
+        updateAccountSession(next.user.id, {
+          access_token: next.access_token,
+          refresh_token: next.refresh_token,
+        })
       }
     })
 
@@ -228,7 +240,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         // Logging out has to actually log out, so the stored session goes
         // with it while the account stays on the switcher.
         if (userId) clearAccountSession(userId)
-        await supabase.auth.signOut()
+        // Local scope only: a global sign out revokes every refresh token for
+        // this account, including the ones other accounts on this device are
+        // not using yet.
+        await supabase.auth.signOut({ scope: 'local' })
       },
       async refreshProfile() {
         if (userId) await loadProfile(userId, session?.user.email ?? undefined)

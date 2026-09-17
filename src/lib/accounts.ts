@@ -60,6 +60,17 @@ export function rememberAccount(
   ])
 }
 
+/** Keeps the stored tokens in step as Supabase rotates them. */
+export function updateAccountSession(
+  id: string,
+  session: { access_token: string; refresh_token: string },
+) {
+  const accounts = read()
+  const existing = accounts.find((a) => a.id === id)
+  if (!existing) return
+  write(accounts.map((a) => (a.id === id ? { ...a, session, lastUsed: Date.now() } : a)))
+}
+
 /** Drops the tokens but keeps the name, so the account stays offerable. */
 export function clearAccountSession(id: string) {
   write(read().map((a) => (a.id === id ? { ...a, session: undefined } : a)))

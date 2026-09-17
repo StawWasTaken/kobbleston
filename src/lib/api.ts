@@ -1,13 +1,15 @@
 import { supabase } from './supabase'
 import type {
-  ActivityEvent, AssetKind, Community, CommunityRole, EarnedBadge, Friendship, MarketAsset,
+  ActivityEvent, AssetKind, Community, EarnedBadge, Friendship, MarketAsset,
   MemberCommunity, Message, Notification, OwnAsset, PixelTransaction, PlatformStats, Profile,
-  ProfileOverview, Space, SpaceBadge, SpaceCategory, SpaceMessage, Conversation,
+  ProfileOverview, Space, SpaceBadge, SpaceCategory, SpaceMessage, SpaceStats, Conversation,
+  CommunityMember, CommunityOverview, CommunityPost, CommunityRank, CommunityRequest,
 } from '@/types/db'
 
 const SPACE_FIELDS =
   'id, owner_id, slug, name, description, category, cover_url, is_published, visit_count, ' +
-  'like_count, favorite_count, update_count, published_at, created_at, updated_at, ' +
+  'like_count, favorite_count, dislike_count, update_count, published_at, created_at, updated_at, ' +
+  'emblem_url, thumbnail_urls, genre, content_id, ' +
   'chat_enabled, chat_greeting, chat_slowmode_seconds, ' +
   'owner:profiles!spaces_owner_id_fkey (id, username, display_name, avatar_url, is_online, is_admin)'
 
@@ -184,10 +186,57 @@ export async function startConversation(otherId: string): Promise<string> {
 
 export async function listMessages(conversationId: string): Promise<Message[]> {
   const rows = unwrap(await supabase.from('messages')
-    .select('id, conversation_id, sender_id, body, created_at')
+    .select('id, conversation_id, sender_id, body, created_at, edited_at, is_removed')
     .eq('conversation_id', conversationId)
     .order('created_at', { ascending: false }).limit(100)) as Message[]
   return (rows ?? []).reverse()
+}
+
+export async function editMessage(id: number, body: string) {
+  unwrap(await supabase.from('messages').update({ body: body.trim() })
+    .eq('id', id).select('id').single())
+}
+
+export async function deleteMessage(id: number) {
+  unwrap(await supabase.from('messages').update({ is_removed: true })
+    .eq('id', id).select('id').single())
+}
+
+/**
+ * Everyone you can talk to, whether or not you have yet. Friends with an
+ * existing conversation carry it; the rest open one on first message.
+ */
+export async function chatRoster(): Promise<Conversation[]> {
+  const [conversations, edges] = await Promise.all([
+    myConversations(),
+    supabase.auth.getUser().then(({ data }) =>
+      data.user ? listFriendships(data.user.id) : []),
+  ])
+
+  const spokenTo = new Set(
+    conversations.flatMap((c) => (c.is_group ? [] : c.members.map((m) => m.id))),
+  )
+
+  const quiet = edges
+    .filter((edge) => edge.friendship.status === 'accepted' && !spokenTo.has(edge.profile.id))
+    .map<Conversation>((edge) => ({
+      id: `friend:${edge.profile.id}`,
+      title: null,
+      is_group: false,
+      last_message_at: edge.friendship.created_at,
+      last_message: null,
+      unread_count: 0,
+      members: [{
+        id: edge.profile.id,
+        username: edge.profile.username,
+        display_name: edge.profile.display_name,
+        avatar_url: edge.profile.avatar_url,
+        is_online: edge.profile.is_online,
+        in_space_id: edge.profile.in_space_id,
+      }],
+    }))
+
+  return [...conversations, ...quiet]
 }
 
 export async function sendMessage(conversationId: string, senderId: string, body: string) {
@@ -256,7 +305,7 @@ export async function listAssets(options: {
 
 export async function listOwnAssets(userId: string): Promise<OwnAsset[]> {
   return (unwrap(await supabase.from('assets')
-    .select('id, kind, name, description, file_path, status, review_note, byte_size, download_count, created_at')
+    .select('id, kind, name, description, file_path, status, review_note, byte_size, download_count, content_id, created_at')
     .eq('creator_id', userId)
     .order('created_at', { ascending: false })) as unknown as OwnAsset[]) ?? []
 }
@@ -289,7 +338,7 @@ export async function uploadAsset(input: {
       description: input.description.trim() || null,
       file_path: path,
       byte_size: input.file.size,
-    }).select('id, kind, name, description, file_path, status, review_note, byte_size, download_count, created_at')
+    }).select('id, kind, name, description, file_path, status, review_note, byte_size, download_count, content_id, created_at')
       .single()) as unknown as OwnAsset
   } catch (err) {
     // Never leave a file in storage with no row pointing at it.
@@ -425,46 +474,6 @@ export async function getCommunity(slug: string): Promise<Community | null> {
   return (data as Community | null) ?? null
 }
 
-export async function createCommunity(input: {
-  ownerId: string
-  name: string
-  slug: string
-  description: string
-}): Promise<Community> {
-  return unwrap(await supabase.from('communities').insert({
-    owner_id: input.ownerId,
-    name: input.name.trim(),
-    slug: input.slug,
-    description: input.description.trim() || null,
-  }).select('*').single()) as unknown as Community
-}
-
-export async function isCommunityMember(communityId: string, userId: string) {
-  const { data } = await supabase.from('community_members')
-    .select('role').eq('community_id', communityId).eq('user_id', userId).maybeSingle()
-  return (data as { role: CommunityRole } | null)?.role ?? null
-}
-
-export async function setCommunityMembership(communityId: string, userId: string, join: boolean) {
-  const result = join
-    ? await supabase.from('community_members').insert({ community_id: communityId, user_id: userId })
-    : await supabase.from('community_members').delete()
-        .eq('community_id', communityId).eq('user_id', userId)
-  if (result.error) throw new Error(result.error.message)
-}
-
-export async function listCommunityMembers(communityId: string): Promise<
-  { role: CommunityRole; profile: Profile }[]
-> {
-  const rows = unwrap(await supabase.from('community_members')
-    .select('role, profiles:profiles!community_members_user_id_fkey (*)')
-    .eq('community_id', communityId).limit(60)) as unknown as
-      { role: CommunityRole; profiles: Profile }[]
-  return (rows ?? []).map((r) => ({ role: r.role, profile: r.profiles }))
-}
-
-// ------------------------------------------------------------------ pixels
-
 export async function listPixelTransactions(userId: string): Promise<PixelTransaction[]> {
   return (unwrap(await supabase.from('pixel_transactions')
     .select('id, amount, kind, note, created_at')
@@ -547,4 +556,187 @@ export function conversationName(conversation: Conversation) {
   if (!names.length) return 'Empty chat'
   if (names.length <= 2) return names.join(' and ')
   return `${names.slice(0, 2).join(', ')} and ${names.length - 2} more`
+}
+
+// ------------------------------------------------------- community details
+
+export async function getCommunityOverview(communityId: string): Promise<CommunityOverview> {
+  const rows = unwrap(await supabase.rpc('community_overview', { community: communityId }))
+  return (Array.isArray(rows) ? rows[0] : rows) as CommunityOverview
+}
+
+export async function listCommunityRoster(communityId: string): Promise<CommunityMember[]> {
+  return unwrap(await supabase.rpc('community_roster', { community: communityId })) ?? []
+}
+
+export async function listCommunityRequests(communityId: string): Promise<CommunityRequest[]> {
+  return unwrap(await supabase.rpc('community_requests', { community: communityId })) ?? []
+}
+
+export async function listCommunityRanks(communityId: string): Promise<CommunityRank[]> {
+  return (unwrap(await supabase.from('community_ranks').select('*')
+    .eq('community_id', communityId)
+    .order('rank', { ascending: false })) as unknown as CommunityRank[]) ?? []
+}
+
+export async function saveCommunityRank(rank: Partial<CommunityRank> & { community_id: string }) {
+  const { id, ...fields } = rank
+  const result = id
+    ? await supabase.from('community_ranks').update(fields).eq('id', id).select('id').single()
+    : await supabase.from('community_ranks').insert(fields).select('id').single()
+  unwrap(result)
+}
+
+export async function deleteCommunityRank(id: string) {
+  const { error } = await supabase.from('community_ranks').delete().eq('id', id)
+  if (error) throw new Error(error.message)
+}
+
+export async function createCommunityFull(input: {
+  name: string
+  slug: string
+  description: string
+  iconUrl: string | null
+  bannerUrl: string | null
+  joinPolicy: 'open' | 'approval'
+}): Promise<string> {
+  return unwrap(await supabase.rpc('create_community', {
+    name: input.name.trim(),
+    slug: input.slug,
+    description: input.description,
+    icon_url: input.iconUrl,
+    banner_url: input.bannerUrl,
+    join_policy: input.joinPolicy,
+  })) as string
+}
+
+export async function joinCommunity(communityId: string): Promise<'joined' | 'requested'> {
+  return unwrap(await supabase.rpc('join_community', { community: communityId })) as
+    'joined' | 'requested'
+}
+
+export async function leaveCommunity(communityId: string, userId: string) {
+  const { error } = await supabase.from('community_members').delete()
+    .eq('community_id', communityId).eq('user_id', userId)
+  if (error) throw new Error(error.message)
+}
+
+export async function answerJoinRequest(communityId: string, applicantId: string, accept: boolean) {
+  unwrap(await supabase.rpc('answer_join_request', {
+    community: communityId, applicant: applicantId, accept,
+  }))
+}
+
+export async function setMemberRank(communityId: string, targetId: string, rankId: string) {
+  unwrap(await supabase.rpc('set_member_rank', {
+    community: communityId, target: targetId, new_rank: rankId,
+  }))
+}
+
+export async function removeMember(communityId: string, targetId: string, ban = false, reason = '') {
+  unwrap(await supabase.rpc('remove_member', {
+    community: communityId, target: targetId, ban, reason,
+  }))
+}
+
+export async function updateCommunity(id: string, patch: Partial<Pick<Community,
+  'name' | 'description' | 'icon_url' | 'banner_url' | 'join_policy'>>) {
+  unwrap(await supabase.from('communities').update(patch).eq('id', id).select('id').single())
+}
+
+// --------------------------------------------------------- community walls
+
+export async function listCommunityPosts(communityId: string): Promise<CommunityPost[]> {
+  return (unwrap(await supabase.from('community_posts')
+    .select('id, community_id, author_id, body, is_announcement, created_at, ' +
+      'author:profiles!community_posts_author_id_fkey (username, display_name, avatar_url)')
+    .eq('community_id', communityId)
+    .order('is_announcement', { ascending: false })
+    .order('created_at', { ascending: false })
+    .limit(50)) as unknown as CommunityPost[]) ?? []
+}
+
+export async function postToCommunity(input: {
+  communityId: string
+  authorId: string
+  body: string
+  isAnnouncement: boolean
+}) {
+  unwrap(await supabase.from('community_posts').insert({
+    community_id: input.communityId,
+    author_id: input.authorId,
+    body: input.body.trim(),
+    is_announcement: input.isAnnouncement,
+  }).select('id').single())
+}
+
+export async function removeCommunityPost(id: number) {
+  unwrap(await supabase.from('community_posts').update({ is_removed: true })
+    .eq('id', id).select('id').single())
+}
+
+// ------------------------------------------------------- community Spaces
+
+export async function listCommunitySpaces(communityId: string): Promise<Space[]> {
+  const { data: rows } = await supabase.from('community_spaces')
+    .select('space_id').eq('community_id', communityId)
+  const ids = (rows ?? []).map((r) => r.space_id)
+  if (!ids.length) return []
+  return (unwrap(await supabase.from('spaces').select(SPACE_FIELDS)
+    .in('id', ids).eq('is_published', true)) as unknown as Space[]) ?? []
+}
+
+export async function linkSpaceToCommunity(communityId: string, spaceId: string, link: boolean) {
+  const result = link
+    ? await supabase.from('community_spaces').insert({ community_id: communityId, space_id: spaceId })
+    : await supabase.from('community_spaces').delete()
+        .eq('community_id', communityId).eq('space_id', spaceId)
+  if (result.error) throw new Error(result.error.message)
+}
+
+/** Emblems and covers live in the same bucket as profile pictures. */
+export async function uploadCommunityImage(userId: string, file: File, kind: 'emblem' | 'cover') {
+  const extension = file.name.split('.').pop()?.toLowerCase() ?? 'png'
+  const path = `${userId}/community-${kind}-${Date.now()}.${extension}`
+  const { error } = await supabase.storage
+    .from('avatars').upload(path, file, { contentType: file.type, upsert: true })
+  if (error) throw new Error(error.message)
+  return supabase.storage.from('avatars').getPublicUrl(path).data.publicUrl
+}
+
+export async function blockPerson(targetId: string) {
+  unwrap(await supabase.rpc('block_person', { target: targetId }))
+}
+
+// ------------------------------------------------------------ space detail
+
+export async function getSpaceStats(spaceId: string): Promise<SpaceStats> {
+  const rows = unwrap(await supabase.rpc('space_stats', { target: spaceId }))
+  return (Array.isArray(rows) ? rows[0] : rows) as SpaceStats
+}
+
+/** Like, dislike, favourite and notify all toggle the same way. */
+export async function toggleSpaceFlag(
+  table: 'space_likes' | 'space_dislikes' | 'space_favorites' | 'space_watchers',
+  spaceId: string,
+  userId: string,
+  on: boolean,
+) {
+  const result = on
+    ? await supabase.from(table).insert({ space_id: spaceId, user_id: userId })
+    : await supabase.from(table).delete().eq('space_id', spaceId).eq('user_id', userId)
+  if (result.error) throw new Error(result.error.message)
+}
+
+export async function updateSpace(id: string, patch: Partial<Pick<Space,
+  'name' | 'description' | 'category' | 'genre' | 'emblem_url' | 'cover_url' |
+  'thumbnail_urls' | 'is_published' | 'chat_enabled' | 'chat_greeting' | 'chat_slowmode_seconds'>>) {
+  unwrap(await supabase.from('spaces').update(patch).eq('id', id).select('id').single())
+}
+
+export async function getSpaceById(id: string): Promise<Space | null> {
+  const { data, error } = await supabase
+    .from('spaces').select(SPACE_FIELDS).eq('id', id).maybeSingle()
+  if (error) throw new Error(error.message)
+  return (data as Space | null) ?? null
 }

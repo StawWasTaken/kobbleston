@@ -14,7 +14,7 @@ import { AssetTile, kindIcons, kindLabels } from '@/components/create/AssetTile'
 import { UploadDialog } from '@/components/create/UploadDialog'
 import { useAuth } from '@/hooks/useAuth'
 import { useAsync } from '@/hooks/useAsync'
-import { deleteAsset, listAssets, listOwnAssets } from '@/lib/api'
+import { deleteAsset, listAssets, listOwnAssets, listSpacesByOwner } from '@/lib/api'
 import { timeAgo } from '@/lib/format'
 import { cn } from '@/lib/cn'
 import type { AssetKind, OwnAsset } from '@/types/db'
@@ -82,6 +82,10 @@ export default function Create() {
   const market = useAsync(() => listAssets({ kind, search: debounced, limit: 36 }), [kind, debounced])
   const mine = useAsync(
     async () => (profile ? listOwnAssets(profile.id) : []),
+    [profile?.id],
+  )
+  const spaces = useAsync(
+    async () => (profile ? listSpacesByOwner(profile.id, true) : []),
     [profile?.id],
   )
 
@@ -190,14 +194,47 @@ export default function Create() {
           )}
         </Card>
 
-        <Card className="p-5">
-          <h2 className="font-display text-lg font-extrabold">Making a Space?</h2>
-          <p className="mt-1.5 text-sm text-white/60">
-            Create holds the parts. A Space is the thing you build out of them.
-          </p>
-          <Button variant="subtle" to="/spaces/new" className="mt-4" icon={faPlus} block>
-            New Space
-          </Button>
+        <Card className="overflow-hidden">
+          <div className="flex items-center justify-between border-b border-ink-line px-4 py-3.5">
+            <h2 className="text-sm font-extrabold">My Spaces</h2>
+            <Button size="sm" variant="ghost" to="/spaces/new" icon={faPlus}>New</Button>
+          </div>
+
+          {spaces.loading && (
+            <div className="space-y-2 p-3">
+              {[0, 1].map((i) => <Skeleton key={i} className="h-12" />)}
+            </div>
+          )}
+
+          {!spaces.loading && !spaces.data?.length && (
+            <p className="px-4 py-6 text-center text-sm text-muted">
+              Create holds the parts. A Space is what you build out of them.
+            </p>
+          )}
+
+          {!!spaces.data?.length && (
+            <ul>
+              {spaces.data.map((space) => (
+                <li
+                  key={space.id}
+                  className="flex items-center gap-3 border-b border-ink-line/70 px-4 py-2.5 last:border-0"
+                >
+                  <span className="grid h-9 w-9 shrink-0 place-items-center overflow-hidden rounded-lg bg-brand-ink text-xs">
+                    {space.emblem_url
+                      ? <img src={space.emblem_url} alt="" className="h-full w-full object-cover" />
+                      : space.name.slice(0, 2).toUpperCase()}
+                  </span>
+                  <span className="min-w-0 flex-1">
+                    <span className="block truncate text-sm font-bold">{space.name}</span>
+                    <span className="block text-xs text-muted">
+                      SPC-{space.content_id ?? '—'}{space.is_published ? '' : ' · draft'}
+                    </span>
+                  </span>
+                  <Button size="sm" variant="subtle" to={`/spaces/${space.id}/edit`}>Configure</Button>
+                </li>
+              ))}
+            </ul>
+          )}
         </Card>
       </aside>
 

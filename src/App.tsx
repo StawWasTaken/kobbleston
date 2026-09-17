@@ -18,6 +18,8 @@ const Search = lazy(() => import('@/pages/Search'))
 const Communities = lazy(() => import('@/pages/Communities'))
 const CommunityPage = lazy(() => import('@/pages/CommunityPage'))
 const NewSpace = lazy(() => import('@/pages/NewSpace'))
+const EditSpace = lazy(() => import('@/pages/EditSpace'))
+const CreateCommunity = lazy(() => import('@/pages/CreateCommunity'))
 const Terms = lazy(() => import('@/pages/Policies').then((m) => ({ default: m.Terms })))
 const Guidelines = lazy(() => import('@/pages/Policies').then((m) => ({ default: m.Guidelines })))
 const Friends = lazy(() => import('@/pages/Friends'))
@@ -77,6 +79,8 @@ export default function App() {
                 <Route element={<RequireAuth />}>
                   <Route path="/home" element={<Home />} />
                   <Route path="/spaces/new" element={<NewSpace />} />
+                  <Route path="/spaces/:spaceId/edit" element={<EditSpace />} />
+                  <Route path="/communities/new" element={<CreateCommunity />} />
                   <Route path="/friends" element={<Friends />} />
                   <Route path="/library" element={<Library />} />
                   <Route path="/settings" element={<Settings />} />

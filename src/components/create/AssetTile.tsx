@@ -24,6 +24,14 @@ export const kindLabels: Record<AssetKind, string> = {
   model: 'Model',
 }
 
+const tagPrefix: Record<AssetKind, string> = {
+  image: 'IMG', audio: 'SND', video: 'VID', font: 'FNT', model: 'MDL',
+}
+
+/** The number every piece of content carries, with its kind in front. */
+export const contentTag = (kind: AssetKind, id: number | null) =>
+  id ? `${tagPrefix[kind]}-${id}` : ''
+
 export function AssetTile({ item }: { item: MarketAsset }) {
   const preview = item.thumbnail_path ?? (item.kind === 'image' ? item.file_path : null)
 
@@ -61,9 +69,12 @@ export function AssetTile({ item }: { item: MarketAsset }) {
             />
           )}
         </Link>
-        <p className="mt-2 flex items-center gap-1.5 text-[11px] text-white/40">
-          <FontAwesomeIcon icon={faDownload} />
-          {formatCount(item.download_count)}
+        <p className="mt-2 flex items-center justify-between gap-2 text-[11px] text-white/40">
+          <span className="inline-flex items-center gap-1.5">
+            <FontAwesomeIcon icon={faDownload} />
+            {formatCount(item.download_count)}
+          </span>
+          <span className="font-mono">{contentTag(item.kind, item.content_id)}</span>
         </p>
       </div>
     </article>

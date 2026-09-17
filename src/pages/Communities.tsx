@@ -1,28 +1,27 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { faMagnifyingGlass, faPlus, faUsers } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faMagnifyingGlass, faPlus, faUsers, faCircleCheck } from '@fortawesome/free-solid-svg-icons'
 import { Page } from '@/components/layout/AppShell'
 import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
-import { Dialog } from '@/components/ui/Dialog'
-import { Input, Textarea } from '@/components/ui/Input'
+import { Input } from '@/components/ui/Input'
 import { EmptyState, ErrorState, Skeleton } from '@/components/ui/States'
-import { useToast } from '@/components/ui/Toast'
 import { GuestGate } from '@/components/ui/GuestGate'
 import { useAuth } from '@/hooks/useAuth'
 import { useAsync } from '@/hooks/useAsync'
-import { createCommunity, listCommunities, listMemberCommunities } from '@/lib/api'
-import { formatCount, slugify } from '@/lib/format'
+import { listCommunities, listMemberCommunities } from '@/lib/api'
+import { formatCount } from '@/lib/format'
 
 function CommunityCard({
-  slug, name, icon, members, note,
+  slug, name, icon, members, note, verified,
 }: {
   slug: string
   name: string
   icon: string | null
   members: number
   note?: string
+  verified?: boolean
 }) {
   return (
     <Link
@@ -33,7 +32,10 @@ function CommunityCard({
         {icon ? <img src={icon} alt="" className="h-full w-full object-cover" /> : name.slice(0, 2).toUpperCase()}
       </span>
       <span className="min-w-0 flex-1">
-        <span className="block truncate font-bold">{name}</span>
+        <span className="flex items-center gap-1.5">
+          <span className="truncate font-bold">{name}</span>
+          {verified && <FontAwesomeIcon icon={faCircleCheck} className="shrink-0 text-xs text-[#4d68ff]" />}
+        </span>
         <span className="block text-xs text-muted">
           {formatCount(members)} members{note && ` · ${note}`}
         </span>
@@ -44,14 +46,8 @@ function CommunityCard({
 
 export default function Communities() {
   const { profile } = useAuth()
-  const toast = useToast()
   const [term, setTerm] = useState('')
   const [debounced, setDebounced] = useState('')
-  const [making, setMaking] = useState(false)
-  const [name, setName] = useState('')
-  const [description, setDescription] = useState('')
-  const [pending, setPending] = useState(false)
-  const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
     const timer = window.setTimeout(() => setDebounced(term), 250)
@@ -64,43 +60,19 @@ export default function Communities() {
     [profile?.id],
   )
 
-  const create = async () => {
-    if (!profile) return
-    const slug = slugify(name)
-    if (!/^[a-z0-9-]{3,40}$/.test(slug)) {
-      setError('The name needs at least three letters or numbers.')
-      return
-    }
-    setPending(true)
-    setError(null)
-    try {
-      await createCommunity({ ownerId: profile.id, name, slug, description })
-      toast('Community created.', 'success')
-      setName('')
-      setDescription('')
-      setMaking(false)
-      all.reload()
-      mine.reload()
-    } catch (err) {
-      const message = err instanceof Error ? err.message : 'That did not save.'
-      setError(message.includes('duplicate') ? 'That name is taken.' : message)
-    } finally {
-      setPending(false)
-    }
-  }
-
   return (
     <Page className="grid gap-8 lg:grid-cols-[1fr_20rem] lg:items-start">
       <div className="min-w-0">
         <header className="mb-5 flex flex-wrap items-end justify-between gap-4">
           <div>
             <h1 className="font-display text-3xl font-extrabold sm:text-4xl">Communities</h1>
-            <p className="mt-1.5 text-muted">Groups of people building around the same thing.</p>
+            <p className="mt-1.5 text-muted">
+              Fan clubs, build teams, hobby corners. They have their own wall and their
+              own Spaces.
+            </p>
           </div>
           <GuestGate action="make a Community">
-            <Button icon={faPlus} onClick={() => setMaking(true)} disabled={!profile}>
-              New Community
-            </Button>
+            <Button icon={faPlus} to="/communities/new" disabled={!profile}>New Community</Button>
           </GuestGate>
         </header>
 
@@ -144,6 +116,7 @@ export default function Communities() {
                 name={community.name}
                 icon={community.icon_url}
                 members={community.member_count}
+                verified={community.is_verified}
               />
             ))}
           </div>
@@ -154,7 +127,7 @@ export default function Communities() {
         <Card className="overflow-hidden">
           <div className="flex items-center gap-2 border-b border-ink-line px-4 py-3.5">
             <FontAwesomeIcon icon={faUsers} className="text-white/40" />
-            <h2 className="text-sm font-extrabold">Yours</h2>
+            <h2 className="text-sm font-extrabold">My Communities</h2>
           </div>
 
           {mine.loading && (
@@ -185,37 +158,6 @@ export default function Communities() {
           )}
         </Card>
       </aside>
-
-      <Dialog
-        open={making}
-        onClose={() => setMaking(false)}
-        title="New Community"
-        description="You will be its owner. People can find and join it straight away."
-        footer={
-          <>
-            <Button variant="ghost" onClick={() => setMaking(false)}>Cancel</Button>
-            <Button loading={pending} onClick={create}>Create</Button>
-          </>
-        }
-      >
-        <div className="space-y-4">
-          <Input
-            label="Name"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            maxLength={48}
-            error={error}
-            hint={name ? `kobbleston.com/c/${slugify(name)}` : undefined}
-          />
-          <Textarea
-            label="What is it about?"
-            labelNote="optional"
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-            maxLength={400}
-          />
-        </div>
-      </Dialog>
     </Page>
   )
 }

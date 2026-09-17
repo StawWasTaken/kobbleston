@@ -1,0 +1,170 @@
+import { Link } from 'react-router-dom'
+import { faCheck, faGavel, faUserMinus, faXmark } from '@fortawesome/free-solid-svg-icons'
+import { Button } from '@/components/ui/Button'
+import { Card } from '@/components/ui/Card'
+import { Avatar } from '@/components/ui/Avatar'
+import { Badge } from '@/components/ui/Badge'
+import { PresenceLabel, presenceOf } from '@/components/ui/StatusDot'
+import { Skeleton } from '@/components/ui/States'
+import { Tooltip } from '@/components/ui/Tooltip'
+import { useToast } from '@/components/ui/Toast'
+import { useAsync } from '@/hooks/useAsync'
+import {
+  answerJoinRequest, listCommunityRanks, listCommunityRequests, listCommunityRoster,
+  removeMember, setMemberRank,
+} from '@/lib/api'
+import { timeAgo } from '@/lib/format'
+import type { CommunityOverview } from '@/types/db'
+
+export function CommunityMembers({
+  communityId, ownerId, rights, onChanged,
+}: {
+  communityId: string
+  ownerId: string
+  rights: CommunityOverview | null
+  onChanged: () => void
+}) {
+  const toast = useToast()
+  const roster = useAsync(() => listCommunityRoster(communityId), [communityId])
+  const ranks = useAsync(() => listCommunityRanks(communityId), [communityId])
+  const requests = useAsync(
+    async () => (rights?.can_manage_members ? listCommunityRequests(communityId) : []),
+    [communityId, rights?.can_manage_members],
+  )
+
+  const guard = async (run: () => Promise<void>) => {
+    try {
+      await run()
+      roster.reload()
+      requests.reload()
+      onChanged()
+    } catch (err) {
+      toast(err instanceof Error ? err.message : 'That did not work.', 'error')
+    }
+  }
+
+  return (
+    <div className="space-y-6">
+      {rights?.can_manage_members && !!requests.data?.length && (
+        <section>
+          <h3 className="mb-3 font-display text-lg font-extrabold">
+            Waiting to join ({requests.data.length})
+          </h3>
+          <Card className="overflow-hidden">
+            <ul>
+              {requests.data.map((person) => (
+                <li
+                  key={person.id}
+                  className="flex items-center gap-3 border-b border-ink-line/70 px-4 py-3 last:border-0"
+                >
+                  <Avatar src={person.avatar_url} name={person.display_name} size="md" />
+                  <div className="min-w-0 flex-1">
+                    <Link to={`/u/${person.username}`} className="block truncate font-bold hover:underline">
+                      {person.display_name}
+                    </Link>
+                    <p className="text-xs text-muted">asked {timeAgo(person.created_at)}</p>
+                  </div>
+                  <Button
+                    size="sm"
+                    icon={faCheck}
+                    onClick={() => guard(() => answerJoinRequest(communityId, person.id, true))}
+                  >
+                    Accept
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    icon={faXmark}
+                    aria-label={`Decline ${person.display_name}`}
+                    onClick={() => guard(() => answerJoinRequest(communityId, person.id, false))}
+                  />
+                </li>
+              ))}
+            </ul>
+          </Card>
+        </section>
+      )}
+
+      <section>
+        <h3 className="mb-3 font-display text-lg font-extrabold">Members</h3>
+
+        {roster.loading && (
+          <Card className="space-y-2 p-4">
+            {[0, 1, 2].map((i) => <Skeleton key={i} className="h-12" />)}
+          </Card>
+        )}
+
+        {!!roster.data?.length && (
+          <Card className="overflow-hidden">
+            <ul>
+              {roster.data.map((member) => (
+                <li
+                  key={member.id}
+                  className="flex flex-wrap items-center gap-3 border-b border-ink-line/70 px-4 py-3 last:border-0"
+                >
+                  <Link to={`/u/${member.username}`} className="shrink-0">
+                    <Avatar src={member.avatar_url} name={member.display_name} size="md" />
+                  </Link>
+                  <div className="min-w-0 flex-1">
+                    <Link
+                      to={`/u/${member.username}`}
+                      className="block truncate font-bold hover:underline"
+                    >
+                      {member.display_name}
+                    </Link>
+                    <PresenceLabel presence={presenceOf(member)} />
+                  </div>
+
+                  {rights?.can_manage_ranks && member.id !== ownerId ? (
+                    <>
+                      <label className="sr-only" htmlFor={`rank-${member.id}`}>
+                        Rank for {member.display_name}
+                      </label>
+                      <select
+                        id={`rank-${member.id}`}
+                        value={member.rank_id ?? ''}
+                        onChange={(e) => guard(() => setMemberRank(communityId, member.id, e.target.value))}
+                        className="h-9 rounded-lg border border-ink-line bg-ink-raised px-2.5 text-sm font-semibold"
+                      >
+                        {(ranks.data ?? []).map((rank) => (
+                          <option key={rank.id} value={rank.id}>
+                            {rank.rank} · {rank.name}
+                          </option>
+                        ))}
+                      </select>
+                    </>
+                  ) : (
+                    member.rank_name && <Badge tone="brand">{member.rank_name}</Badge>
+                  )}
+
+                  {rights?.can_manage_members && member.id !== ownerId && (
+                    <div className="flex gap-1">
+                      <Tooltip label="Remove from the Community" side="top">
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          icon={faUserMinus}
+                          aria-label={`Remove ${member.display_name}`}
+                          onClick={() => guard(() => removeMember(communityId, member.id))}
+                        />
+                      </Tooltip>
+                      <Tooltip label="Remove and ban" side="top">
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          icon={faGavel}
+                          aria-label={`Ban ${member.display_name}`}
+                          onClick={() => guard(() => removeMember(communityId, member.id, true))}
+                        />
+                      </Tooltip>
+                    </div>
+                  )}
+                </li>
+              ))}
+            </ul>
+          </Card>
+        )}
+      </section>
+    </div>
+  )
+}

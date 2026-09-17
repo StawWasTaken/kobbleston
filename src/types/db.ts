@@ -27,6 +27,11 @@ export type Space = {
   description: string | null
   category: SpaceCategory
   cover_url: string | null
+  emblem_url: string | null
+  thumbnail_urls: string[]
+  genre: string
+  dislike_count: number
+  content_id: number | null
   is_published: boolean
   chat_enabled: boolean
   chat_greeting: string | null
@@ -72,6 +77,7 @@ export type MarketAsset = {
   file_path: string
   thumbnail_path: string | null
   download_count: number
+  content_id: number | null
   created_at: string
   creator_username: string
   creator_display_name: string
@@ -87,6 +93,7 @@ export type OwnAsset = {
   file_path: string
   status: ModerationStatus
   review_note: string | null
+  content_id: number | null
   byte_size: number
   download_count: number
   created_at: string
@@ -109,6 +116,8 @@ export type Message = {
   sender_id: string
   body: string
   created_at: string
+  edited_at: string | null
+  is_removed: boolean
 }
 
 export type Notification = {
@@ -162,8 +171,71 @@ export type Community = {
   name: string
   description: string | null
   icon_url: string | null
+  banner_url: string | null
+  join_policy: 'open' | 'approval'
+  is_verified: boolean
   member_count: number
   created_at: string
+}
+
+export type CommunityRank = {
+  id: string
+  community_id: string
+  rank: number
+  name: string
+  can_post_wall: boolean
+  can_moderate_wall: boolean
+  can_manage_members: boolean
+  can_manage_ranks: boolean
+  can_manage_community: boolean
+  can_manage_spaces: boolean
+}
+
+export type CommunityOverview = {
+  member_count: number
+  request_count: number
+  space_count: number
+  my_rank_name: string | null
+  my_rank_id: string | null
+  can_manage_members: boolean
+  can_manage_ranks: boolean
+  can_manage_community: boolean
+  can_manage_spaces: boolean
+  can_post_wall: boolean
+  can_moderate_wall: boolean
+  has_requested: boolean
+  is_banned: boolean
+}
+
+export type CommunityMember = {
+  id: string
+  username: string
+  display_name: string
+  avatar_url: string | null
+  is_online: boolean
+  in_space_id: string | null
+  rank_id: string | null
+  rank_name: string | null
+  rank_number: number | null
+  joined_at: string
+}
+
+export type CommunityRequest = {
+  id: string
+  username: string
+  display_name: string
+  avatar_url: string | null
+  created_at: string
+}
+
+export type CommunityPost = {
+  id: number
+  community_id: string
+  author_id: string
+  body: string
+  is_announcement: boolean
+  created_at: string
+  author?: Pick<Profile, 'username' | 'display_name' | 'avatar_url'> | null
 }
 
 export type MemberCommunity = {
@@ -204,4 +276,20 @@ export type Conversation = {
   last_message: string | null
   unread_count: number
   members: ConversationMember[]
+}
+
+export type SpaceStats = {
+  active_now: number
+  visits: number
+  favorites: number
+  likes: number
+  dislikes: number
+  updates: number
+  created_at: string
+  updated_at: string
+  genre: string
+  i_like: boolean
+  i_dislike: boolean
+  i_favorite: boolean
+  i_watch: boolean
 }

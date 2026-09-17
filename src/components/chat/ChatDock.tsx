@@ -11,10 +11,15 @@ import { StatusDot, PresenceLabel, presenceOf } from '@/components/ui/StatusDot'
 import { Skeleton } from '@/components/ui/States'
 import { Tooltip } from '@/components/ui/Tooltip'
 import { NewGroupDialog } from './NewGroupDialog'
+import { MessageRow } from './MessageRow'
+import { SafetyNote } from './SafetyNote'
+import { ReportDialog } from '@/components/social/ReportDialog'
 import { useAuth } from '@/hooks/useAuth'
 import {
-  conversationName, listMessages, markConversationRead, myConversations, sendMessage,
+  chatRoster, conversationName, deleteMessage, editMessage, listMessages,
+  markConversationRead, sendMessage, startConversation,
 } from '@/lib/api'
+import { blockPerson } from '@/lib/api'
 import { supabase } from '@/lib/supabase'
 import { timeAgo } from '@/lib/format'
 import { cn } from '@/lib/cn'
@@ -52,10 +57,11 @@ function useRemembered(key: string, fallback: boolean) {
 }
 
 function Window({
-  conversation, onClose,
+  conversation, onClose, onOpened,
 }: {
   conversation: Conversation
   onClose: () => void
+  onOpened: (conversationId: string) => void
 }) {
   const { profile } = useAuth()
   const [collapsed, setCollapsed] = useState(false)
@@ -64,21 +70,40 @@ function Window({
   const [loading, setLoading] = useState(true)
   const [draft, setDraft] = useState('')
   const [error, setError] = useState<string | null>(null)
+  const [reporting, setReporting] = useState(false)
   const bottom = useRef<HTMLDivElement>(null)
 
   const name = conversationName(conversation)
   const solo = conversation.members.length === 1 ? conversation.members[0] : null
 
+  // A row for a friend nobody has messaged yet carries no real conversation
+  // until the first message opens one.
+  const pending = conversation.id.startsWith('friend:')
+
+  const onBlock = async (targetId: string) => {
+    try {
+      await blockPerson(targetId)
+      onClose()
+    } catch {
+      setError('That did not work.')
+    }
+  }
+
   useEffect(() => {
+    if (pending) {
+      setLoading(false)
+      return
+    }
     let active = true
     listMessages(conversation.id)
       .then((rows) => active && setMessages(rows))
       .finally(() => active && setLoading(false))
     if (profile) markConversationRead(conversation.id, profile.id)
     return () => { active = false }
-  }, [conversation.id, profile])
+  }, [conversation.id, profile, pending])
 
   useEffect(() => {
+    if (pending) return
     const channel = supabase
       .channel(`dock:${conversation.id}`)
       .on('postgres_changes',
@@ -92,7 +117,7 @@ function Window({
         })
       .subscribe()
     return () => { supabase.removeChannel(channel) }
-  }, [conversation.id])
+  }, [conversation.id, pending])
 
   useEffect(() => {
     if (!collapsed && !details) bottom.current?.scrollIntoView({ block: 'end' })
@@ -105,7 +130,11 @@ function Window({
     setDraft('')
     setError(null)
     try {
-      await sendMessage(conversation.id, profile.id, body)
+      const target = pending
+        ? await startConversation(conversation.id.replace('friend:', ''))
+        : conversation.id
+      await sendMessage(target, profile.id, body)
+      if (pending) onOpened(target)
     } catch (err) {
       setDraft(body)
       setError(err instanceof Error ? err.message : 'That did not send.')
@@ -203,59 +232,49 @@ function Window({
           <div className="flex-1 space-y-1.5 overflow-y-auto px-3 py-3 kob-scroll">
             {loading && [0, 1].map((i) => <Skeleton key={i} className="h-8 w-2/3" />)}
 
-            {/* How a conversation opens, with the safety line people need
-                the first time rather than buried in settings. */}
-            {!loading && !messages.length && solo && (
-              <div className="rounded-xl border border-ink-line bg-ink-raised p-3">
-                <div className="flex items-center gap-2">
-                  <Avatar src={solo.avatar_url} name={solo.display_name} size="sm" />
-                  <span className="min-w-0">
-                    <span className="block truncate text-sm font-bold">{solo.display_name}</span>
-                    <span className="block truncate text-xs text-muted">@{solo.username}</span>
-                  </span>
-                </div>
-                <p className="mt-2.5 text-sm font-bold">First conversation with {solo.display_name}</p>
-                <p className="mt-1 text-xs leading-relaxed text-muted">
-                  Be careful chatting with people you do not know. Do not share personal
-                  details or move to another app. You can block or report anyone from
-                  their profile.
-                </p>
-              </div>
+            {/* Stays at the top of the history rather than only showing when
+                the conversation is empty. */}
+            {!loading && solo && (
+              <SafetyNote
+                person={solo}
+                onBlock={() => onBlock(solo.id)}
+                onReport={() => setReporting(true)}
+              />
             )}
 
             {!loading && !messages.length && !solo && (
               <p className="py-6 text-center text-xs text-muted">Say something to the group.</p>
             )}
 
-            {messages.map((m) => {
-              const mine = m.sender_id === profile?.id
-              const sender = conversation.members.find((member) => member.id === m.sender_id)
-              return (
-                <div key={m.id} className={cn('flex gap-2', mine ? 'justify-end' : 'justify-start')}>
-                  {!mine && conversation.is_group && (
-                    <Avatar
-                      src={sender?.avatar_url}
-                      name={sender?.display_name ?? 'K'}
-                      size="xs"
-                      className="mt-auto"
-                    />
-                  )}
-                  <div
-                    className={cn(
-                      'max-w-[80%] rounded-2xl px-3 py-1.5 text-sm leading-snug',
-                      mine ? 'bg-brand text-white' : 'bg-ink-hover text-white/90',
-                    )}
-                  >
-                    {!mine && conversation.is_group && (
-                      <p className="text-[11px] font-bold text-[#9fadff]">
-                        {sender?.display_name ?? 'Someone'}
-                      </p>
-                    )}
-                    <p className="whitespace-pre-wrap break-words">{m.body}</p>
-                  </div>
-                </div>
-              )
-            })}
+            {messages.map((m) => (
+              <MessageRow
+                key={m.id}
+                message={m}
+                mine={m.sender_id === profile?.id}
+                sender={
+                  m.sender_id === profile?.id
+                    ? {
+                        id: profile.id,
+                        username: profile.username,
+                        display_name: profile.display_name,
+                        avatar_url: profile.avatar_url,
+                        is_online: profile.is_online,
+                        in_space_id: profile.in_space_id,
+                      }
+                    : conversation.members.find((member) => member.id === m.sender_id)
+                }
+                onEdit={async (body) => {
+                  await editMessage(m.id, body)
+                  setMessages((all) =>
+                    all.map((x) => (x.id === m.id ? { ...x, body, edited_at: new Date().toISOString() } : x)))
+                }}
+                onDelete={async () => {
+                  await deleteMessage(m.id)
+                  setMessages((all) =>
+                    all.map((x) => (x.id === m.id ? { ...x, is_removed: true } : x)))
+                }}
+              />
+            ))}
             <div ref={bottom} />
           </div>
 
@@ -282,6 +301,16 @@ function Window({
             </div>
           </form>
         </>
+      )}
+
+      {solo && (
+        <ReportDialog
+          open={reporting}
+          onClose={() => setReporting(false)}
+          targetType="profile"
+          targetId={solo.id}
+          targetName={solo.display_name}
+        />
       )}
     </section>
   )
@@ -428,7 +457,7 @@ export function ChatDock({ children }: { children: ReactNode }) {
       return
     }
     try {
-      setConversations(await myConversations())
+      setConversations(await chatRoster())
     } catch {
       setConversations([])
     } finally {
@@ -478,6 +507,10 @@ export function ChatDock({ children }: { children: ReactNode }) {
                 key={id}
                 conversation={conversation}
                 onClose={() => setOpenIds((all) => all.filter((open) => open !== id))}
+                onOpened={(real) => {
+                  setOpenIds((all) => all.map((open) => (open === id ? real : open)))
+                  load()
+                }}
               />
             )
           })}
