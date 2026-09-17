@@ -63,26 +63,25 @@ export function CommunityRail() {
 
   return (
     <aside
-      className="sticky top-14 hidden h-[calc(100dvh-3.5rem)] w-72 shrink-0 flex-col border-r border-ink-line bg-ink-raised/40 lg:flex"
+      className="sticky top-14 hidden max-h-[calc(100dvh-3.5rem)] w-72 shrink-0 flex-col overflow-y-auto px-3 pb-6 pt-4 lg:flex kob-scroll"
       aria-label="My Communities"
     >
-      <div className="px-4 pb-3 pt-5">
-        <Link to="/communities" className="font-display text-lg font-extrabold hover:text-[#9fadff]">
-          Communities
+      <div className="mb-2 flex items-baseline justify-between px-1">
+        <h2 className="font-display text-base font-extrabold">Communities</h2>
+        <Link to="/communities" className="text-xs font-bold text-[#9fadff] hover:underline">
+          See All
         </Link>
       </div>
 
-      <div className="px-3 pb-3">
-        <Input
-          icon={faMagnifyingGlass}
-          value={term}
-          onChange={(e) => setTerm(e.target.value)}
-          placeholder="Search My Communities"
-          aria-label="Search My Communities"
-        />
-      </div>
+      <Input
+        icon={faMagnifyingGlass}
+        value={term}
+        onChange={(e) => setTerm(e.target.value)}
+        placeholder="Search My Communities"
+        aria-label="Search My Communities"
+      />
 
-      <div className="min-h-0 flex-1 overflow-y-auto px-2 kob-scroll">
+      <div className="mt-2">
         {mine.loading && (
           <div className="space-y-2 p-1">
             {[0, 1, 2].map((i) => <Skeleton key={i} className="h-12" />)}
@@ -90,9 +89,7 @@ export function CommunityRail() {
         )}
 
         {!mine.loading && !mine.data?.length && (
-          <p className="px-3 py-6 text-center text-sm text-muted">
-            You have not joined any yet.
-          </p>
+          <p className="px-2 py-5 text-sm text-muted">You have not joined any yet.</p>
         )}
 
         {shown.map((community) => (
@@ -108,7 +105,9 @@ export function CommunityRail() {
         ))}
       </div>
 
-      <div className="border-t border-ink-line p-3">
+      {/* Sits under the list, the way it does on the pages this borrows from,
+          rather than pinned to the bottom of the window. */}
+      <div className="mt-3 px-1">
         <GuestGate action="make a Community">
           <Button variant="subtle" block to="/communities/new" disabled={!profile}>
             Create Community
