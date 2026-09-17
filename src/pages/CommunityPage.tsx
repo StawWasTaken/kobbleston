@@ -1,33 +1,37 @@
 import { useState } from 'react'
 import { useParams } from 'react-router-dom'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import {
-  faCircleCheck, faRightFromBracket, faUserPlus, faClock, faBullhorn,
-} from '@fortawesome/free-solid-svg-icons'
+import { faBullhorn } from '@fortawesome/free-solid-svg-icons'
 import { Page } from '@/components/layout/AppShell'
 import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
-import { Badge } from '@/components/ui/Badge'
 import { EmptyState, ErrorState, Skeleton, SpaceCardSkeleton } from '@/components/ui/States'
 import { useToast } from '@/components/ui/Toast'
+import { ReportDialog } from '@/components/social/ReportDialog'
 import { SpaceCard } from '@/components/spaces/SpaceCard'
+import { CommunityHeader } from '@/components/community/CommunityHeader'
 import { CommunityWall } from '@/components/community/CommunityWall'
 import { CommunityMembers } from '@/components/community/CommunityMembers'
-import { CommunityRanks } from '@/components/community/CommunityRanks'
+import { AffiliateGrid } from '@/components/community/AffiliateGrid'
 import { useAuth } from '@/hooks/useAuth'
 import { useAsync } from '@/hooks/useAsync'
 import {
-  getCommunity, getCommunityOverview, joinCommunity, leaveCommunity, listCommunityPosts,
-  listCommunitySpaces,
+  getCommunity, getCommunityOverview, joinCommunity, leaveCommunity,
+  listCommunityPosts, listCommunitySpaces, listRelations,
 } from '@/lib/api'
-import { formatCount } from '@/lib/format'
+import { supabase } from '@/lib/supabase'
 import { cn } from '@/lib/cn'
+
+const tabs = ['About', 'Wall', 'Members', 'Affiliates'] as const
+type Tab = (typeof tabs)[number]
 
 export default function CommunityPage() {
   const { slug = '' } = useParams()
   const { profile } = useAuth()
   const toast = useToast()
+  const [tab, setTab] = useState<Tab>('About')
   const [pending, setPending] = useState(false)
+  const [reporting, setReporting] = useState(false)
 
   const community = useAsync(() => getCommunity(slug), [slug])
   const group = community.data
@@ -36,30 +40,29 @@ export default function CommunityPage() {
     async () => (group ? getCommunityOverview(group.id) : null),
     [group?.id, profile?.id],
   )
-  const spaces = useAsync(
-    async () => (group ? listCommunitySpaces(group.id) : []),
-    [group?.id],
+  const owner = useAsync(
+    async () => {
+      if (!group) return null
+      const { data } = await supabase.from('profiles').select('username')
+        .eq('id', group.owner_id).maybeSingle()
+      return (data as { username: string } | null)?.username ?? null
+    },
+    [group?.owner_id],
   )
+  const spaces = useAsync(async () => (group ? listCommunitySpaces(group.id) : []), [group?.id])
   const announcements = useAsync(
     async () => (group ? (await listCommunityPosts(group.id)).filter((p) => p.is_announcement) : []),
     [group?.id],
   )
+  const allies = useAsync(async () => (group ? listRelations(group.id, 'ally') : []), [group?.id])
+  const enemies = useAsync(async () => (group ? listRelations(group.id, 'enemy') : []), [group?.id])
 
-  const isMember = Boolean(rights.data?.my_rank_id)
-  const tabs = ['About', 'Wall', 'Members', ...(rights.data?.can_manage_ranks ? ['Ranks'] : [])]
-  const [tab, setTab] = useState('About')
-
-  const toggleMembership = async () => {
-    if (!group || !profile) return
+  const join = async () => {
+    if (!group) return
     setPending(true)
     try {
-      if (isMember) {
-        await leaveCommunity(group.id, profile.id)
-        toast('You left the Community.', 'info')
-      } else {
-        const result = await joinCommunity(group.id)
-        toast(result === 'joined' ? 'You are in.' : 'Asked to join. They will let you know.', 'success')
-      }
+      const result = await joinCommunity(group.id)
+      toast(result === 'joined' ? 'You are in.' : 'Asked to join. They will let you know.', 'success')
       community.reload()
       rights.reload()
     } catch (err) {
@@ -69,8 +72,20 @@ export default function CommunityPage() {
     }
   }
 
+  const leave = async () => {
+    if (!group || !profile) return
+    try {
+      await leaveCommunity(group.id, profile.id)
+      toast('You left the Community.', 'info')
+      community.reload()
+      rights.reload()
+    } catch (err) {
+      toast(err instanceof Error ? err.message : 'That did not work.', 'error')
+    }
+  }
+
   if (community.loading) {
-    return <Page className="space-y-4"><Skeleton className="h-40 w-full" /></Page>
+    return <Page className="space-y-4"><Skeleton className="h-56 w-full" /></Page>
   }
 
   if (community.error) {
@@ -94,55 +109,18 @@ export default function CommunityPage() {
 
   return (
     <>
-      {group.banner_url && (
-        <div className="h-32 overflow-hidden bg-brand-ink sm:h-44">
-          <img src={group.banner_url} alt="" className="h-full w-full object-cover" />
-        </div>
-      )}
+      <CommunityHeader
+        group={group}
+        rights={rights.data}
+        ownerName={owner.data ?? undefined}
+        pending={pending}
+        onJoin={join}
+        onLeave={leave}
+        onReport={() => setReporting(true)}
+      />
 
-      <Page className={cn(group.banner_url && '-mt-12')}>
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-end">
-          <span className="grid h-24 w-24 shrink-0 place-items-center overflow-hidden rounded-2xl bg-brand-deep font-display text-2xl font-extrabold ring-4 ring-ink">
-            {group.icon_url
-              ? <img src={group.icon_url} alt="" className="h-full w-full object-cover" />
-              : group.name.slice(0, 2).toUpperCase()}
-          </span>
-
-          <div className="min-w-0 flex-1">
-            <h1 className="flex flex-wrap items-center gap-2 font-display text-2xl font-extrabold sm:text-3xl">
-              {group.name}
-              {group.is_verified && (
-                <FontAwesomeIcon icon={faCircleCheck} className="text-lg text-[#4d68ff]" title="Verified" />
-              )}
-            </h1>
-            <p className="mt-1 text-sm text-muted">
-              {formatCount(group.member_count)} {group.member_count === 1 ? 'member' : 'members'}
-              {group.join_policy === 'approval' && ' · approval needed'}
-            </p>
-            {rights.data?.my_rank_name && (
-              <Badge tone="brand" className="mt-2">{rights.data.my_rank_name}</Badge>
-            )}
-          </div>
-
-          {profile && group.owner_id !== profile.id && (
-            rights.data?.is_banned ? (
-              <Badge tone="warm">You are banned from this Community</Badge>
-            ) : rights.data?.has_requested ? (
-              <Button variant="subtle" icon={faClock} disabled>Waiting on approval</Button>
-            ) : (
-              <Button
-                variant={isMember ? 'subtle' : 'primary'}
-                icon={isMember ? faRightFromBracket : faUserPlus}
-                loading={pending}
-                onClick={toggleMembership}
-              >
-                {isMember ? 'Leave' : group.join_policy === 'approval' ? 'Ask to Join' : 'Join Community'}
-              </Button>
-            )
-          )}
-        </div>
-
-        <div className="mt-6 flex overflow-x-auto border-b border-ink-line kob-scroll" role="tablist">
+      <Page className="pt-6">
+        <div className="flex overflow-x-auto border-b border-ink-line kob-scroll" role="tablist">
           {tabs.map((name) => (
             <button
               key={name}
@@ -150,7 +128,7 @@ export default function CommunityPage() {
               aria-selected={tab === name}
               onClick={() => setTab(name)}
               className={cn(
-                'shrink-0 border-b-2 px-6 py-3 text-sm font-bold transition-colors sm:px-10',
+                'shrink-0 border-b-2 px-6 py-3 text-sm font-bold transition-colors sm:px-12',
                 tab === name
                   ? 'border-white text-white'
                   : 'border-transparent text-white/50 hover:text-white',
@@ -163,12 +141,6 @@ export default function CommunityPage() {
 
         {tab === 'About' && (
           <div className="mt-6 space-y-8">
-            {group.description && (
-              <p className="max-w-3xl whitespace-pre-wrap leading-relaxed text-white/70">
-                {group.description}
-              </p>
-            )}
-
             <section>
               <h2 className="mb-3 flex items-center gap-2 font-display text-xl font-extrabold">
                 <FontAwesomeIcon icon={faBullhorn} className="text-base text-white/40" />
@@ -197,9 +169,7 @@ export default function CommunityPage() {
                 </div>
               )}
               {!spaces.loading && !spaces.data?.length && (
-                <p className="text-sm text-muted">
-                  No Spaces linked to this Community yet.
-                </p>
+                <p className="text-sm text-muted">No Spaces linked to this Community yet.</p>
               )}
               {!!spaces.data?.length && (
                 <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -227,13 +197,31 @@ export default function CommunityPage() {
           </div>
         )}
 
-        {tab === 'Ranks' && (
-          <div className="mt-6">
-            <CommunityRanks communityId={group.id} />
+        {tab === 'Affiliates' && (
+          <div className="mt-6 space-y-8">
+            <AffiliateGrid
+              title="Allies"
+              relations={allies.data}
+              loading={allies.loading}
+              empty="No allies yet."
+            />
+            <AffiliateGrid
+              title="Enemies"
+              relations={enemies.data}
+              loading={enemies.loading}
+              empty="Nobody has been declared an enemy."
+            />
           </div>
         )}
-
       </Page>
+
+      <ReportDialog
+        open={reporting}
+        onClose={() => setReporting(false)}
+        targetType="profile"
+        targetId={group.owner_id}
+        targetName={group.name}
+      />
     </>
   )
 }

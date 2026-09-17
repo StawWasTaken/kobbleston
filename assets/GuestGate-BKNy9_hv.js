@@ -1,1 +1,0 @@
-import{An as e,_ as t,ft as n,kn as r,wn as i}from"./app-DzxMYXkU.js";var a=e(r(),1),o=i();function s({action:e,side:r=`top`,children:i}){let{profile:s}=n();return s?.is_guest?(0,o.jsx)(t,{label:`Guests cannot ${e}. Make an account and you can.`,side:r,children:(0,o.jsx)(`span`,{className:`inline-flex`,children:(0,a.cloneElement)(i,{disabled:!0})})}):i}export{s as t};

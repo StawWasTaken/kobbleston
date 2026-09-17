@@ -1,0 +1,1 @@
+import{It as e,ar as t,br as n,d as r,vr as i}from"./Card-DlR-nIAq.js";var a=n(i(),1),o=t();function s({action:t,side:n=`top`,children:i}){let{profile:s}=e();return s?.is_guest?(0,o.jsx)(r,{label:`Guests cannot ${t}. Make an account and you can.`,side:n,children:(0,o.jsx)(`span`,{className:`inline-flex`,children:(0,a.cloneElement)(i,{disabled:!0})})}):i}export{s as t};

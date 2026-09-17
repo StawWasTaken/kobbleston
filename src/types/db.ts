@@ -175,6 +175,7 @@ export type Community = {
   join_policy: 'open' | 'approval'
   is_verified: boolean
   member_count: number
+  funds: number
   created_at: string
 }
 
@@ -292,4 +293,34 @@ export type SpaceStats = {
   i_dislike: boolean
   i_favorite: boolean
   i_watch: boolean
+}
+
+export type CommunityRelation = {
+  id: string
+  slug: string
+  name: string
+  icon_url: string | null
+  member_count: number
+  accepted: boolean
+  /** True when the other Community asked us, so there is something to answer. */
+  incoming: boolean
+}
+
+export type CommunityBan = {
+  id: string
+  username: string
+  display_name: string
+  avatar_url: string | null
+  reason: string | null
+  banned_at: string
+}
+
+export type CommunityAuditEntry = {
+  id: number
+  action: string
+  detail: string | null
+  created_at: string
+  actor_username: string | null
+  actor_display_name: string | null
+  actor_avatar_url: string | null
 }

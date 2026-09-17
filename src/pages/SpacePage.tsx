@@ -1,9 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import {
-  faArrowRightToBracket, faBell, faStar, faCircleCheck, faFlag, faPenToSquare,
-} from '@fortawesome/free-solid-svg-icons'
+import { faPlay, faBell, faStar, faCircleCheck, faFlag, faPenToSquare } from '@fortawesome/free-solid-svg-icons'
 import { Page } from '@/components/layout/AppShell'
 import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
@@ -17,6 +15,7 @@ import { ReportDialog } from '@/components/social/ReportDialog'
 import { BadgeTile } from '@/components/spaces/BadgeGrid'
 import { BadgeManager } from '@/components/spaces/BadgeManager'
 import { RatingBar } from '@/components/spaces/RatingBar'
+import { Carousel } from '@/components/spaces/Carousel'
 import { SpaceViewer } from '@/components/spaces/SpaceViewer'
 import { categoryLabels, coverFor } from '@/components/spaces/SpaceCard'
 import { useAuth } from '@/hooks/useAuth'
@@ -58,7 +57,6 @@ export default function SpacePage() {
   const [inside, setInside] = useState(false)
   const [entering, setEntering] = useState(false)
   const [reporting, setReporting] = useState(false)
-  const [shot, setShot] = useState(0)
 
   useEffect(() => {
     if (!inside) return
@@ -132,37 +130,15 @@ export default function SpacePage() {
 
   const owner = space.owner
   const isOwner = profile?.id === space.owner_id
-  const shots = space.thumbnail_urls?.length ? space.thumbnail_urls : [coverFor(space)]
+  // The cover leads, then whatever thumbnails have been added.
+  const shots = [coverFor(space), ...(space.thumbnail_urls ?? [])]
   const numbers = stats.data
 
   return (
     <>
       <Page>
         <div className="grid gap-6 lg:grid-cols-[1.7fr_1fr]">
-          <div>
-            <div className="overflow-hidden rounded-xl border border-ink-line bg-brand-ink">
-              <img src={shots[shot]} alt="" className="aspect-[16/9] w-full object-cover" />
-            </div>
-
-            {shots.length > 1 && (
-              <div className="mt-2 flex gap-2 overflow-x-auto pb-1 kob-scroll">
-                {shots.map((url, i) => (
-                  <button
-                    key={url}
-                    onClick={() => setShot(i)}
-                    aria-label={`Picture ${i + 1}`}
-                    aria-pressed={i === shot}
-                    className={cn(
-                      'h-14 w-24 shrink-0 overflow-hidden rounded-lg border-2 transition-colors',
-                      i === shot ? 'border-brand-bright' : 'border-transparent hover:border-white/25',
-                    )}
-                  >
-                    <img src={url} alt="" className="h-full w-full object-cover" />
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
+          <Carousel images={shots} alt={`Pictures of ${space.name}`} />
 
           <div className="flex flex-col">
             <div className="flex items-start gap-3">
@@ -203,27 +179,28 @@ export default function SpacePage() {
               <Badge tone="neutral">SPC-{space.content_id ?? '—'}</Badge>
             </div>
 
-            <div className="mt-auto pt-6">
+            <div className="pt-5">
               <Button
                 variant="enter"
                 size="lg"
                 block
-                icon={faArrowRightToBracket}
+                icon={faPlay}
                 loading={entering}
                 onClick={onEnter}
                 disabled={!profile}
+                className="h-14 text-base"
               >
                 {entering ? 'Entering' : 'Enter Space'}
               </Button>
 
-              <div className="mt-4 grid grid-cols-[auto_auto_1fr] items-start gap-5">
+              <div className="mt-3 flex items-start gap-4">
                 <Tooltip label={numbers?.i_favorite ? 'Saved' : 'Save this Space'} side="top">
                   <button
                     onClick={() => flag('space_favorites', !numbers?.i_favorite)}
                     disabled={!profile}
                     aria-pressed={numbers?.i_favorite}
                     className={cn(
-                      'flex flex-col items-center gap-1 text-xs font-bold transition-colors disabled:opacity-40',
+                      'flex shrink-0 flex-col items-center gap-1 text-[11px] font-bold transition-colors disabled:opacity-40',
                       numbers?.i_favorite ? 'text-amber-300' : 'text-white/60 hover:text-white',
                     )}
                   >
@@ -238,7 +215,7 @@ export default function SpacePage() {
                     disabled={!profile}
                     aria-pressed={numbers?.i_watch}
                     className={cn(
-                      'flex flex-col items-center gap-1 text-xs font-bold transition-colors disabled:opacity-40',
+                      'flex shrink-0 flex-col items-center gap-1 text-[11px] font-bold transition-colors disabled:opacity-40',
                       numbers?.i_watch ? 'text-[#9fadff]' : 'text-white/60 hover:text-white',
                     )}
                   >

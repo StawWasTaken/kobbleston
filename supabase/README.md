@@ -20,6 +20,12 @@ part way can simply be run again once the cause is fixed.
 12. `0012_space_chat.sql` - the chat that comes with every Space
 13. `0013_guest_limits.sql` - what a guest may and may not do
 14. `0014_group_chats.sql` - named group conversations
+15. `0015_communities.sql` - Communities, ranks and moderation
+16. `0016_community_policies.sql` - their row level security and page reads
+17. `0017_review_fix_and_ids.sql` - the review fix and content IDs
+18. `0018_message_edits.sql` - editing messages, and blocking
+19. `0019_space_presentation.sql` - emblems, dislikes, notify and stats
+20. `0020_affiliates.sql` - allies and enemies between Communities
 
 Notes:
 

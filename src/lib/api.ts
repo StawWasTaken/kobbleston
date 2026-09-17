@@ -4,6 +4,7 @@ import type {
   MemberCommunity, Message, Notification, OwnAsset, PixelTransaction, PlatformStats, Profile,
   ProfileOverview, Space, SpaceBadge, SpaceCategory, SpaceMessage, SpaceStats, Conversation,
   CommunityMember, CommunityOverview, CommunityPost, CommunityRank, CommunityRequest,
+  CommunityRelation, CommunityBan, CommunityAuditEntry,
 } from '@/types/db'
 
 const SPACE_FIELDS =
@@ -739,4 +740,48 @@ export async function getSpaceById(id: string): Promise<Space | null> {
     .from('spaces').select(SPACE_FIELDS).eq('id', id).maybeSingle()
   if (error) throw new Error(error.message)
   return (data as Space | null) ?? null
+}
+
+// ------------------------------------------------------------- affiliates
+
+export async function listRelations(
+  communityId: string,
+  relation: 'ally' | 'enemy',
+  onlyPending = false,
+): Promise<CommunityRelation[]> {
+  return unwrap(await supabase.rpc('community_relations_list', {
+    community: communityId, want: relation, only_pending: onlyPending,
+  })) ?? []
+}
+
+export async function requestAlly(communityId: string, otherId: string) {
+  unwrap(await supabase.rpc('request_ally', { community: communityId, other: otherId }))
+}
+
+export async function answerAllyRequest(communityId: string, otherId: string, accept: boolean) {
+  unwrap(await supabase.rpc('answer_ally_request', {
+    community: communityId, other: otherId, accept,
+  }))
+}
+
+export async function declareEnemy(communityId: string, otherId: string) {
+  unwrap(await supabase.rpc('declare_enemy', { community: communityId, other: otherId }))
+}
+
+export async function removeRelation(communityId: string, otherId: string) {
+  unwrap(await supabase.rpc('remove_relation', { community: communityId, other: otherId }))
+}
+
+// ------------------------------------------------- moderation and the log
+
+export async function listCommunityBanned(communityId: string): Promise<CommunityBan[]> {
+  return unwrap(await supabase.rpc('community_banned', { community: communityId })) ?? []
+}
+
+export async function liftBan(communityId: string, targetId: string) {
+  unwrap(await supabase.rpc('lift_ban', { community: communityId, target: targetId }))
+}
+
+export async function listCommunityAudit(communityId: string): Promise<CommunityAuditEntry[]> {
+  return unwrap(await supabase.rpc('community_audit_log', { community: communityId })) ?? []
 }
