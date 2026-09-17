@@ -78,7 +78,9 @@ export function AffiliateGrid({
         <div className="grid grid-cols-3 gap-3 sm:grid-cols-5 lg:grid-cols-6">
           {shown.map((other) => (
             <article key={other.id} className="group relative min-w-0">
-              {onRemove && (
+              {/* Only the side that declared a rivalry can call it off, so a
+                  rivalry aimed at us carries no menu. */}
+              {onRemove && other.mine !== false && (
                 <span className="absolute right-1.5 top-1.5 z-10 opacity-0 transition-opacity group-hover:opacity-100 focus-within:opacity-100">
                   <Menu
                     label={`Options for ${other.name}`}
@@ -146,6 +148,10 @@ export function AffiliateGrid({
 
               {onAnswer && !other.incoming && (
                 <p className="mt-2 text-[11px] font-semibold text-white/40">Waiting on them</p>
+              )}
+
+              {!onAnswer && other.incoming && (
+                <p className="mt-1 text-[11px] font-semibold text-danger">Declared us</p>
               )}
             </article>
           ))}

@@ -133,7 +133,7 @@ export function Cropper({
       </div>
 
       <div className="mt-4 flex items-center gap-3">
-        <FontAwesomeIcon icon={faMagnifyingGlassPlus} className="text-sm text-muted" />
+        <FontAwesomeIcon icon={faMagnifyingGlassPlus} className="text-sm" />
         <input
           type="range"
           min={1}

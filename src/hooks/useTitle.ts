@@ -6,13 +6,15 @@ const DEFAULT_ICON = asset('/brand/favicon.png')
 
 /**
  * What the browser tab says. Every page names itself, and the name goes back
- * to plain Kobbleston when you leave.
+ * to plain Kobbleston when you leave. Parts of the site that have a name of
+ * their own pass it as the second argument, so a page inside Create reads
+ * "My Uploads - Kobbleston Create" rather than stacking both names.
  */
-export function useTitle(title?: string | null) {
+export function useTitle(title?: string | null, site: string = DEFAULT_TITLE) {
   useEffect(() => {
-    document.title = title ? `${title} - Kobbleston` : DEFAULT_TITLE
+    document.title = title ? `${title} - ${site}` : site
     return () => { document.title = DEFAULT_TITLE }
-  }, [title])
+  }, [title, site])
 }
 
 /** A title that is already written in full, used where the pattern differs. */

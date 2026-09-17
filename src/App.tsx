@@ -25,7 +25,7 @@ const CreateInventory = lazy(() => import('@/pages/CreateHub').then((m) => ({ de
 const CreateAnalytics = lazy(() => import('@/pages/CreateHub').then((m) => ({ default: m.CreateAnalytics })))
 const CreatorPage = lazy(() => import('@/pages/CreatorPage'))
 const EventPage = lazy(() => import('@/pages/EventPage'))
-const Search = lazy(() => import('@/pages/Search'))
+const People = lazy(() => import('@/pages/People'))
 const Communities = lazy(() => import('@/pages/Communities'))
 const CommunityPage = lazy(() => import('@/pages/CommunityPage'))
 const NewSpace = lazy(() => import('@/pages/NewSpace'))
@@ -92,7 +92,7 @@ export default function App() {
                   <Route path="creator/:username" element={<CreatorPage />} />
                   <Route path=":tag" element={<AssetPage />} />
                 </Route>
-                <Route path="/search" element={<Search />} />
+                <Route path="/people" element={<People />} />
                 <Route element={<CommunityShell />}>
                   <Route path="/communities" element={<Communities />} />
                   <Route path="/c/:id/:name" element={<CommunityPage />} />

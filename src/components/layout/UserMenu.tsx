@@ -70,7 +70,7 @@ export function UserMenu() {
                 onClick={() => setOpen(false)}
                 className="flex items-center gap-3 px-4 py-2.5 text-sm font-semibold text-white/80 transition-colors hover:bg-ink-hover hover:text-white"
               >
-                <FontAwesomeIcon icon={item.icon} className="w-4 text-white/45" />
+                <FontAwesomeIcon icon={item.icon} className="w-4" />
                 {item.label}
               </Link>
             ) : (
@@ -80,7 +80,7 @@ export function UserMenu() {
                 onClick={() => { setOpen(false); item.onSelect?.() }}
                 className="flex w-full items-center gap-3 px-4 py-2.5 text-left text-sm font-semibold text-white/80 transition-colors hover:bg-ink-hover hover:text-white"
               >
-                <FontAwesomeIcon icon={item.icon} className="w-4 text-white/45" />
+                <FontAwesomeIcon icon={item.icon} className="w-4" />
                 {item.label}
               </button>
             ),

@@ -26,18 +26,17 @@ import { Verified } from '@/components/brand/Verified'
 const MAX_BYTES = 12 * 1024 * 1024
 
 /**
- * What a Community says to everybody. An announcement has a heading, can
- * carry a picture or a clip, can be fixed after it goes out, and never
- * appears on the wall, which is for conversation.
+ * What a Community is saying right now. There is one announcement at a time:
+ * making a new one retires the one before it, so the Community always has a
+ * single clear thing to say. It carries a heading, a picture or a clip, can
+ * be fixed after it goes out, and never appears on the wall, which is for
+ * conversation.
  */
 export function Announcements({
-  communityId, rights, compact, onSeeAll,
+  communityId, rights,
 }: {
   communityId: string
   rights?: CommunityOverview | null
-  /** On the About tab only the first few show, with a way to the rest. */
-  compact?: boolean
-  onSeeAll?: () => void
 }) {
   const { profile } = useAuth()
   const toast = useToast()
@@ -51,7 +50,7 @@ export function Announcements({
   const [pending, setPending] = useState(false)
 
   const canManage = !!rights?.can_manage_community
-  const shown = compact ? (posts.data ?? []).slice(0, 2) : posts.data ?? []
+  const current = (posts.data ?? [])[0] ?? null
 
   const begin = (post: CommunityPost | null) => {
     setEditing(post)
@@ -108,19 +107,14 @@ export function Announcements({
     <section>
       <div className="mb-3 flex items-center gap-3">
         <h2 className="flex items-center gap-2 font-display text-lg font-extrabold">
-          <FontAwesomeIcon icon={faBullhorn} className="text-sm text-white/40" />
-          Announcements
+          <FontAwesomeIcon icon={faBullhorn} className="text-sm" />
+          Announcement
         </h2>
 
         <div className="ml-auto flex items-center gap-2">
-          {compact && (posts.data?.length ?? 0) > 2 && onSeeAll && (
-            <button onClick={onSeeAll} className="text-xs font-bold text-link hover:underline">
-              See all
-            </button>
-          )}
           {canManage && (
             <Button size="sm" variant="subtle" icon={faPlus} onClick={() => begin(null)}>
-              Announce
+              {current ? 'Replace it' : 'Announce'}
             </Button>
           )}
         </div>
@@ -128,12 +122,12 @@ export function Announcements({
 
       {posts.loading && <Skeleton className="h-24" />}
 
-      {!posts.loading && !shown.length && (
+      {!posts.loading && !current && (
         <p className="text-sm text-muted">Nothing announced yet.</p>
       )}
 
-      <div className="space-y-3">
-        {shown.map((post) => (
+      <div>
+        {[current].filter((post): post is CommunityPost => !!post).map((post) => (
           <article
             key={post.id}
             className="relative overflow-hidden rounded-2xl border border-brand/30 bg-brand/[0.07]"
@@ -229,7 +223,7 @@ export function Announcements({
       <Dialog
         open={open}
         onClose={() => setOpen(false)}
-        title={editing ? 'Edit this announcement' : 'New announcement'}
+        title={editing ? 'Edit this announcement' : current ? 'Replace the announcement' : 'New announcement'}
         size="lg"
         footer={
           <>
@@ -239,6 +233,13 @@ export function Announcements({
         }
       >
         <div className="space-y-4">
+          {!editing && current && (
+            <p className="rounded-xl border border-ink-line bg-ink-raised p-3 text-xs leading-relaxed text-muted">
+              A Community says one thing at a time. Posting this retires the announcement that
+              is up now.
+            </p>
+          )}
+
           <Input
             label="Heading"
             labelNote="optional"

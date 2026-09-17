@@ -171,7 +171,7 @@ export function UploadDialog({
       </div>
 
       <p className="mt-4 flex items-start gap-2.5 rounded-lg border border-ink-line bg-ink-raised p-3 text-xs leading-relaxed text-white/55">
-        <FontAwesomeIcon icon={faShieldHalved} className="mt-0.5 shrink-0 text-white/40" />
+        <FontAwesomeIcon icon={faShieldHalved} className="mt-0.5 shrink-0" />
         Uploads are checked automatically as soon as they arrive, so most go live straight
         away. Anything the check is unsure about waits for a person, and you will be told
         either way in My Uploads.

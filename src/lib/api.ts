@@ -159,6 +159,32 @@ export async function searchProfiles(
   return (unwrap(await query) as Profile[]) ?? []
 }
 
+export type PeopleSort = 'active' | 'new' | 'name'
+
+/**
+ * Everybody, for the People page. Unlike searchProfiles this leaves nobody
+ * out: you are shown your own account too, because we show everybody the
+ * same list. Guests are left out, since those accounts are not people you
+ * can go and look at.
+ */
+export async function listPeople(
+  { search = '', sort = 'active', limit = 48 }:
+  { search?: string; sort?: PeopleSort; limit?: number } = {},
+): Promise<Profile[]> {
+  let query = supabase.from('profiles').select('*').eq('is_guest', false).limit(limit)
+
+  const term = search.trim()
+  if (term) query = query.or(`username.ilike.%${term}%,display_name.ilike.%${term}%,bio.ilike.%${term}%`)
+
+  query = sort === 'new'
+    ? query.order('created_at', { ascending: false })
+    : sort === 'name'
+      ? query.order('username')
+      : query.order('is_online', { ascending: false }).order('last_seen_at', { ascending: false })
+
+  return (unwrap(await query) as Profile[]) ?? []
+}
+
 /** What a name change costs. The database charges it; this is for the copy. */
 export const USERNAME_CHANGE_COST = 250
 

@@ -18,6 +18,9 @@ import { UploadDialog } from '@/components/create/UploadDialog'
 import { useAuth } from '@/hooks/useAuth'
 import { useAsync } from '@/hooks/useAsync'
 import { useTitle } from '@/hooks/useTitle'
+
+/** Everything under Create names itself inside Create, not inside the site. */
+const CREATE = 'Kobbleston Create'
 import {
   communityAnalytics, creatorAnalytics, listAssets, listCommunitySpacesManaged,
   listCommunityUploads, listInventory, listOwnAssets, listSharedSpaces, listSpacesByOwner,
@@ -44,7 +47,6 @@ const statusLook: Record<string, { icon: IconDefinition; tone: string; label: st
 
 export default function CreateHub() {
   const { profile } = useAuth()
-  useTitle('Kobbleston Create')
   const [uploading, setUploading] = useState(false)
 
   const inventory = useAsync(
@@ -92,6 +94,7 @@ function Tile({ icon, label, value, to }: {
 }
 
 export function CreateOverview() {
+  useTitle(null, CREATE)
   const { profile } = useAuth()
   const { openUpload, inventory } = useHub()
 
@@ -233,6 +236,7 @@ function UploadRow({ item }: { item: OwnAsset }) {
 }
 
 export function CreateUploads() {
+  useTitle('My Uploads', CREATE)
   const { profile } = useAuth()
   const { openUpload } = useHub()
   const { target } = useWorkingAs()
@@ -289,6 +293,7 @@ export function CreateUploads() {
 /* ----------------------------------------------------------------- spaces */
 
 export function CreateSpaces() {
+  useTitle('My Spaces', CREATE)
   const { profile } = useAuth()
   const { target } = useWorkingAs()
   const spaces = useAsync(
@@ -368,6 +373,7 @@ export function CreateSpaces() {
 const kinds: (AssetKind | 'all')[] = ['all', 'image', 'audio', 'video', 'font', 'model']
 
 export function CreateMarketplace() {
+  useTitle('Creator Marketplace', CREATE)
   const { profile } = useAuth()
   const { openUpload } = useHub()
   const [params, setParams] = useSearchParams()
@@ -665,6 +671,7 @@ function Chip({ children, onClear }: { children: React.ReactNode; onClear: () =>
 /* -------------------------------------------------------------- inventory */
 
 export function CreateInventory() {
+  useTitle('Inventory', CREATE)
   const { inventory } = useHub()
   const [kind, setKind] = useState<AssetKind | 'all'>('all')
 
@@ -727,6 +734,7 @@ export function CreateInventory() {
 /* -------------------------------------------------------------- analytics */
 
 export function CreateAnalytics() {
+  useTitle('Analytics', CREATE)
   const { profile } = useAuth()
   const { target } = useWorkingAs()
   const rows = useAsync(

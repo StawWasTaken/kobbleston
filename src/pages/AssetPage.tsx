@@ -208,7 +208,7 @@ export default function AssetPage() {
       : null,
   )
 
-  useTitle(asset ? `${asset.name} - Kobbleston Create` : 'Kobbleston Create')
+  useTitle(asset?.name, 'Kobbleston Create')
 
   // A view is recorded once the page has actually opened the item.
   useEffect(() => {

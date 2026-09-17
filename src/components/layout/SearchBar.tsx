@@ -15,6 +15,20 @@ export const searchScopes: { tab: string; label: string; icon: IconDefinition }[
   { tab: 'communities', label: 'Communities', icon: faUsers },
 ]
 
+/**
+ * Each kind of thing is searched where it lives: Spaces in Discover, people
+ * on People, Communities on Communities, content in the marketplace. The bar
+ * hands you over to the right one with your words already in its box, rather
+ * than showing four thin copies of those pages on one results screen.
+ */
+const destinations: Record<string, (query: string) => string> = {
+  spaces: (q) => `/discover?q=${encodeURIComponent(q)}`,
+  people: (q) => `/people?q=${encodeURIComponent(q)}`,
+  communities: (q) => `/communities?q=${encodeURIComponent(q)}`,
+  create: (q) => `/create/marketplace?q=${encodeURIComponent(q)}`,
+}
+
+
 export function SearchBar({ className }: { className?: string }) {
   const navigate = useNavigate()
   const [term, setTerm] = useState('')
@@ -30,19 +44,12 @@ export function SearchBar({ className }: { className?: string }) {
     return () => document.removeEventListener('pointerdown', onPointer)
   }, [])
 
-  /*
-   * Create has its own search on its own pages, so picking the marketplace
-   * hands you over to it rather than showing a thin copy of it here.
-   */
+
   const go = (tab: string) => {
     const query = term.trim()
     if (!query) return
     setOpen(false)
-    navigate(
-      tab === 'create'
-        ? `/create/marketplace?q=${encodeURIComponent(query)}`
-        : `/search?q=${encodeURIComponent(query)}&tab=${tab}`,
-    )
+    navigate((destinations[tab] ?? destinations.spaces)(query))
   }
 
   const onKeyDown = (e: React.KeyboardEvent) => {

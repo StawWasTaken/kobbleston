@@ -1,16 +1,14 @@
 import { useEffect, useRef, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useSearchParams } from 'react-router-dom'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import {
-  faMagnifyingGlass, faPlus, faXmark, faUsers, faSeedling,
+  faMagnifyingGlass, faXmark, faUsers, faSeedling,
 } from '@fortawesome/free-solid-svg-icons'
 import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
 import { CommunityCard } from '@/components/community/CommunityCard'
 import { Verified } from '@/components/brand/Verified'
 import { EmptyState, ErrorState, Skeleton } from '@/components/ui/States'
-import { GuestGate } from '@/components/ui/GuestGate'
-import { useAuth } from '@/hooks/useAuth'
 import { useAsync } from '@/hooks/useAsync'
 import { listCommunities } from '@/lib/api'
 import { formatCount } from '@/lib/format'
@@ -20,15 +18,20 @@ import { useTitle } from '@/hooks/useTitle'
 
 export default function Communities() {
   useTitle('Communities')
-  const { profile } = useAuth()
-  const [term, setTerm] = useState('')
-  const [debounced, setDebounced] = useState('')
+  const [params, setParams] = useSearchParams()
+  const [term, setTerm] = useState(params.get('q') ?? '')
+  const [debounced, setDebounced] = useState(term)
   const field = useRef<HTMLInputElement>(null)
 
+  // The search lives in the address, so the bar at the top of the site can
+  // hand a search over to this page and a result can be linked to.
   useEffect(() => {
-    const timer = window.setTimeout(() => setDebounced(term), 250)
+    const timer = window.setTimeout(() => {
+      setDebounced(term)
+      setParams(term ? { q: term } : {}, { replace: true })
+    }, 250)
     return () => window.clearTimeout(timer)
-  }, [term])
+  }, [term, setParams])
 
   const all = useAsync(() => listCommunities(debounced), [debounced])
 
@@ -61,8 +64,8 @@ export default function Communities() {
               own events and its own Spaces.
             </p>
 
-            <div className="mt-5 flex flex-col gap-3 sm:flex-row">
-              <div className="relative flex-1">
+            <div className="mt-5">
+              <div className="relative">
                 <FontAwesomeIcon
                   icon={faMagnifyingGlass}
                   className="pointer-events-none absolute left-5 top-1/2 -translate-y-1/2 text-white/35"
@@ -85,12 +88,6 @@ export default function Communities() {
                   </button>
                 )}
               </div>
-
-              <GuestGate action="make a Community">
-                <Button size="lg" icon={faPlus} to="/communities/new" disabled={!profile}>
-                  New Community
-                </Button>
-              </GuestGate>
             </div>
           </div>
         </section>
@@ -140,7 +137,7 @@ export default function Communities() {
           <>
             <section className="mt-8">
               <h2 className="mb-3 flex items-center gap-2 font-display text-xl font-extrabold">
-                <FontAwesomeIcon icon={faUsers} className="text-base text-white/40" />
+                <FontAwesomeIcon icon={faUsers} className="text-base" />
                 The biggest
               </h2>
               <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -152,7 +149,7 @@ export default function Communities() {
 
             <section className="mt-8">
               <h2 className="mb-3 flex items-center gap-2 font-display text-xl font-extrabold">
-                <FontAwesomeIcon icon={faSeedling} className="text-base text-white/40" />
+                <FontAwesomeIcon icon={faSeedling} className="text-base" />
                 Just started
               </h2>
               <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
@@ -186,7 +183,9 @@ function BigCommunityCard({ community }: { community: Community }) {
         <div className="absolute inset-0 bg-gradient-to-t from-ink-card via-ink-card/40 to-transparent" />
       </div>
 
-      <div className="flex items-start gap-3 px-4 pb-4">
+      {/* The banner is positioned, so the row has to be too, otherwise the
+          emblem hanging over it gets painted away. */}
+      <div className="relative z-10 flex items-start gap-3 px-4 pb-4">
         <span className="-mt-7 grid h-14 w-14 shrink-0 place-items-center overflow-hidden rounded-xl bg-brand-deep font-display text-base font-extrabold ring-4 ring-ink-card">
           {community.icon_url
             ? <img src={community.icon_url} alt="" className="h-full w-full object-cover" />

@@ -162,19 +162,14 @@ export default function CommunityPage() {
 
         {tab === 'About' && (
           <div className="mt-6 space-y-8">
-            <Announcements
-              communityId={group.id}
-              rights={rights.data}
-              compact
-              onSeeAll={() => setTab('Events')}
-            />
+            <Announcements communityId={group.id} rights={rights.data} />
 
             {/* What is on, kept short here with the rest under its own tab. */}
             {!!events.data?.filter((e) => !e.is_cancelled).length && (
               <section>
                 <div className="mb-3 flex items-center gap-3">
                   <h2 className="flex items-center gap-2 font-display text-xl font-extrabold">
-                    <FontAwesomeIcon icon={faCalendarDay} className="text-base text-white/40" />
+                    <FontAwesomeIcon icon={faCalendarDay} className="text-base" />
                     Events
                   </h2>
                   <button

@@ -165,7 +165,7 @@ export default function EventPage() {
 
           <section>
             <h2 className="flex items-center gap-2 text-sm font-extrabold">
-              <FontAwesomeIcon icon={faUserGroup} className="text-white/40" />
+              <FontAwesomeIcon icon={faUserGroup} />
               {formatCount(it.attending_count)} going
             </h2>
 

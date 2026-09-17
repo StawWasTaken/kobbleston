@@ -65,7 +65,7 @@ function Count({ label, value, onClick }: {
 function Fact({ icon, label, value }: { icon: typeof faEye; label: string; value: string }) {
   return (
     <div className="flex items-center gap-2.5 px-4 py-2.5">
-      <FontAwesomeIcon icon={icon} className="w-4 text-xs text-white/35" />
+      <FontAwesomeIcon icon={icon} className="w-4 text-xs text-muted" />
       <span className="flex-1 text-sm text-muted">{label}</span>
       <span className="text-sm font-bold">{value}</span>
     </div>
@@ -403,7 +403,7 @@ export default function Profile() {
 
             <section>
               <h2 className="mb-3 flex items-center gap-2 font-display text-xl font-extrabold">
-                <FontAwesomeIcon icon={faUserGroup} className="text-base text-white/40" />
+                <FontAwesomeIcon icon={faUserGroup} className="text-base" />
                 Friends
                 {!!friends.data?.length && (
                   <span className="text-base font-bold text-muted">({friends.data.length})</span>
@@ -571,7 +571,7 @@ export default function Profile() {
         {tab === 'Badges' && (
           <div className="mt-6">
             <h2 className="mb-3 flex items-center gap-2 font-display text-xl font-extrabold">
-              <FontAwesomeIcon icon={faAward} className="text-base text-white/40" />
+              <FontAwesomeIcon icon={faAward} className="text-base" />
               Badges
             </h2>
             {badges.loading && (

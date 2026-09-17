@@ -298,7 +298,9 @@ function Information({ group, onSaved }: { group: NonNullable<Awaited<ReturnType
           <div className="absolute inset-0 bg-gradient-to-t from-ink-card via-ink-card/50 to-transparent" />
         </div>
 
-        <div className="flex items-start gap-3 px-4 pb-4">
+        {/* The cover is positioned, so this row has to be too, otherwise the
+            emblem hanging over it gets painted away. */}
+        <div className="relative z-10 flex items-start gap-3 px-4 pb-4">
           <span className="-mt-8 grid h-16 w-16 shrink-0 place-items-center overflow-hidden rounded-2xl bg-brand-deep font-display text-lg font-extrabold ring-4 ring-ink-card">
             {(emblemPreview ?? group.icon_url)
               ? <img src={emblemPreview ?? group.icon_url ?? ''} alt="" className="h-full w-full object-cover" />

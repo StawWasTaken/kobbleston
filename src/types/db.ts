@@ -469,6 +469,8 @@ export type CommunityRelation = {
   accepted: boolean
   /** True when the other Community asked us, so there is something to answer. */
   incoming: boolean
+  /** True when we hold this relation, so we are the side that can call it off. */
+  mine: boolean
 }
 
 export type CommunityBan = {
