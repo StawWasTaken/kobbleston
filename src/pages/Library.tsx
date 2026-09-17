@@ -94,7 +94,7 @@ export default function Library() {
           action={<Button size="sm" variant="subtle" to="/spaces/new" icon={faPlus}>New Space</Button>}
         />
         {mine.loading && (
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
             {[0, 1, 2].map((i) => <SpaceCardSkeleton key={i} />)}
           </div>
         )}
@@ -110,7 +110,7 @@ export default function Library() {
           </Card>
         )}
         {!!published.length && (
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
             {published.map((space) => (
               <div key={space.id} className="space-y-2">
                 <SpaceCard space={space} />
@@ -132,7 +132,7 @@ export default function Library() {
       {!!drafts.length && (
         <section>
           <SectionHeading title="Drafts" subtitle="Only you can see these." />
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
             {drafts.map((space) => <SpaceCard key={space.id} space={space} />)}
           </div>
         </section>
@@ -141,7 +141,7 @@ export default function Library() {
       <section>
         <SectionHeading title="Saved" subtitle="Spaces you starred." />
         {saved.loading && (
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
             {[0, 1].map((i) => <SpaceCardSkeleton key={i} />)}
           </div>
         )}
@@ -157,7 +157,7 @@ export default function Library() {
           </Card>
         )}
         {!!saved.data?.length && (
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
             {saved.data.map((space) => <SpaceCard key={space.id} space={space} />)}
           </div>
         )}

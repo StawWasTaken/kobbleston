@@ -463,7 +463,7 @@ export default function Profile() {
         {tab === 'Creations' && (
           <div className="mt-6">
             {spaces.loading && (
-              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+              <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6">
                 {[0, 1, 2].map((i) => <SpaceCardSkeleton key={i} />)}
               </div>
             )}
@@ -482,7 +482,7 @@ export default function Profile() {
               </Card>
             )}
             {!!spaces.data?.length && (
-              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+              <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6">
                 {spaces.data.map((space) => <SpaceCard key={space.id} space={space} />)}
               </div>
             )}

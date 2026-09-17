@@ -52,13 +52,10 @@ export function Skeleton({ className }: { className?: string }) {
 
 export function SpaceCardSkeleton() {
   return (
-    <div className="overflow-hidden rounded-2xl border border-ink-line bg-ink-card">
-      <Skeleton className="aspect-[16/9] rounded-none" />
-      <div className="space-y-2.5 p-4">
-        <Skeleton className="h-4 w-2/3" />
-        <Skeleton className="h-3 w-1/3" />
-        <Skeleton className="h-8 w-full" />
-      </div>
+    <div>
+      <Skeleton className="aspect-square rounded-xl" />
+      <Skeleton className="mt-2 h-4 w-2/3" />
+      <Skeleton className="mt-1.5 h-3 w-1/3" />
     </div>
   )
 }

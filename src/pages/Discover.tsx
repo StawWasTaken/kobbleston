@@ -6,6 +6,7 @@ import { Card } from '@/components/ui/Card'
 import { Input } from '@/components/ui/Input'
 import { EmptyState, ErrorState, SpaceCardSkeleton } from '@/components/ui/States'
 import { SpaceCard, categoryLabels } from '@/components/spaces/SpaceCard'
+import { SpaceRail } from '@/components/spaces/SpaceRail'
 import { useAsync } from '@/hooks/useAsync'
 import { listSpaces } from '@/lib/api'
 import type { SpaceSort } from '@/lib/api'
@@ -59,10 +60,21 @@ export default function Discover() {
     return () => window.clearTimeout(timer)
   }, [term, setParams])
 
+  // With nothing typed and nothing filtered, Discover reads as rows to
+  // browse. The moment you search or pick a category it becomes a grid of
+  // results, because then you are looking for something specific.
+  const browsing = !debounced && category === 'all'
+
   const { data, error, loading, reload } = useAsync(
-    () => listSpaces({ sort, category, search: debounced, limit: 30 }),
-    [sort, category, debounced],
+    async () => (browsing ? [] : listSpaces({ sort, category, search: debounced, limit: 36 })),
+    [sort, category, debounced, browsing],
   )
+  const trending = useAsync(
+    async () => (browsing ? listSpaces({ sort: 'trending', limit: 18 }) : []),
+    [browsing],
+  )
+  const fresh = useAsync(async () => (browsing ? listSpaces({ sort: 'new', limit: 18 }) : []), [browsing])
+  const liked = useAsync(async () => (browsing ? listSpaces({ sort: 'popular', limit: 18 }) : []), [browsing])
 
   return (
     <Page>
@@ -80,12 +92,12 @@ export default function Discover() {
           aria-label="Search Spaces"
         />
         <div className="flex gap-2 overflow-x-auto pb-1 kob-scroll">
-          {sorts.map((s) => (
+          {!browsing && sorts.map((s) => (
             <Chip key={s.value} active={sort === s.value} onClick={() => setSort(s.value)}>
               {s.label}
             </Chip>
           ))}
-          <span className="mx-1 w-px shrink-0 bg-ink-line" />
+          {!browsing && <span className="mx-1 w-px shrink-0 bg-ink-line" />}
           {categories.map((c) => (
             <Chip key={c} active={category === c} onClick={() => setCategory(c)}>
               {c === 'all' ? 'Everything' : categoryLabels[c]}
@@ -94,15 +106,32 @@ export default function Discover() {
         </div>
       </div>
 
-      {loading && (
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      {browsing && (
+        <>
+          <SpaceRail title="Being visited right now" spaces={trending.data} loading={trending.loading} />
+          <SpaceRail title="Just published" spaces={fresh.data} loading={fresh.loading} />
+          <SpaceRail title="Most liked" spaces={liked.data} loading={liked.loading} />
+          {!trending.loading && !trending.data?.length && (
+            <Card>
+              <EmptyState
+                mood="construction"
+                title="Nothing published yet"
+                body="Be the first person to publish something here."
+              />
+            </Card>
+          )}
+        </>
+      )}
+
+      {!browsing && loading && (
+        <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
           {[0, 1, 2, 3, 4, 5].map((i) => <SpaceCardSkeleton key={i} />)}
         </div>
       )}
 
       {error && <ErrorState message={error} onRetry={reload} />}
 
-      {!loading && !error && data?.length === 0 && (
+      {!browsing && !loading && !error && data?.length === 0 && (
         <Card>
           <EmptyState
             mood="noResults"
@@ -116,8 +145,8 @@ export default function Discover() {
         </Card>
       )}
 
-      {!!data?.length && (
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      {!browsing && !!data?.length && (
+        <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
           {data.map((space) => <SpaceCard key={space.id} space={space} />)}
         </div>
       )}

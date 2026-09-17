@@ -103,7 +103,7 @@ export default function Landing() {
 
           <div>
             {spaces.loading && (
-              <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+              <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 xl:grid-cols-4">
                 {[0, 1, 2].map((i) => <SpaceCardSkeleton key={i} />)}
               </div>
             )}
@@ -118,7 +118,7 @@ export default function Landing() {
             )}
 
             {!!spaces.data?.length && (
-              <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+              <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 xl:grid-cols-4">
                 {spaces.data.map((space) => <SpaceCard key={space.id} space={space} />)}
               </div>
             )}

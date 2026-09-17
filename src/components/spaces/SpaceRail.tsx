@@ -55,10 +55,10 @@ export function SpaceRail({
         >
           {loading
             ? [0, 1, 2, 3, 4].map((i) => (
-                <div key={i} className="w-60 shrink-0"><SpaceCardSkeleton /></div>
+                <div key={i} className="w-40 shrink-0 sm:w-44"><SpaceCardSkeleton /></div>
               ))
             : spaces!.map((space) => (
-                <div key={space.id} className="w-60 shrink-0"><SpaceCard space={space} /></div>
+                <div key={space.id} className="w-40 shrink-0 sm:w-44"><SpaceCard space={space} /></div>
               ))}
         </div>
       )}

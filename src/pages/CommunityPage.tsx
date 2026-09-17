@@ -164,7 +164,7 @@ export default function CommunityPage() {
             <section>
               <h2 className="mb-3 font-display text-xl font-extrabold">Spaces</h2>
               {spaces.loading && (
-                <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
                   {[0, 1, 2].map((i) => <SpaceCardSkeleton key={i} />)}
                 </div>
               )}
@@ -172,7 +172,7 @@ export default function CommunityPage() {
                 <p className="text-sm text-muted">No Spaces linked to this Community yet.</p>
               )}
               {!!spaces.data?.length && (
-                <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
                   {spaces.data.map((space) => <SpaceCard key={space.id} space={space} />)}
                 </div>
               )}

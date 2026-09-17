@@ -517,6 +517,17 @@ export async function isFollowing(followerId: string, followingId: string) {
   return Boolean(data)
 }
 
+/** People you follow, and people who follow you. */
+export async function listFollows(userId: string, side: 'followers' | 'following'): Promise<Profile[]> {
+  const column = side === 'followers' ? 'following_id' : 'follower_id'
+  const other = side === 'followers' ? 'follower_id' : 'following_id'
+  const rows = unwrap(await supabase.from('follows').select(other).eq(column, userId)) as
+    Record<string, string>[]
+  const ids = (rows ?? []).map((row) => row[other])
+  if (!ids.length) return []
+  return (unwrap(await supabase.from('profiles').select('*').in('id', ids)) as Profile[]) ?? []
+}
+
 export async function setFollowing(followerId: string, followingId: string, on: boolean) {
   const result = on
     ? await supabase.from('follows').insert({ follower_id: followerId, following_id: followingId })
