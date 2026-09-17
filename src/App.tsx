@@ -2,6 +2,7 @@ import { Suspense, lazy } from 'react'
 import { BrowserRouter, Navigate, Outlet, Route, Routes } from 'react-router-dom'
 import { AppShell } from '@/components/layout/AppShell'
 import { PublicLayout } from '@/components/layout/PublicLayout'
+import { CommunityShell } from '@/components/community/CommunityRail'
 import { ToastProvider } from '@/components/ui/Toast'
 import { AuthProvider, useAuth } from '@/hooks/useAuth'
 import { Logomark } from '@/components/brand/Wordmark'
@@ -72,8 +73,10 @@ export default function App() {
                 <Route path="/discover" element={<Discover />} />
                 <Route path="/create" element={<Create />} />
                 <Route path="/search" element={<Search />} />
-                <Route path="/communities" element={<Communities />} />
-                <Route path="/c/:slug" element={<CommunityPage />} />
+                <Route element={<CommunityShell />}>
+                  <Route path="/communities" element={<Communities />} />
+                  <Route path="/c/:slug" element={<CommunityPage />} />
+                </Route>
                 <Route path="/u/:username" element={<Profile />} />
                 <Route path="/u/:username/:slug" element={<SpacePage />} />
 
@@ -81,8 +84,10 @@ export default function App() {
                   <Route path="/home" element={<Home />} />
                   <Route path="/spaces/new" element={<NewSpace />} />
                   <Route path="/spaces/:spaceId/edit" element={<EditSpace />} />
-                  <Route path="/communities/new" element={<CreateCommunity />} />
-                  <Route path="/c/:slug/configure" element={<ConfigureCommunity />} />
+                  <Route element={<CommunityShell />}>
+                    <Route path="/communities/new" element={<CreateCommunity />} />
+                    <Route path="/c/:slug/configure" element={<ConfigureCommunity />} />
+                  </Route>
                   <Route path="/friends" element={<Friends />} />
                   <Route path="/library" element={<Library />} />
                   <Route path="/settings" element={<Settings />} />
