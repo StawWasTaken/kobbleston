@@ -28,6 +28,16 @@ export function Dialog({
 }) {
   const panel = useRef<HTMLDivElement>(null)
 
+  /*
+   * onClose is nearly always written inline at the call site, so it is a new
+   * function on every render. Holding it in a ref keeps the effect below
+   * tied to `open` alone: otherwise every keystroke in a field re-ran the
+   * whole thing, which moved focus back to the top of the card and made it
+   * impossible to type.
+   */
+  const close = useRef(onClose)
+  useEffect(() => { close.current = onClose })
+
   useEffect(() => {
     if (!open) return
     const previous = document.activeElement as HTMLElement | null
@@ -36,7 +46,7 @@ export function Dialog({
 
     const onKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
-        onClose()
+        close.current()
         return
       }
       if (e.key !== 'Tab' || !panel.current) return
@@ -56,14 +66,20 @@ export function Dialog({
     }
 
     document.addEventListener('keydown', onKey)
-    panel.current?.querySelector<HTMLElement>('input, button')?.focus()
+
+    // Land on the first thing somebody would type in, not on the close
+    // button, and only when the card opens.
+    const first = panel.current?.querySelector<HTMLElement>(
+      'input:not([type="file"]), textarea',
+    )
+    first?.focus()
 
     return () => {
       document.removeEventListener('keydown', onKey)
       document.body.style.overflow = overflow
       previous?.focus()
     }
-  }, [open, onClose])
+  }, [open])
 
   if (!open) return null
 

@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
 import { Dialog } from '@/components/ui/Dialog'
 import { Input, Textarea } from '@/components/ui/Input'
+import { DateTimeField, toLocalValue } from '@/components/ui/DateTimeField'
 import { Skeleton } from '@/components/ui/States'
 import { Tooltip } from '@/components/ui/Tooltip'
 import { useToast } from '@/components/ui/Toast'
@@ -22,12 +23,7 @@ import { cn } from '@/lib/cn'
 import type { CommunityEvent } from '@/types/db'
 
 /** A local datetime the input understands, from an ISO string. */
-const forInput = (iso?: string | null) => {
-  if (!iso) return ''
-  const date = new Date(iso)
-  const pad = (n: number) => String(n).padStart(2, '0')
-  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`
-}
+const forInput = (iso?: string | null) => (iso ? toLocalValue(new Date(iso)) : '')
 
 export function EventsEditor({ communityId }: { communityId: string }) {
   const { profile } = useAuth()
@@ -223,18 +219,14 @@ export function EventsEditor({ communityId }: { communityId: string }) {
           />
 
           <div className="grid gap-3 sm:grid-cols-2">
-            <Input
-              label="Starts"
-              type="datetime-local"
-              value={starts}
-              onChange={(e) => setStarts(e.target.value)}
-            />
-            <Input
+            <DateTimeField label="Starts" value={starts} onChange={setStarts} />
+            <DateTimeField
               label="Ends"
               labelNote="optional"
-              type="datetime-local"
               value={ends}
-              onChange={(e) => setEnds(e.target.value)}
+              onChange={setEnds}
+              min={starts ? new Date(starts) : undefined}
+              clearable
             />
           </div>
 
