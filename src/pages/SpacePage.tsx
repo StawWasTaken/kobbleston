@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faPlay, faBell, faStar, faCircleCheck, faFlag, faPenToSquare } from '@fortawesome/free-solid-svg-icons'
+import { faPlay, faBell, faStar, faFlag, faPenToSquare } from '@fortawesome/free-solid-svg-icons'
 import { Page } from '@/components/layout/AppShell'
 import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
@@ -29,6 +29,7 @@ import {
 import { formatCount, timeAgo } from '@/lib/format'
 import { cn } from '@/lib/cn'
 import { avatarOf } from '@/lib/avatars'
+import { Verified } from '@/components/brand/Verified'
 
 const tabs = ['About', 'Badges'] as const
 type Tab = (typeof tabs)[number]
@@ -185,7 +186,7 @@ export default function SpacePage() {
                     </span>
                     By <span className="font-bold text-white">{owner.display_name}</span>
                     {owner.is_admin && (
-                      <FontAwesomeIcon icon={faCircleCheck} className="text-[#4d68ff]" title="Verified" />
+                      <Verified />
                     )}
                   </Link>
                 )}

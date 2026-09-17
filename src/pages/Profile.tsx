@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import {
-  faComment, faFlag, faGear, faUserPlus, faClock, faUserCheck, faCircleCheck,
+  faComment, faFlag, faGear, faUserPlus, faClock, faUserCheck,
   faEllipsis, faLink, faUserGroup, faCubes, faEye, faAward,
 } from '@fortawesome/free-solid-svg-icons'
 import { Page } from '@/components/layout/AppShell'
@@ -33,6 +33,7 @@ import { asset } from '@/lib/asset'
 import { cn } from '@/lib/cn'
 import { communityLink, profileLink } from '@/lib/links'
 import { avatarOf } from '@/lib/avatars'
+import { Verified } from '@/components/brand/Verified'
 
 const tabs = ['About', 'Creations', 'People', 'Badges'] as const
 type Tab = (typeof tabs)[number]
@@ -254,7 +255,7 @@ export default function Profile() {
             <h1 className="flex items-center gap-2 font-display text-3xl font-extrabold">
               {user.display_name}
               {user.is_admin && (
-                <FontAwesomeIcon icon={faCircleCheck} className="text-xl text-[#4d68ff]" title="Verified" />
+                <Verified className="text-xl" />
               )}
             </h1>
 

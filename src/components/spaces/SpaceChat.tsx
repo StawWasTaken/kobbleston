@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faPaperPlane, faCircleCheck, faComments } from '@fortawesome/free-solid-svg-icons'
+import { faPaperPlane, faComments } from '@fortawesome/free-solid-svg-icons'
 import { Avatar } from '@/components/ui/Avatar'
 import { Skeleton } from '@/components/ui/States'
 import { useAuth } from '@/hooks/useAuth'
@@ -10,6 +10,7 @@ import { supabase } from '@/lib/supabase'
 import { cn } from '@/lib/cn'
 import type { Space, SpaceMessage } from '@/types/db'
 import { avatarOf } from '@/lib/avatars'
+import { Verified } from '@/components/brand/Verified'
 
 /**
  * The chat that comes with every Space. The owner decides whether it is on,
@@ -115,7 +116,7 @@ export function SpaceChat({ space }: { space: Space }) {
                 {message.sender?.display_name ?? 'Someone'}
               </Link>
               {message.sender?.is_admin && (
-                <FontAwesomeIcon icon={faCircleCheck} className="ml-1 text-xs text-[#4d68ff]" />
+                <Verified className="ml-1 text-xs" />
               )}
               <span className="text-white/40"> · </span>
               <span className="whitespace-pre-wrap break-words text-white/80">{message.body}</span>

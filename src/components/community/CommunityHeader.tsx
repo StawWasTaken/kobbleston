@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import {
-  faCircleCheck, faEllipsis, faGear, faRightFromBracket, faLink, faFlag, faUserPlus, faClock,
+  faEllipsis, faGear, faRightFromBracket, faLink, faFlag, faUserPlus, faClock,
 } from '@fortawesome/free-solid-svg-icons'
 import { Button } from '@/components/ui/Button'
 import { Badge } from '@/components/ui/Badge'
@@ -11,6 +11,7 @@ import { formatCount } from '@/lib/format'
 import { asset } from '@/lib/asset'
 import { cn } from '@/lib/cn'
 import type { Community, CommunityOverview } from '@/types/db'
+import { Verified } from '@/components/brand/Verified'
 
 /**
  * The top of a Community: its cover fading into the page, the emblem sitting
@@ -70,7 +71,7 @@ export function CommunityHeader({
               <h1 className="flex flex-wrap items-center gap-2 font-display text-2xl font-extrabold leading-tight sm:text-3xl">
                 {group.name}
                 {group.is_verified && (
-                  <FontAwesomeIcon icon={faCircleCheck} className="text-lg text-[#4d68ff]" title="Verified" />
+                  <Verified className="text-lg" />
                 )}
               </h1>
               {ownerName && (

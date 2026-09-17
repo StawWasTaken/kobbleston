@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faCircleCheck, faMagnifyingGlass, faUser } from '@fortawesome/free-solid-svg-icons'
+import { faMagnifyingGlass, faUser } from '@fortawesome/free-solid-svg-icons'
 import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
 import { Input } from '@/components/ui/Input'
@@ -16,6 +15,7 @@ import { formatCount, timeAgo } from '@/lib/format'
 import { profileLink } from '@/lib/links'
 import { cn } from '@/lib/cn'
 import type { AssetKind } from '@/types/db'
+import { Verified } from '@/components/brand/Verified'
 
 const kinds: (AssetKind | 'all')[] = ['all', 'image', 'audio', 'video', 'font', 'model']
 
@@ -70,7 +70,7 @@ export default function CreatorPage() {
           <h1 className="flex items-center gap-2 font-display text-2xl font-extrabold sm:text-3xl">
             {person.display_name}
             {person.is_admin && (
-              <FontAwesomeIcon icon={faCircleCheck} className="text-lg text-[#4d68ff]" title="Verified" />
+              <Verified className="text-lg" />
             )}
           </h1>
           <p className="mt-1 text-sm text-muted">

@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import {
-  faCopy, faCircleCheck, faLock, faLockOpen, faPen, faTrash, faShieldHalved,
+  faCopy, faLock, faLockOpen, faPen, faTrash, faShieldHalved,
   faTriangleExclamation, faClock, faEllipsis,
   faThumbsUp, faThumbsDown, faComment, faChevronRight, faTag, faBagShopping, faLink, faBoxOpen,
 } from '@fortawesome/free-solid-svg-icons'
@@ -34,6 +34,7 @@ import { cn } from '@/lib/cn'
 import type { AssetDay, AssetPageItem } from '@/types/db'
 import { timeAgo } from '@/lib/format'
 import { Kube } from '@/components/brand/Kube'
+import { Verified } from '@/components/brand/Verified'
 
 const prefixes: Record<string, string> = {
   IMG: 'image', SND: 'audio', VID: 'video', FNT: 'font', MDL: 'model',
@@ -100,10 +101,11 @@ function UsePanel({ asset, onChanged }: { asset: AssetPageItem; onChanged: () =>
       <div className="space-y-2">
         <Button block icon={faCopy} onClick={copy}>Copy ID</Button>
         <p className="flex items-start gap-2 text-xs leading-relaxed text-muted">
-          <FontAwesomeIcon
-            icon={asset.creator_is_admin ? faCircleCheck : faShieldHalved}
-            className="mt-0.5 shrink-0"
-          />
+          {asset.creator_is_admin ? (
+            <Verified className="mt-0.5" />
+          ) : (
+            <FontAwesomeIcon icon={faShieldHalved} className="mt-0.5 shrink-0" />
+          )}
           <span>
             {mine
               ? 'Yours, so you can use it anywhere.'
@@ -304,7 +306,7 @@ export default function AssetPage() {
             >
               By @{asset.creator_username}
               {asset.creator_is_admin && (
-                <FontAwesomeIcon icon={faCircleCheck} className="text-xs text-[#4d68ff]" />
+                <Verified className="text-xs" />
               )}
             </Link>
             <span className="h-3.5 w-px bg-ink-line" aria-hidden="true" />
