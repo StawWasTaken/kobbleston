@@ -1,45 +1,15 @@
 import { useEffect, useState } from 'react'
-import { Link } from 'react-router-dom'
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faMagnifyingGlass, faPlus, faCircleCheck } from '@fortawesome/free-solid-svg-icons'
+import { faMagnifyingGlass, faPlus } from '@fortawesome/free-solid-svg-icons'
 import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
 import { Input } from '@/components/ui/Input'
+import { CommunityCard } from '@/components/community/CommunityCard'
 import { EmptyState, ErrorState, Skeleton } from '@/components/ui/States'
 import { GuestGate } from '@/components/ui/GuestGate'
 import { useAuth } from '@/hooks/useAuth'
 import { useAsync } from '@/hooks/useAsync'
 import { listCommunities } from '@/lib/api'
-import { formatCount } from '@/lib/format'
 import { cn } from '@/lib/cn'
-
-function BrowseCard({
-  slug, name, icon, members, verified,
-}: {
-  slug: string
-  name: string
-  icon: string | null
-  members: number
-  verified?: boolean
-}) {
-  return (
-    <Link
-      to={`/c/${slug}`}
-      className="flex items-center gap-3 rounded-xl border border-ink-line bg-ink-card p-3 transition-colors hover:border-brand/60"
-    >
-      <span className="grid h-12 w-12 shrink-0 place-items-center overflow-hidden rounded-lg bg-brand-deep font-display text-base font-extrabold">
-        {icon ? <img src={icon} alt="" className="h-full w-full object-cover" /> : name.slice(0, 2).toUpperCase()}
-      </span>
-      <span className="min-w-0 flex-1">
-        <span className="flex items-center gap-1.5">
-          <span className="truncate font-bold">{name}</span>
-          {verified && <FontAwesomeIcon icon={faCircleCheck} className="shrink-0 text-xs text-[#4d68ff]" />}
-        </span>
-        <span className="block text-xs text-muted">{formatCount(members)} members</span>
-      </span>
-    </Link>
-  )
-}
 
 export default function Communities() {
   const { profile } = useAuth()
@@ -103,14 +73,7 @@ export default function Communities() {
         {!!all.data?.length && (
           <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
             {all.data.map((community) => (
-              <BrowseCard
-                key={community.id}
-                slug={community.slug}
-                name={community.name}
-                icon={community.icon_url}
-                members={community.member_count}
-                verified={community.is_verified}
-              />
+              <CommunityCard key={community.id} community={community} />
             ))}
           </div>
         )}

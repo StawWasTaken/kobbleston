@@ -125,10 +125,18 @@ export async function getProfileByUsername(username: string): Promise<Profile | 
   return (data as Profile | null) ?? null
 }
 
-export async function searchProfiles(term: string, excludeId?: string): Promise<Profile[]> {
+/**
+ * Everyone matches, yourself included: People is a directory, not a list of
+ * strangers, so searching your own name has to find you. Friends passes
+ * `excludeId` because you cannot befriend yourself.
+ */
+export async function searchProfiles(
+  term: string, excludeId?: string, limit = 12,
+): Promise<Profile[]> {
   if (!term.trim()) return []
   let query = supabase.from('profiles').select('*')
-    .or(`username.ilike.%${term.trim()}%,display_name.ilike.%${term.trim()}%`).limit(12)
+    .or(`username.ilike.%${term.trim()}%,display_name.ilike.%${term.trim()}%`)
+    .order('username').limit(limit)
   if (excludeId) query = query.neq('id', excludeId)
   return (unwrap(await query) as Profile[]) ?? []
 }

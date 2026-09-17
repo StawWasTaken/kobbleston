@@ -9,15 +9,14 @@ import { PresenceLabel, presenceOf } from '@/components/ui/StatusDot'
 import { EmptyState, ErrorState, Skeleton, SpaceCardSkeleton } from '@/components/ui/States'
 import { SpaceCard } from '@/components/spaces/SpaceCard'
 import { AssetTile } from '@/components/create/AssetTile'
+import { CommunityCard } from '@/components/community/CommunityCard'
 import { searchScopes } from '@/components/layout/SearchBar'
-import { useAuth } from '@/hooks/useAuth'
 import { useAsync } from '@/hooks/useAsync'
-import { listAssets, listSpaces, searchProfiles } from '@/lib/api'
+import { listAssets, listCommunities, listSpaces, searchProfiles } from '@/lib/api'
 import { cn } from '@/lib/cn'
 
 export default function Search() {
   const [params, setParams] = useSearchParams()
-  const { profile } = useAuth()
   const term = params.get('q') ?? ''
   const tab = params.get('tab') ?? 'spaces'
 
@@ -26,15 +25,24 @@ export default function Search() {
     [tab, term],
   )
   const people = useAsync(
-    async () => (tab === 'people' && term ? searchProfiles(term, profile?.id) : []),
-    [tab, term, profile?.id],
+    // No exclusion here: searching People shows everyone, you included.
+    async () => (tab === 'people' && term ? searchProfiles(term, undefined, 30) : []),
+    [tab, term],
   )
   const assets = useAsync(
     async () => (tab === 'create' && term ? listAssets({ search: term, limit: 36 }) : []),
     [tab, term],
   )
 
-  const current = tab === 'people' ? people : tab === 'create' ? assets : spaces
+  const communities = useAsync(
+    async () => (tab === 'communities' && term ? listCommunities(term) : []),
+    [tab, term],
+  )
+
+  const current = tab === 'people' ? people
+    : tab === 'create' ? assets
+      : tab === 'communities' ? communities
+        : spaces
   const nothing = !current.loading && !current.error && current.data?.length === 0
 
   return (
@@ -134,6 +142,23 @@ export default function Search() {
                 ))}
               </ul>
             </Card>
+          )}
+        </>
+      )}
+
+      {tab === 'communities' && (
+        <>
+          {communities.loading && (
+            <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+              {[0, 1, 2, 3].map((i) => <Skeleton key={i} className="h-[4.5rem]" />)}
+            </div>
+          )}
+          {!!communities.data?.length && (
+            <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+              {communities.data.map((community) => (
+                <CommunityCard key={community.id} community={community} />
+              ))}
+            </div>
           )}
         </>
       )}

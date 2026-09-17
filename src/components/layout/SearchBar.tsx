@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import {
-  faMagnifyingGlass, faXmark, faLayerGroup, faUser, faShapes,
+  faMagnifyingGlass, faXmark, faLayerGroup, faUser, faShapes, faUsers,
 } from '@fortawesome/free-solid-svg-icons'
 import type { IconDefinition } from '@fortawesome/fontawesome-svg-core'
 import { cn } from '@/lib/cn'
@@ -12,6 +12,7 @@ export const searchScopes: { tab: string; label: string; icon: IconDefinition }[
   { tab: 'spaces', label: 'Spaces', icon: faLayerGroup },
   { tab: 'people', label: 'People', icon: faUser },
   { tab: 'create', label: 'Create', icon: faShapes },
+  { tab: 'communities', label: 'Communities', icon: faUsers },
 ]
 
 export function SearchBar({ className }: { className?: string }) {
