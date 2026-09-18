@@ -26,20 +26,25 @@ style.css
 script.js
 ```
 
-## The three ways to build
+## How a Space is built
 
-The editor should meet people where they are, so the same Space can be worked
-on three ways and they all write the same files.
+Out of blocks, and only out of blocks.
 
-1. **Blocks.** Drag sections onto the page: a heading, a gallery, a guestbook,
-   a music player, a wall of links. Each block is a small template that writes
-   markup. This is how somebody with no idea what HTML is makes something on
-   their first afternoon.
-2. **Style.** Fonts, colours, spacing, background, borders, one panel that
-   writes CSS variables rather than a stylesheet nobody can read afterwards.
-3. **Files.** The actual markup, styles and scripts, for people who want them.
-   Turning this on is a one way door for a given Space: once the files are
-   hand edited, the block editor stops trying to own them.
+1. **Blocks.** Drag them onto the page: a heading, a gallery, a picture, a
+   button, an ad slot, a donate button. Each one is dragged, resized, layered
+   and edited in a panel beside the canvas. This is how somebody with no idea
+   what HTML is makes something on their first afternoon.
+2. **Style.** Colours, fonts, sizes and corners, per block and for the page,
+   in that same panel. A stylesheet is written from it; nobody edits the
+   stylesheet.
+
+Writing the files by hand was in the first version of this plan and has been
+taken back out. It made every Space a page that might contain anybody's
+script, and the whole safety argument then rests on the frame alone. Blocks
+write the markup, the words people type are escaped on the way in, the
+database refuses to store a script at all, and the served page runs nothing
+but our own bridge. That is a much shorter argument, and a Space loses
+nothing anybody was actually asking for.
 
 ## Using what is in Create
 
@@ -92,16 +97,14 @@ Space can be rolled back after a bad save.
    copy per Space, publishing between them, and the page drawn in a frame
    with scripts only, no same origin, and a policy that refuses everything
    but pictures, sound and fonts.
-2. **The file editor (built).** Files down one side, the text in the middle,
-   the page on the right.
+2. **The editor (built).** A toolbox down one side, the canvas in the middle
+   and everything about the selected block down the other.
 3. **The asset picker and `kob://` rewriting (built).** A number typed in, or
    an upload that goes to Create and fills its own number in. References
    become short lived links only at the moment of drawing.
 4. **The block editor (built).** A canvas with drag, resize, snapping and
    layers; a toolbox of blocks; an inspector for the selected one and for the
-   page. Blocks are kept as `page.json` and compiled to the markup and styles,
-   and taking the files over by hand is the one way door it was always meant
-   to be.
+   page. Blocks are kept as `page.json` and compiled to the markup and styles.
 5. **The bridge (partly built).** A Space can say two things: somebody pressed
    a donate button, and somebody pressed an ad. Both are handled outside the
    frame, where the amount can be shown plainly and the account is reachable.
@@ -115,8 +118,8 @@ Space can be rolled back after a bad save.
   sizes the inspector has now.
 - **Badges through the bridge**, which is what finally makes them award
   themselves.
-- **Sanitising markup on save**, so what is stored is already clean rather
-  than relying on the frame alone.
+- **Blocks for the rest of it**: a guestbook, a wall of links, a music player
+  that is more than an audio element.
 - **A serving domain of its own.** The frame already has an origin of null,
   which is what isolation needs; a separate domain would let a Space be
   visited directly rather than only inside Kobbleston.

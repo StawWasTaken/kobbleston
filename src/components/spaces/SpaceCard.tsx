@@ -24,9 +24,9 @@ export const categoryLabels: Record<SpaceCategory, string> = {
 const fallbackCovers = [asset('/brand/banner.png'), asset('/brand/banner2.png'), asset('/brand/banner3.png')]
 
 /*
- * What a Space looks like in a row. The cover is the picture of it, and the
- * first thumbnail stands in when there is no cover. An emblem is the Space's
- * badge, not a picture of it, so it is never used here.
+ * What a Space looks like in a row: its first picture, which is what the
+ * cover is. The emblem is the Space's badge rather than a picture of the
+ * place, so it is never used here.
  */
 export function coverFor(space: Space) {
   return space.cover_url ?? space.thumbnail_urls?.[0] ?? null

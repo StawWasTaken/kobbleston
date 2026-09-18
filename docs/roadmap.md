@@ -21,12 +21,13 @@ have files, and there is an editor for them.
 - **The asset picker (built).** A number typed in, or an upload that goes to
   Create and fills its own number in.
 - **Blocks (built).** A canvas with drag, resize, snapping, layers and an
-  inspector, kept as `page.json` and compiled into the files. Style as a way
-  of working in its own right is not built.
+  inspector, kept as `page.json` and compiled into the files. Writing the
+  files by hand has been taken out: a Space is built out of blocks, holds no
+  scripts, and the database refuses to store one.
 - **The bridge (partly built).** Donate buttons and ad presses cross it, both
   handled outside the frame. Badges awarding themselves is not built.
-- **Sanitising markup on save**, so what is stored is already clean rather
-  than relying on the frame alone. Not built.
+- **Richer blocks**: a guestbook, a wall of links, a music player that is more
+  than an audio element. Not built.
 
 ### Ads and gifts
 Built. An ad is bought up front, costs a Kube a view, is shown in the ad

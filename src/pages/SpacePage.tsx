@@ -159,10 +159,13 @@ export default function SpacePage() {
   const owner = space.owner
   const isOwner = profile?.id === space.owner_id
   // The cover leads, then whatever thumbnails have been added.
-  // The cover is the first picture of a Space, then whatever else was added.
-  const shots = [...new Set(
-    [space.cover_url, ...(space.thumbnail_urls ?? [])].filter(Boolean) as string[],
-  )]
+  /*
+   * The pictures of this Space. The first of them is the cover, so it is not
+   * added again on the front of the list.
+   */
+  const shots = (space.thumbnail_urls?.length
+    ? space.thumbnail_urls
+    : [space.cover_url].filter(Boolean) as string[])
   const numbers = stats.data
 
   return (

@@ -36,7 +36,6 @@ export default function EditSpace() {
   const [genre, setGenre] = useState('other')
   const [published, setPublished] = useState(false)
   const [emblem, setEmblem] = useState<File | null>(null)
-  const [cover, setCover] = useState<File | null>(null)
   const [thumbnails, setThumbnails] = useState<string[]>([])
   const [newShot, setNewShot] = useState<File | null>(null)
   const [pending, setPending] = useState(false)
@@ -57,10 +56,9 @@ export default function EditSpace() {
     if (!space.data || !profile) return
     setPending(true)
     try {
-      const [emblemUrl, coverUrl] = await Promise.all([
-        emblem ? uploadSpaceImage(profile.id, emblem, 'emblem') : Promise.resolve(space.data.emblem_url),
-        cover ? uploadSpaceImage(profile.id, cover, 'cover') : Promise.resolve(space.data.cover_url),
-      ])
+      const emblemUrl = emblem
+        ? await uploadSpaceImage(profile.id, emblem, 'emblem')
+        : space.data.emblem_url
 
       await updateSpace(space.data.id, {
         name: name.trim(),
@@ -69,13 +67,14 @@ export default function EditSpace() {
         genre,
         is_published: published,
         emblem_url: emblemUrl,
-        cover_url: coverUrl,
+        // The cover is the first picture of the Space, not a separate upload,
+        // and the emblem is its badge rather than a picture of the place.
+        cover_url: thumbnails[0] ?? null,
         thumbnail_urls: thumbnails,
       })
       toast('Saved.', 'success')
       space.reload()
       setEmblem(null)
-      setCover(null)
     } catch (err) {
       toast(err instanceof Error ? err.message : 'That did not save.', 'error')
     } finally {
@@ -135,20 +134,17 @@ export default function EditSpace() {
             file={emblem}
             existing={space.data.emblem_url}
             onChange={setEmblem}
-            note="The square icon people see in lists and inside the Space."
-          />
-
-          <ImageDrop
-            label="Cover"
-            aspect="wide"
-            file={cover}
-            existing={space.data.cover_url}
-            onChange={setCover}
-            note="The wide picture at the top of the page."
+            note="The badge for this Space: the tab icon and the mark beside its name. It is never used as a picture of the Space."
           />
 
           <div>
-            <p className="mb-1.5 text-xs font-bold uppercase tracking-wide text-muted">Thumbnails</p>
+            <p className="mb-1.5 text-xs font-bold uppercase tracking-wide text-muted">
+              Pictures of this Space
+            </p>
+            <p className="mb-3 text-xs text-muted">
+              The first one is the cover: it is what people see in Discover and at the top of
+              the page. Drag is not needed, the order is the order you add them.
+            </p>
             {!!thumbnails.length && (
               <div className="mb-3 flex flex-wrap gap-2">
                 {thumbnails.map((url) => (

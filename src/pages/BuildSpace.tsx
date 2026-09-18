@@ -1,13 +1,11 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import {
-  faFileCode, faPlus, faTrash, faRotateLeft, faCloudArrowUp, faFloppyDisk,
-  faDesktop, faMobileScreen, faCircleDot, faShapes, faCode, faEye,
+  faRotateLeft, faCloudArrowUp, faFloppyDisk, faCircleDot, faEye,
 } from '@fortawesome/free-solid-svg-icons'
 import { Button } from '@/components/ui/Button'
 import { Dialog } from '@/components/ui/Dialog'
-import { Input } from '@/components/ui/Input'
 import { ErrorState, Skeleton } from '@/components/ui/States'
 import { useToast } from '@/components/ui/Toast'
 import { BackLink } from '@/components/ui/BackLink'
@@ -20,8 +18,7 @@ import type { Block, BlockKind, Page } from '@/lib/blocks'
 import { useAsync } from '@/hooks/useAsync'
 import { useTitle } from '@/hooks/useTitle'
 import {
-  deleteSpaceFile, getSpaceById, listSpaceFiles, publishSpaceFiles, revertSpaceFiles,
-  saveSpaceFile,
+  getSpaceById, listSpaceFiles, publishSpaceFiles, revertSpaceFiles, saveSpaceFile,
 } from '@/lib/api'
 import type { SpaceFile } from '@/lib/api'
 import { spaceLink } from '@/lib/links'
@@ -48,9 +45,6 @@ function startingPage(name: string): Page {
   return page
 }
 
-const language = (path: string) =>
-  path.endsWith('.css') ? 'Styles' : path.endsWith('.js') ? 'Script' : path.endsWith('.json') ? 'Blocks' : 'Markup'
-
 export default function BuildSpace() {
   const { spaceId = '' } = useParams()
   const toast = useToast()
@@ -60,73 +54,57 @@ export default function BuildSpace() {
 
   useTitle(space.data ? `Building ${space.data.name}` : 'Building')
 
-  const [mode, setMode] = useState<'blocks' | 'files'>('blocks')
   const [files, setFiles] = useState<SpaceFile[]>([])
   const [page, setPage] = useState<Page | null>(null)
   const [selected, setSelected] = useState<string | null>(null)
   const [zoom, setZoom] = useState(1)
-  const [open, setOpen] = useState('index.html')
-  const [dirty, setDirty] = useState<Record<string, boolean>>({})
+  const [dirty, setDirty] = useState(false)
   const [saving, setSaving] = useState(false)
   const [publishing, setPublishing] = useState(false)
-  const [adding, setAdding] = useState(false)
-  const [takingOver, setTakingOver] = useState(false)
-  const [newName, setNewName] = useState('')
-  const [wide, setWide] = useState(true)
-  const editor = useRef<HTMLTextAreaElement>(null)
+  const [looking, setLooking] = useState(false)
 
   /*
    * What is on screen starts as what is stored. A Space nobody has touched
-   * starts as a page with something on it, built from blocks; one whose files
-   * have been taken over by hand opens in Files, because the blocks no longer
-   * own them.
+   * starts as a page with something on it rather than a blank canvas, and one
+   * built before blocks existed is read back from its page.json.
    */
   useEffect(() => {
     if (!stored.data || !space.data) return
 
-    if (stored.data.length) {
-      setFiles(stored.data)
-      const found = readPage(stored.data.find((file) => file.path === PAGE_FILE)?.content)
+    const found = readPage(stored.data.find((file) => file.path === PAGE_FILE)?.content)
+    if (found) {
       setPage(found)
-      setMode(found ? 'blocks' : 'files')
-      setOpen(stored.data.find((f) => f.path === 'index.html')?.path ?? stored.data[0].path)
+      setFiles(stored.data)
       return
     }
 
     const fresh = startingPage(space.data.name)
-    const built = compilePage(fresh)
-    const now = new Date().toISOString()
     setPage(fresh)
-    setFiles([
-      { path: PAGE_FILE, content: JSON.stringify(fresh), updated_at: now },
-      { path: 'index.html', content: built.html, updated_at: now },
-      { path: 'style.css', content: built.css, updated_at: now },
-    ])
-    setDirty({ [PAGE_FILE]: true, 'index.html': true, 'style.css': true })
+    setFiles(write(fresh, stored.data))
+    setDirty(true)
   }, [stored.data, space.data])
 
-  const current = files.find((file) => file.path === open) ?? files[0]
-  const unsaved = useMemo(() => Object.values(dirty).some(Boolean), [dirty])
-  const block = page?.blocks.find((one) => one.id === selected) ?? null
-
-  /** A change to the blocks rewrites the two files they own. */
-  const applyPage = (next: Page) => {
-    setPage(next)
+  /** The three files the blocks own, beside anything else a Space holds. */
+  function write(next: Page, existing: SpaceFile[]): SpaceFile[] {
     const built = compilePage(next)
     const now = new Date().toISOString()
+    const others = existing.filter(
+      (file) => ![PAGE_FILE, 'index.html', 'style.css'].includes(file.path),
+    )
+    return [
+      { path: PAGE_FILE, content: JSON.stringify(next), updated_at: now },
+      { path: 'index.html', content: built.html, updated_at: now },
+      { path: 'style.css', content: built.css, updated_at: now },
+      ...others,
+    ]
+  }
 
-    setFiles((all) => {
-      const others = all.filter(
-        (file) => ![PAGE_FILE, 'index.html', 'style.css'].includes(file.path),
-      )
-      return [
-        { path: PAGE_FILE, content: JSON.stringify(next), updated_at: now },
-        { path: 'index.html', content: built.html, updated_at: now },
-        { path: 'style.css', content: built.css, updated_at: now },
-        ...others,
-      ]
-    })
-    setDirty((all) => ({ ...all, [PAGE_FILE]: true, 'index.html': true, 'style.css': true }))
+  const block = page?.blocks.find((one) => one.id === selected) ?? null
+
+  const applyPage = (next: Page) => {
+    setPage(next)
+    setFiles((all) => write(next, all))
+    setDirty(true)
   }
 
   const insert = (kind: BlockKind) => {
@@ -143,11 +121,6 @@ export default function BuildSpace() {
     applyPage({ ...page, blocks: page.blocks.map((one) => (one.id === next.id ? next : one)) })
   }
 
-  const changeBlocks = (blocks: Block[]) => {
-    if (!page) return
-    applyPage({ ...page, blocks })
-  }
-
   const removeBlock = () => {
     if (!page || !block) return
     applyPage({ ...page, blocks: page.blocks.filter((one) => one.id !== block.id) })
@@ -156,7 +129,12 @@ export default function BuildSpace() {
 
   const duplicateBlock = () => {
     if (!page || !block) return
-    const copy = { ...block, id: `${block.kind}-${Math.random().toString(36).slice(2, 9)}`, x: block.x + 20, y: block.y + 20 }
+    const copy = {
+      ...block,
+      id: `${block.kind}-${Math.random().toString(36).slice(2, 9)}`,
+      x: block.x + 20,
+      y: block.y + 20,
+    }
     applyPage({ ...page, blocks: [...page.blocks, copy] })
     setSelected(copy.id)
   }
@@ -173,20 +151,13 @@ export default function BuildSpace() {
     applyPage({ ...page, blocks })
   }
 
-  const changeFile = (content: string) => {
-    if (!current) return
-    setFiles((all) => all.map((file) => (file.path === current.path ? { ...file, content } : file)))
-    setDirty((all) => ({ ...all, [current.path]: true }))
-    if (current.path === PAGE_FILE) setPage(readPage(content))
-  }
-
   const saveAll = async () => {
     setSaving(true)
     try {
-      for (const file of files) {
-        if (dirty[file.path]) await saveSpaceFile(spaceId, file.path, file.content)
+      for (const file of files.slice(0, 3)) {
+        await saveSpaceFile(spaceId, file.path, file.content)
       }
-      setDirty({})
+      setDirty(false)
       toast('Saved to your draft.', 'success')
       stored.reload()
     } catch (err) {
@@ -199,10 +170,10 @@ export default function BuildSpace() {
   const publish = async () => {
     setPublishing(true)
     try {
-      for (const file of files) {
-        if (dirty[file.path]) await saveSpaceFile(spaceId, file.path, file.content)
+      for (const file of files.slice(0, 3)) {
+        await saveSpaceFile(spaceId, file.path, file.content)
       }
-      setDirty({})
+      setDirty(false)
       const count = await publishSpaceFiles(spaceId)
       toast(`Published. ${count} ${count === 1 ? 'file is' : 'files are'} live.`, 'success')
       space.reload()
@@ -222,52 +193,7 @@ export default function BuildSpace() {
     }
   }
 
-  /* Once the files are yours, the blocks stop owning them. One way. */
-  const takeOverFiles = async () => {
-    try {
-      await deleteSpaceFile(spaceId, PAGE_FILE)
-    } catch {
-      // It may never have been saved, which does not matter here.
-    }
-    setFiles((all) => all.filter((file) => file.path !== PAGE_FILE))
-    setPage(null)
-    setMode('files')
-    setTakingOver(false)
-    toast('The files are yours now. Blocks will not overwrite them.', 'info')
-  }
-
-  const addFile = () => {
-    const path = newName.trim().toLowerCase()
-    if (!/^[a-z0-9][a-z0-9._/-]{0,59}$/.test(path)) {
-      toast('Letters, numbers, dots, dashes and slashes.', 'error')
-      return
-    }
-    if (files.some((file) => file.path === path)) {
-      toast('There is already a file called that.', 'error')
-      return
-    }
-    setFiles((all) => [...all, { path, content: '', updated_at: new Date().toISOString() }])
-    setDirty((all) => ({ ...all, [path]: true }))
-    setOpen(path)
-    setAdding(false)
-    setNewName('')
-    window.setTimeout(() => editor.current?.focus(), 50)
-  }
-
-  const removeFile = async (path: string) => {
-    if (path === 'index.html') {
-      toast('Every Space needs its index.html.', 'error')
-      return
-    }
-    try {
-      await deleteSpaceFile(spaceId, path)
-    } catch {
-      // It may never have been saved, which is not worth a message.
-    }
-    setFiles((all) => all.filter((file) => file.path !== path))
-    setDirty((all) => ({ ...all, [path]: false }))
-    if (open === path) setOpen('index.html')
-  }
+  const count = useMemo(() => page?.blocks.length ?? 0, [page])
 
   if (space.loading) {
     return <div className="p-6"><Skeleton className="h-[70vh] w-full rounded-2xl" /></div>
@@ -287,72 +213,34 @@ export default function BuildSpace() {
       <header className="flex flex-wrap items-center gap-3 border-b border-ink-line px-4 py-2.5 sm:px-6">
         <BackLink to={spaceLink(space.data)}>{space.data.name}</BackLink>
 
-        <div className="flex items-center gap-1 rounded-xl border border-ink-line p-1">
-          {([
-            { key: 'blocks', icon: faShapes, label: 'Blocks' },
-            { key: 'files', icon: faCode, label: 'Files' },
-          ] as const).map((tab) => (
-            <button
-              key={tab.key}
-              onClick={() => (tab.key === 'blocks' && !page ? setTakingOver(true) : setMode(tab.key))}
-              aria-pressed={mode === tab.key}
-              className={cn(
-                'inline-flex items-center gap-2 rounded-lg px-3 py-1.5 text-xs font-bold transition-colors',
-                mode === tab.key ? 'bg-brand text-onbrand' : 'text-white/55 hover:text-white',
-              )}
-            >
-              <FontAwesomeIcon icon={tab.icon} className="text-[11px]" />
-              {tab.label}
-            </button>
-          ))}
-        </div>
-
         <span className="hidden items-center gap-2 text-xs font-bold uppercase tracking-wide text-muted sm:flex">
-          <FontAwesomeIcon icon={faCircleDot} className={cn(unsaved ? 'text-amber-300' : 'text-space')} />
-          {unsaved ? 'Not saved' : 'Saved'}
+          <FontAwesomeIcon icon={faCircleDot} className={cn(dirty ? 'text-amber-300' : 'text-space')} />
+          {dirty ? 'Not saved' : 'Saved'}
+          <span className="text-white/35">
+            · {count} {count === 1 ? 'block' : 'blocks'}
+          </span>
         </span>
 
         <div className="ml-auto flex flex-wrap items-center gap-2">
-          {mode === 'blocks' && (
-            <div className="hidden items-center gap-1 rounded-lg border border-ink-line px-1 lg:flex">
-              {[0.5, 0.75, 1].map((level) => (
-                <button
-                  key={level}
-                  onClick={() => setZoom(level)}
-                  aria-pressed={zoom === level}
-                  className={cn(
-                    'rounded-md px-2 py-1 text-[11px] font-bold tabular-nums transition-colors',
-                    zoom === level ? 'bg-brand text-onbrand' : 'text-white/50 hover:text-white',
-                  )}
-                >
-                  {level * 100}%
-                </button>
-              ))}
-            </div>
-          )}
+          <div className="hidden items-center gap-1 rounded-lg border border-ink-line px-1 lg:flex">
+            {[0.5, 0.75, 1].map((level) => (
+              <button
+                key={level}
+                onClick={() => setZoom(level)}
+                aria-pressed={zoom === level}
+                className={cn(
+                  'rounded-md px-2 py-1 text-[11px] font-bold tabular-nums transition-colors',
+                  zoom === level ? 'bg-brand text-onbrand' : 'text-white/50 hover:text-white',
+                )}
+              >
+                {level * 100}%
+              </button>
+            ))}
+          </div>
 
-          {mode === 'files' && (
-            <div className="hidden items-center gap-1 rounded-lg border border-ink-line p-1 lg:flex">
-              {[
-                { wide: true, icon: faDesktop, label: 'Wide' },
-                { wide: false, icon: faMobileScreen, label: 'Narrow' },
-              ].map((option) => (
-                <button
-                  key={option.label}
-                  onClick={() => setWide(option.wide)}
-                  aria-pressed={wide === option.wide}
-                  aria-label={`${option.label} preview`}
-                  className={cn(
-                    'grid h-7 w-8 place-items-center rounded-md text-xs transition-colors',
-                    wide === option.wide ? 'bg-brand text-onbrand' : 'text-white/50 hover:text-white',
-                  )}
-                >
-                  <FontAwesomeIcon icon={option.icon} />
-                </button>
-              ))}
-            </div>
-          )}
-
+          <Button size="sm" variant="ghost" icon={faEye} onClick={() => setLooking(true)}>
+            Preview
+          </Button>
           <Button size="sm" variant="ghost" icon={faRotateLeft} onClick={undoPublish}>
             Undo publish
           </Button>
@@ -361,7 +249,7 @@ export default function BuildSpace() {
             variant="subtle"
             icon={faFloppyDisk}
             loading={saving}
-            disabled={!unsaved}
+            disabled={!dirty}
             onClick={saveAll}
           >
             Save
@@ -372,8 +260,8 @@ export default function BuildSpace() {
         </div>
       </header>
 
-      {/* -------------------------------------------------------- blocks */}
-      {mode === 'blocks' && page && (
+      {/* ------------------------------------------------------- building */}
+      {page && (
         <div className="flex min-h-0 flex-1 flex-col lg:flex-row">
           <aside className="w-full shrink-0 border-b border-ink-line lg:w-60 lg:border-b-0 lg:border-r">
             <Toolbox
@@ -389,7 +277,7 @@ export default function BuildSpace() {
               page={page}
               selected={selected}
               onSelect={setSelected}
-              onChange={changeBlocks}
+              onChange={(blocks) => applyPage({ ...page, blocks })}
               zoom={zoom}
             />
           </div>
@@ -408,163 +296,17 @@ export default function BuildSpace() {
         </div>
       )}
 
-      {/* --------------------------------------------------------- files */}
-      {mode === 'files' && (
-        <div className="flex min-h-0 flex-1 flex-col lg:flex-row">
-          <aside className="flex w-full shrink-0 flex-col border-b border-ink-line lg:w-56 lg:border-b-0 lg:border-r">
-            <p className="px-4 pb-2 pt-3 text-[11px] font-extrabold uppercase tracking-wide text-muted">
-              Files
-            </p>
-
-            <ul className="flex gap-1 overflow-x-auto px-2 pb-2 lg:flex-col lg:overflow-y-auto kob-scroll">
-              {files.map((file) => (
-                <li key={file.path} className="group relative shrink-0 lg:shrink">
-                  <button
-                    onClick={() => setOpen(file.path)}
-                    className={cn(
-                      'flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm font-semibold transition-colors',
-                      open === file.path ? 'bg-brand text-onbrand' : 'text-white/65 hover:bg-ink-hover hover:text-white',
-                    )}
-                  >
-                    <FontAwesomeIcon icon={faFileCode} className="text-xs" />
-                    <span className="truncate">{file.path}</span>
-                    {dirty[file.path] && <span className="ml-auto text-amber-300">•</span>}
-                  </button>
-
-                  {file.path !== 'index.html' && (
-                    <button
-                      onClick={() => removeFile(file.path)}
-                      aria-label={`Delete ${file.path}`}
-                      className="absolute right-1 top-1/2 -translate-y-1/2 rounded-md p-1.5 text-xs text-white/40 opacity-0 transition-opacity hover:text-danger group-hover:opacity-100"
-                    >
-                      <FontAwesomeIcon icon={faTrash} />
-                    </button>
-                  )}
-                </li>
-              ))}
-            </ul>
-
-            <div className="px-2 pb-3">
-              <Button size="sm" variant="ghost" block icon={faPlus} onClick={() => setAdding(true)}>
-                New file
-              </Button>
-            </div>
-          </aside>
-
-          <section className="flex min-h-0 w-full flex-1 flex-col border-b border-ink-line lg:w-1/2 lg:border-b-0 lg:border-r">
-            <div className="flex items-center gap-3 border-b border-ink-line px-4 py-2">
-              <span className="font-display text-sm font-extrabold">{current?.path}</span>
-              <span className="text-[11px] font-bold uppercase tracking-wide text-muted">
-                {current ? language(current.path) : ''}
-              </span>
-
-              {page && (
-                <span className="ml-auto text-[11px] text-amber-300">
-                  Blocks rewrite index.html and style.css when you change them.
-                </span>
-              )}
-            </div>
-
-            <textarea
-              ref={editor}
-              value={current?.content ?? ''}
-              onChange={(e) => changeFile(e.target.value)}
-              spellCheck={false}
-              autoCapitalize="off"
-              autoCorrect="off"
-              aria-label={`${current?.path ?? 'File'} contents`}
-              className="min-h-[18rem] flex-1 resize-none bg-ink-raised/40 p-4 font-mono text-[13px] leading-relaxed text-white/90 outline-none kob-scroll"
-            />
-
-            {page && (
-              <div className="border-t border-ink-line p-3">
-                <Button size="sm" variant="ghost" block onClick={() => setTakingOver(true)}>
-                  Take the files over by hand
-                </Button>
-              </div>
-            )}
-          </section>
-
-          <section className="flex min-h-0 w-full flex-1 flex-col lg:w-1/2">
-            <div className="flex items-center gap-2 border-b border-ink-line px-4 py-2 text-[11px] font-bold uppercase tracking-wide text-muted">
-              <FontAwesomeIcon icon={faEye} />
-              Preview
-              <span className="ml-auto normal-case text-white/35">
-                Your draft, not what is live.
-              </span>
-            </div>
-
-            <div className="min-h-[18rem] flex-1 overflow-auto bg-ink-raised/40 p-4">
-              <div className={cn('mx-auto h-full bg-white', wide ? 'w-full' : 'w-[22rem] max-w-full')}>
-                <SiteFrame
-                  files={files}
-                  spaceId={spaceId}
-                  title={`${space.data.name}, as you are building it`}
-                  building
-                />
-              </div>
-            </div>
-          </section>
+      {/* The page as a visitor gets it, rather than as a canvas. */}
+      <Dialog
+        open={looking}
+        onClose={() => setLooking(false)}
+        title="How it looks"
+        description="Your draft, drawn the way a visitor would get it."
+        size="lg"
+      >
+        <div className="h-[60vh] overflow-hidden rounded-xl bg-white">
+          <SiteFrame files={files} title={`${space.data.name}, as you are building it`} building />
         </div>
-      )}
-
-      <Dialog
-        open={adding}
-        onClose={() => setAdding(false)}
-        title="New file"
-        description="Markup, styles or script. The name decides which."
-        size="sm"
-        footer={
-          <>
-            <Button variant="ghost" onClick={() => setAdding(false)}>Cancel</Button>
-            <Button onClick={addFile}>Make it</Button>
-          </>
-        }
-      >
-        <Input
-          label="File name"
-          value={newName}
-          onChange={(e) => setNewName(e.target.value)}
-          placeholder="about.html"
-          hint="Letters, numbers, dots, dashes and slashes."
-        />
-      </Dialog>
-
-      <Dialog
-        open={takingOver}
-        onClose={() => setTakingOver(false)}
-        title={page ? 'Take the files over' : 'Start again with blocks'}
-        description={
-          page
-            ? 'The blocks will stop writing index.html and style.css.'
-            : 'The files here were written by hand.'
-        }
-        size="sm"
-        footer={
-          <>
-            <Button variant="ghost" onClick={() => setTakingOver(false)}>Cancel</Button>
-            {page ? (
-              <Button onClick={takeOverFiles}>Take them over</Button>
-            ) : (
-              <Button
-                onClick={() => {
-                  const fresh = startingPage(space.data?.name ?? 'My Space')
-                  applyPage(fresh)
-                  setMode('blocks')
-                  setTakingOver(false)
-                }}
-              >
-                Start with blocks
-              </Button>
-            )}
-          </>
-        }
-      >
-        <p className="text-sm leading-relaxed text-muted">
-          {page
-            ? 'From then on the files are yours alone: what you write stays exactly as you wrote it, and the block editor will not overwrite it. You can start again with blocks later, but that replaces the page.'
-            : 'Starting with blocks replaces index.html and style.css with a page built out of blocks. Anything else you have written is left alone.'}
-        </p>
       </Dialog>
     </div>
   )

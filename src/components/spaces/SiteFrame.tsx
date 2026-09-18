@@ -22,13 +22,15 @@ import { cn } from '@/lib/cn'
  * everything else is refused outright: no fetching, no third party scripts,
  * no frames, nothing sent anywhere.
  */
-const POLICY = [
+const policyFor = (nonce: string) => [
   "default-src 'none'",
   "img-src https: data: blob:",
   "media-src https: blob:",
   "font-src https: data:",
   "style-src 'unsafe-inline' https:",
-  "script-src 'unsafe-inline'",
+  // Ours and nothing else: a Space is built out of blocks, so no script in a
+  // page is ever the owner's, and one that turned up anyway cannot run.
+  `script-src 'nonce-${nonce}'`,
   "form-action 'none'",
   "base-uri 'none'",
   "frame-src 'none'",
@@ -83,6 +85,7 @@ function buildDocument(
   files: SpaceFile[],
   links: Map<string, string>,
   ads: Map<string, { ad: ShownAd; url: string } | null>,
+  nonce: string,
 ) {
   const byPath = new Map(files.map((file) => [file.path, file.content]))
   let html = byPath.get('index.html') ?? ''
@@ -137,7 +140,7 @@ function buildDocument(
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<meta http-equiv="Content-Security-Policy" content="${escapeForAttribute(POLICY)}" />
+<meta http-equiv="Content-Security-Policy" content="${escapeForAttribute(policyFor(nonce))}" />
 <style>
 html,body{margin:0;min-height:100%;background:#fff;color:#111;font-family:system-ui,sans-serif}
 .kob-ad-empty{display:grid;place-items:center;height:100%;border:1px dashed currentColor;border-radius:8px;opacity:.4;font-size:12px}
@@ -146,7 +149,7 @@ html,body{margin:0;min-height:100%;background:#fff;color:#111;font-family:system
 </head>
 <body>
 ${html}
-<script>${BRIDGE}</script>
+<script nonce="${nonce}">${BRIDGE}</script>
 </body>
 </html>`
 }
@@ -259,7 +262,17 @@ export function SiteFrame({
     }
   }
 
-  const document = useMemo(() => buildDocument(files, links, ads), [files, links, ads])
+  // A fresh one each time the page is built, so it cannot be guessed and
+  // written into anything stored.
+  const nonce = useMemo(
+    () => Math.random().toString(36).slice(2) + Math.random().toString(36).slice(2),
+    [files],
+  )
+
+  const document = useMemo(
+    () => buildDocument(files, links, ads, nonce),
+    [files, links, ads, nonce],
+  )
 
   return (
     <>
