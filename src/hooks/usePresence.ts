@@ -10,20 +10,46 @@ import { touchPresence } from '@/lib/api'
  * said "online" was two stale copies of the same fact.
  */
 let doingNow: 'around' | 'building' = 'around'
+let spaceNow: string | null = null
 const watchers = new Set<() => void>()
+
+function tellWatchers() {
+  for (const tell of watchers) tell()
+}
 
 function setDoing(next: 'around' | 'building') {
   if (doingNow === next) return
   doingNow = next
-  for (const tell of watchers) tell()
+  tellWatchers()
+}
+
+const listen = (tell: () => void) => {
+  watchers.add(tell)
+  return () => { watchers.delete(tell) }
 }
 
 export function useMyActivity() {
-  return useSyncExternalStore(
-    (tell) => { watchers.add(tell); return () => { watchers.delete(tell) } },
-    () => doingNow,
-    () => doingNow,
-  )
+  return useSyncExternalStore(listen, () => doingNow, () => doingNow)
+}
+
+/*
+ * The Space you are inside, as against the one your row happens to remember.
+ *
+ * The row is set when you enter and cleared when you leave, but a tab that
+ * closes mid visit leaves it standing, and nothing refetches it while you walk
+ * around the site. Reading it meant anybody who had ever entered a Space was
+ * stuck showing In a Space for good, so walking into Create changed nothing.
+ * The Space viewer says so itself while it is on screen, and that is the only
+ * thing that can be out of date by no more than a moment.
+ */
+export function setMySpace(id: string | null) {
+  if (spaceNow === id) return
+  spaceNow = id
+  tellWatchers()
+}
+
+export function useMySpace() {
+  return useSyncExternalStore(listen, () => spaceNow, () => spaceNow)
 }
 
 /** Every minute, and whenever what somebody is doing changes. */

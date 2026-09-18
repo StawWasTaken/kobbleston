@@ -10,6 +10,7 @@ import { SiteFrame } from './SiteFrame'
 import { Skeleton } from '@/components/ui/States'
 import { useAsync } from '@/hooks/useAsync'
 import { useAuth } from '@/hooks/useAuth'
+import { setMySpace } from '@/hooks/usePresence'
 import { listSpaceFiles } from '@/lib/api'
 import type { Space } from '@/types/db'
 
@@ -29,6 +30,12 @@ export function SpaceViewer({ space, onLeave }: { space: Space; onLeave: () => v
   // as the icon. A Space without one keeps ours.
   useExactTitle(space.name)
   useFavicon(space.emblem_url)
+
+  // Your dot says In a Space for exactly as long as you are in one.
+  useEffect(() => {
+    setMySpace(space.id)
+    return () => { setMySpace(null) }
+  }, [space.id])
 
   useEffect(() => {
     const previous = document.body.style.overflow

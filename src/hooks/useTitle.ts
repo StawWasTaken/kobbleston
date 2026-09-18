@@ -28,18 +28,58 @@ export function useExactTitle(title?: string | null) {
   }, [title])
 }
 
+/*
+ * The mark on the tab.
+ *
+ * Two things went wrong with simply setting the href. A page that wants no
+ * mark of its own never said so, so the Create mark stayed on after you left
+ * Create; and a browser that has already drawn an icon often ignores a change
+ * to the same element, so nothing redrew even when the address was right.
+ *
+ * So the wanted mark is kept here instead, as a pile: whoever asked last and
+ * is still on screen wins, and when they leave the one under them comes back.
+ * Every change draws a new element, which is the part browsers do listen to.
+ */
+const wanted: { token: number; url: string }[] = []
+let tokens = 0
+let showing = ''
+
+function drawIcon() {
+  const url = wanted.length ? wanted[wanted.length - 1].url : DEFAULT_ICON
+  if (url === showing) return
+  showing = url
+
+  for (const old of Array.from(document.head.querySelectorAll('link[rel="icon"]'))) {
+    old.remove()
+  }
+  const link = document.createElement('link')
+  link.rel = 'icon'
+  link.type = url.endsWith('.svg') ? 'image/svg+xml' : 'image/png'
+  link.href = url
+  document.head.appendChild(link)
+}
+
 /**
- * Inside a Space, the tab becomes that Space: its name and its emblem. A
- * Space without one keeps ours rather than showing nothing.
+ * Wear a mark while this page is on screen: Create's own on every page of
+ * Create, a Space's emblem inside that Space, and Kobbleston's everywhere
+ * else. Passing nothing means the plain Kobbleston mark.
  */
 export function useFavicon(url?: string | null) {
   useEffect(() => {
-    const link = document.querySelector<HTMLLinkElement>('link[rel="icon"]')
-    if (!link) return
-    const previous = link.href
-    link.href = url || DEFAULT_ICON
-    return () => { link.href = previous }
+    const mine = { token: (tokens += 1), url: url || DEFAULT_ICON }
+    wanted.push(mine)
+    drawIcon()
+    return () => {
+      const at = wanted.findIndex((one) => one.token === mine.token)
+      if (at >= 0) wanted.splice(at, 1)
+      drawIcon()
+    }
   }, [url])
+}
+
+/** Pages with no mark of their own still put ours back on the way in. */
+export function useSiteFavicon() {
+  useFavicon(DEFAULT_ICON)
 }
 
 /**

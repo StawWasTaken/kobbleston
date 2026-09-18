@@ -7,7 +7,7 @@ import { ChatDock } from '@/components/chat/ChatDock'
 import { mobileNav } from './nav'
 import { cn } from '@/lib/cn'
 import { AdsProvider } from '@/components/ads/AdBanner'
-import { usePresence, useMyActivity } from '@/hooks/usePresence'
+import { usePresence, useMyActivity, useMySpace } from '@/hooks/usePresence'
 import { usePresenceChannel } from '@/hooks/usePresenceStore'
 import { useAuth } from '@/hooks/useAuth'
 
@@ -23,7 +23,8 @@ export function AppShell() {
   usePresence(!!session)
 
   const doing = useMyActivity()
-  usePresenceChannel(profile?.id, doing, profile?.in_space_id)
+  const inSpace = useMySpace()
+  usePresenceChannel(profile?.id, doing, inSpace)
 
   useEffect(() => { setNavOpen(false) }, [location.pathname])
 
