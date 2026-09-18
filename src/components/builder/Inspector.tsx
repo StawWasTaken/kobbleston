@@ -12,7 +12,7 @@ import { Button } from '@/components/ui/Button'
 import { ColourPicker } from '@/components/ui/ColourPicker'
 import { AssetField } from '@/components/builder/AssetField'
 import { FontField } from '@/components/builder/FontField'
-import { AD_SIZES, BLOCK_DEFAULTS } from '@/lib/blocks'
+import { AD_SIZES, BLOCK_DEFAULTS, BUYABLE_AD_SIZES } from '@/lib/blocks'
 import type { Block, Page } from '@/lib/blocks'
 import { cn } from '@/lib/cn'
 
@@ -498,7 +498,7 @@ export function Inspector({
                 if (size) onBlock({ ...block, w: size.w, h: size.h, props: { ...block.props, size: v } })
                 else set('size', v)
               }}
-              options={Object.entries(AD_SIZES).map(([value, size]) => ({ value, label: size.label }))}
+              options={BUYABLE_AD_SIZES.map((value) => ({ value, label: AD_SIZES[value].label }))}
             />
           </Row>
           <p className="text-xs leading-relaxed text-muted">

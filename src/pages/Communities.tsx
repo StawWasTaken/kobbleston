@@ -16,7 +16,6 @@ import { communityLink } from '@/lib/links'
 import type { Community } from '@/types/db'
 import { useTitle } from '@/hooks/useTitle'
 import { useNewCommunity } from '@/components/community/NewCommunityDialog'
-import { AdBanner } from '@/components/ads/AdBanner'
 
 export default function Communities() {
   useTitle('Communities')
@@ -155,16 +154,9 @@ export default function Communities() {
                 <FontAwesomeIcon icon={faUsers} className="text-base" />
                 The biggest
               </h2>
-              {/* The cards are all one size now, so an ad the same size sits
-                  in the row rather than towering over it. */}
+              {/* One size each, so a row of them lines up. */}
               <div className="grid auto-rows-fr gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                {biggest.slice(0, 3).map((community) => (
-                  <BigCommunityCard key={community.id} community={community} />
-                ))}
-
-                {biggest.length > 3 && <AdBanner size="box" fill quiet />}
-
-                {biggest.slice(3).map((community) => (
+                {biggest.map((community) => (
                   <BigCommunityCard key={community.id} community={community} />
                 ))}
               </div>

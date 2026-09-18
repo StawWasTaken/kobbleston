@@ -66,9 +66,10 @@ stopped. A finished campaign can be put back up rather than built again. An
 ad names the thing it advertises, and can only be bought by somebody allowed
 to advertise that thing; Kobbleston's own account is the only one that may
 point one off the site. Ads are shown in the blocks Spaces choose to keep and
-in Kobbleston's own slots, on the home page, in Discover, on profiles,
-community pages and Space pages, where nobody takes a share because nobody
-owns the page. The Space showing it keeps 15%, counted in hundredths and paid in
+in Kobbleston's own: one tall ad in a rail down the right of the site on a
+wide screen, and one banner at the top of Discover. Nobody takes a share of
+those, because nobody owns the page. The square was dropped: nowhere on the
+site had a good place for it. The Space showing it keeps 15%, counted in hundredths and paid in
 whole Kubes. A donate block gives Kubes straight to whoever made the Space,
 confirmed outside the page so the amount cannot be misrepresented.
 
@@ -107,6 +108,28 @@ Pages that are still light and need to be made heavy:
   events, the store and payouts from the reference are not built.
 - **Search.** Now searches names, descriptions and creators; it does not
   rank anything.
+
+### Profiles, redone from nothing
+The next thing after the builder, and not a tidy-up: the layout, the design
+and what a profile is for all need doing again. What is there now is a banner,
+an avatar on the seam, four counters, four tabs and a card of facts down the
+side, which is the shape every site has and says nothing about the person
+whose page it is. On a site where people build things, a profile should be the
+best thing they have made, not a form with their name at the top.
+
+What the rewrite is for:
+
+- **Something of their own on it.** A profile should carry some of what a
+  Space can carry: their own colours, their own arrangement, something they
+  chose rather than a template everyone shares.
+- **The work first.** Spaces, uploads and communities are the reason to be on
+  somebody's page, and they are currently behind tabs under a wall of
+  counters.
+- **A shape that is not the same as everybody else's.** The banner, the round
+  avatar and the counter row are the default internet profile; the whole point
+  of Kobbleston is that pages here do not look like everywhere else.
+- **Counters that earn their place**, or none at all. Four numbers in a row
+  because there were four numbers to hand is not a reason.
 
 ### Profile and avatar customisation
 Not built. A marketplace for what people wear and how their profile looks,

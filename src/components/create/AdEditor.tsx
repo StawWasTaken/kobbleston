@@ -15,7 +15,7 @@ import { useAsync } from '@/hooks/useAsync'
 import { useSignedUrl } from '@/hooks/useSignedUrl'
 import { addAd, editAd, listAdvertisable, listOwnAssets } from '@/lib/api'
 import type { AdSize, AdTarget, Advertisable, CampaignAd } from '@/lib/api'
-import { AD_SIZES } from '@/lib/blocks'
+import { AD_SIZES, BUYABLE_AD_SIZES } from '@/lib/blocks'
 import { cn } from '@/lib/cn'
 import type { OwnAsset } from '@/types/db'
 
@@ -163,7 +163,7 @@ export function AdEditor({
             Shape
           </p>
           <div className="grid gap-2 sm:grid-cols-3">
-            {(Object.entries(AD_SIZES) as [AdSize, { label: string }][]).map(([value, shape]) => (
+            {BUYABLE_AD_SIZES.map((value) => AD_SIZES[value] && (
               <button
                 key={value}
                 onClick={() => setSize(value)}
@@ -174,7 +174,7 @@ export function AdEditor({
                     : 'border-ink-line bg-ink-raised hover:bg-ink-hover',
                 )}
               >
-                {shape.label}
+                {AD_SIZES[value].label}
               </button>
             ))}
           </div>

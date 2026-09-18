@@ -7,12 +7,23 @@ import { ChatDock } from '@/components/chat/ChatDock'
 import { mobileNav } from './nav'
 import { cn } from '@/lib/cn'
 import { TopAd } from '@/components/ads/TopAd'
+import { AdRail } from '@/components/ads/AdRail'
+import { useAd } from '@/components/ads/AdBanner'
 
 export function AppShell() {
   const [navOpen, setNavOpen] = useState(false)
   const location = useLocation()
 
   useEffect(() => { setNavOpen(false) }, [location.pathname])
+
+  /*
+   * The ad in the rail is asked for here, once, because asking is what counts
+   * a view: a slot that fetched its own would count a second one. Create has
+   * its own rail on the left and its own work in the middle, so it is left
+   * alone, as are the pages somebody is signing in on.
+   */
+  const railless = /^\/(create(\/|$)|login|signup|terms|guidelines)/.test(location.pathname)
+  const rail = useAd('tall', railless)
 
   return (
     <ChatDock>
@@ -36,8 +47,14 @@ export function AppShell() {
           </div>
         )}
 
-        <main id="main" className="pb-20 pt-14 lg:pb-0 lg:pl-56">
-          {/* Right under the bar, before the page says anything. */}
+        {/* Ads sit beside the page rather than across it, and the room for
+            one is only taken when there is one. */}
+        <AdRail ad={rail} />
+
+        <main
+          id="main"
+          className={cn('pb-20 pt-14 lg:pb-0 lg:pl-56', rail.ad && 'xl:pr-[200px]')}
+        >
           <TopAd />
           <Outlet />
         </main>

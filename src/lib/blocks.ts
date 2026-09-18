@@ -162,12 +162,21 @@ export const BLOCK_DEFAULTS: Record<BlockKind, { w: number; h: number; props: Bl
   box: { w: 320, h: 200, label: 'Box', props: { colour: '#ffffff12', radius: 16, border: '#ffffff22' } },
 }
 
-/** The sizes an ad slot can be, in the shapes advertisers actually buy. */
+/**
+ * The sizes an ad slot can be.
+ *
+ * The box is still here because pages built with one keep working, but it is
+ * not sold any more: nowhere on the site had a good place for it, and a shape
+ * with nowhere to go is a shape nobody should be paying for.
+ */
 export const AD_SIZES: Record<string, { w: number; h: number; label: string }> = {
   banner: { w: 728, h: 90, label: 'Banner, 728 by 90' },
-  box: { w: 300, h: 250, label: 'Box, 300 by 250' },
   tall: { w: 160, h: 600, label: 'Tall, 160 by 600' },
+  box: { w: 300, h: 250, label: 'Box, 300 by 250' },
 }
+
+/** The shapes a campaign can actually buy. */
+export const BUYABLE_AD_SIZES = ['banner', 'tall'] as const
 
 export const emptyPage = (): Page => ({
   version: 1,

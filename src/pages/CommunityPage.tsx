@@ -27,7 +27,6 @@ import {
 import { supabase } from '@/lib/supabase'
 import { cn } from '@/lib/cn'
 import { communityLink } from '@/lib/links'
-import { AdBanner } from '@/components/ads/AdBanner'
 
 const tabs = ['About', 'Events', 'Members', 'Affiliates'] as const
 type Tab = (typeof tabs)[number]
@@ -168,8 +167,7 @@ export default function CommunityPage() {
         </div>
 
         {tab === 'About' && (
-          <div className="mt-6 grid gap-10 xl:grid-cols-[minmax(0,1fr)_160px] xl:items-start">
-            <div className="min-w-0 space-y-8">
+          <div className="mt-6 space-y-8">
             <Announcements communityId={group.id} rights={rights.data} />
 
             {/* What is on, kept short here with the rest under its own tab. */}
@@ -234,10 +232,6 @@ export default function CommunityPage() {
             )}
 
             <CommunityWall communityId={group.id} rights={rights.data} />
-            </div>
-
-            {/* A tall one down the side, where there is room for it. */}
-            <AdBanner size="tall" className="hidden xl:block xl:sticky xl:top-20" />
           </div>
         )}
 

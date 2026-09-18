@@ -20,25 +20,21 @@ import { cn } from '@/lib/cn'
  * When there is nothing to show, the slot says what it is rather than
  * pretending to be something else or leaving a hole in the page.
  */
-export function AdBanner({
-  size = 'banner', className, quiet, fill,
-}: {
-  size?: AdSize
-  className?: string
-  /** Leave nothing behind when there is no ad, rather than inviting one. */
-  quiet?: boolean
-  /** Take the shape of whatever holds it, for a slot in a grid of cards. */
-  fill?: boolean
-}) {
-  const navigate = useNavigate()
-  const { profile } = useAuth()
+/**
+ * The one ad for a slot of this size, and the link to its picture.
+ *
+ * Asking is what counts the view, so it is asked once and never in a loop.
+ * Kept apart from the drawing of it so the page frame can know whether there
+ * is an ad at all before it decides to leave room for one.
+ */
+export function useAd(size: AdSize, skip = false) {
   const [ad, setAd] = useState<ShownAd | null>(null)
-  const [reporting, setReporting] = useState(false)
   const [picture, setPicture] = useState<string | null>(null)
   const [asked, setAsked] = useState(false)
 
   useEffect(() => {
     let live = true
+    if (skip) return
 
     pickAd(size)
       .then(async (found) => {
@@ -53,7 +49,34 @@ export function AdBanner({
       .catch(() => { if (live) setAsked(true) })
 
     return () => { live = false }
-  }, [size])
+  }, [size, skip])
+
+  return { ad, picture, asked }
+}
+
+export type AdHold = ReturnType<typeof useAd>
+
+export function AdBanner({
+  size = 'banner', className, quiet, fill, supplied,
+}: {
+  size?: AdSize
+  className?: string
+  /** Leave nothing behind when there is no ad, rather than inviting one. */
+  quiet?: boolean
+  /** Take the shape of whatever holds it, for a slot in a grid of cards. */
+  fill?: boolean
+  /**
+   * An ad already asked for elsewhere. Asking is what counts a view, so a
+   * slot the page frame already fetched is handed down rather than fetched
+   * again, which would count the same view twice.
+   */
+  supplied?: AdHold
+}) {
+  const navigate = useNavigate()
+  const { profile } = useAuth()
+  const [reporting, setReporting] = useState(false)
+  const own = useAd(size, !!supplied)
+  const { ad, picture, asked } = supplied ?? own
 
   const shape = AD_SIZES[size]
   const frame = fill

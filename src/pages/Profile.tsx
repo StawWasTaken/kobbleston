@@ -34,7 +34,6 @@ import { cn } from '@/lib/cn'
 import { communityLink, profileLink } from '@/lib/links'
 import { avatarOf } from '@/lib/avatars'
 import { Verified } from '@/components/brand/Verified'
-import { AdBanner } from '@/components/ads/AdBanner'
 
 const tabs = ['About', 'Creations', 'People', 'Badges'] as const
 type Tab = (typeof tabs)[number]
@@ -505,8 +504,6 @@ export default function Profile() {
                 value={formatCount(communities.data?.length ?? 0)}
               />
             </Card>
-
-            <AdBanner size="box" className="lg:col-start-2" />
           </div>
         )}
 
