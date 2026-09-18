@@ -6,6 +6,7 @@ import { AppTopbar } from './AppTopbar'
 import { ChatDock } from '@/components/chat/ChatDock'
 import { mobileNav } from './nav'
 import { cn } from '@/lib/cn'
+import { TopAd } from '@/components/ads/TopAd'
 
 export function AppShell() {
   const [navOpen, setNavOpen] = useState(false)
@@ -36,6 +37,8 @@ export function AppShell() {
         )}
 
         <main id="main" className="pb-20 pt-14 lg:pb-0 lg:pl-56">
+          {/* Right under the bar, before the page says anything. */}
+          <TopAd />
           <Outlet />
         </main>
 

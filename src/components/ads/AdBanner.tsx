@@ -21,12 +21,14 @@ import { cn } from '@/lib/cn'
  * pretending to be something else or leaving a hole in the page.
  */
 export function AdBanner({
-  size = 'banner', className, quiet,
+  size = 'banner', className, quiet, fill,
 }: {
   size?: AdSize
   className?: string
   /** Leave nothing behind when there is no ad, rather than inviting one. */
   quiet?: boolean
+  /** Take the shape of whatever holds it, for a slot in a grid of cards. */
+  fill?: boolean
 }) {
   const navigate = useNavigate()
   const { profile } = useAuth()
@@ -54,12 +56,17 @@ export function AdBanner({
   }, [size])
 
   const shape = AD_SIZES[size]
-  const frame = { maxWidth: shape.w, aspectRatio: `${shape.w} / ${shape.h}` }
+  const frame = fill
+    ? { width: '100%', height: '100%' }
+    : { maxWidth: shape.w, aspectRatio: `${shape.w} / ${shape.h}` }
 
   if (ad && picture) {
     return (
-      <aside className={cn('mx-auto w-full', className)} aria-label="Advertisement">
-        <div className="relative mx-auto" style={{ maxWidth: shape.w }}>
+      <aside className={cn('mx-auto w-full', fill && 'h-full', className)} aria-label="Advertisement">
+        <div
+          className={cn('relative mx-auto', fill && 'h-full')}
+          style={fill ? undefined : { maxWidth: shape.w }}
+        >
         <button
           onClick={async () => {
             await recordAdClick(ad.id).catch(() => {})

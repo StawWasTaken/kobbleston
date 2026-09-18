@@ -168,10 +168,8 @@ export default function CommunityPage() {
         </div>
 
         {tab === 'About' && (
-          <div className="mt-6 grid gap-8 xl:grid-cols-[minmax(0,1fr)_160px] xl:items-start">
+          <div className="mt-6 grid gap-10 xl:grid-cols-[minmax(0,1fr)_160px] xl:items-start">
             <div className="min-w-0 space-y-8">
-            <AdBanner />
-
             <Announcements communityId={group.id} rights={rights.data} />
 
             {/* What is on, kept short here with the rest under its own tab. */}

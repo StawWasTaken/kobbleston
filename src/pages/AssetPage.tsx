@@ -503,8 +503,8 @@ export default function AssetPage() {
         }
       >
         <p className="text-sm leading-relaxed text-muted">
-          If an ad of yours is using this, it has to be removed first: the ad would be left
-          pointing at nothing otherwise.
+          If an ad of yours is using this, take that ad out of its campaign first: it would be
+          left pointing at nothing otherwise.
         </p>
       </Dialog>
 

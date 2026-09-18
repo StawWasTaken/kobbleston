@@ -12,7 +12,6 @@ import { Link } from 'react-router-dom'
 import { formatCount } from '@/lib/format'
 import { communityLink } from '@/lib/links'
 import { useTitle } from '@/hooks/useTitle'
-import { AdBanner } from '@/components/ads/AdBanner'
 
 export default function Home() {
   useTitle('Home')
@@ -35,8 +34,6 @@ export default function Home() {
       <h1 className="mb-5 font-display text-2xl font-extrabold sm:text-3xl">
         {profile ? `Welcome back, ${profile.display_name}` : 'Home'}
       </h1>
-
-      <AdBanner className="mb-6" />
 
       {profile && <FriendsRail />}
 

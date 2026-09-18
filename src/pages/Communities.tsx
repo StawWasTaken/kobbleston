@@ -16,6 +16,7 @@ import { communityLink } from '@/lib/links'
 import type { Community } from '@/types/db'
 import { useTitle } from '@/hooks/useTitle'
 import { useNewCommunity } from '@/components/community/NewCommunityDialog'
+import { AdBanner } from '@/components/ads/AdBanner'
 
 export default function Communities() {
   useTitle('Communities')
@@ -154,8 +155,16 @@ export default function Communities() {
                 <FontAwesomeIcon icon={faUsers} className="text-base" />
                 The biggest
               </h2>
-              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                {biggest.map((community) => (
+              {/* The cards are all one size now, so an ad the same size sits
+                  in the row rather than towering over it. */}
+              <div className="grid auto-rows-fr gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                {biggest.slice(0, 3).map((community) => (
+                  <BigCommunityCard key={community.id} community={community} />
+                ))}
+
+                {biggest.length > 3 && <AdBanner size="box" fill quiet />}
+
+                {biggest.slice(3).map((community) => (
                   <BigCommunityCard key={community.id} community={community} />
                 ))}
               </div>
@@ -183,9 +192,9 @@ function BigCommunityCard({ community }: { community: Community }) {
   return (
     <Link
       to={communityLink(community)}
-      className="group relative block overflow-hidden rounded-2xl border border-ink-line bg-ink-card transition-colors hover:border-brand/60"
+      className="group relative flex h-full flex-col overflow-hidden rounded-2xl border border-ink-line bg-ink-card transition-colors hover:border-brand/60"
     >
-      <div className="relative h-24 overflow-hidden bg-media">
+      <div className="relative h-28 shrink-0 overflow-hidden bg-media">
         {community.banner_url && (
           <img
             src={community.banner_url}
@@ -199,7 +208,7 @@ function BigCommunityCard({ community }: { community: Community }) {
 
       {/* The banner is positioned, so the row has to be too, otherwise the
           emblem hanging over it gets painted away. */}
-      <div className="relative z-10 flex items-start gap-3 px-4 pb-4">
+      <div className="relative z-10 flex flex-1 items-start gap-3 px-4 pb-4">
         <span className="-mt-7 grid h-14 w-14 shrink-0 place-items-center overflow-hidden rounded-xl bg-brand-deep font-display text-base font-extrabold ring-4 ring-ink-card">
           {community.icon_url
             ? <img src={community.icon_url} alt="" className="h-full w-full object-cover" />
@@ -214,11 +223,11 @@ function BigCommunityCard({ community }: { community: Community }) {
           <span className="block text-xs text-muted">
             {formatCount(community.member_count)} members
           </span>
-          {community.description && (
-            <span className="mt-1.5 line-clamp-2 block text-xs leading-relaxed text-white/55">
-              {community.description}
-            </span>
-          )}
+          {/* Always two lines of room, so a community that says nothing and
+              one that says plenty make cards the same size. */}
+          <span className="mt-1.5 line-clamp-2 block min-h-[2.5rem] text-xs leading-relaxed text-white/55">
+            {community.description}
+          </span>
         </span>
       </div>
     </Link>

@@ -378,9 +378,6 @@ export default function Profile() {
         </div>
 
         {tab === 'About' && (
-          <>
-          <AdBanner className="mt-6" />
-
           <div className="mt-6 grid gap-6 lg:grid-cols-[1fr_18rem] lg:items-start">
             <div className="min-w-0 space-y-8">
               <div>
@@ -511,7 +508,6 @@ export default function Profile() {
 
             <AdBanner size="box" className="lg:col-start-2" />
           </div>
-          </>
         )}
 
 
