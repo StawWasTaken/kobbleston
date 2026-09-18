@@ -40,6 +40,7 @@ const Terms = lazyPage(() => import('@/pages/Policies').then((m) => ({ default: 
 const Guidelines = lazyPage(() => import('@/pages/Policies').then((m) => ({ default: m.Guidelines })))
 const Friends = lazyPage(() => import('@/pages/Friends'))
 const Library = lazyPage(() => import('@/pages/Library'))
+const Style = lazyPage(() => import('@/pages/Style'))
 const Profile = lazyPage(() => import('@/pages/Profile'))
 const Settings = lazyPage(() => import('@/pages/Settings'))
 
@@ -111,6 +112,7 @@ export default function App() {
                   <Route path=":tag" element={<AssetPage />} />
                 </Route>
                 <Route path="/people" element={<People />} />
+                <Route path="/style" element={<Style />} />
                 <Route element={<CommunityShell />}>
                   <Route path="/communities" element={<Communities />} />
                   <Route

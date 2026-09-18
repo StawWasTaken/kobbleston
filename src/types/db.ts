@@ -22,7 +22,22 @@ export type Profile = {
   accent_color: string | null
   /** What they are doing, while they are here: around, or building. */
   activity: 'around' | 'building' | null
+  /** What they have on their picture, kept on the row so lists can draw it. */
+  style?: WornStyle[] | null
   created_at: string
+}
+
+/** One thing somebody is wearing on their picture, and where it sits. */
+export type WornStyle = {
+  id: string
+  name?: string
+  url: string
+  x: number
+  y: number
+  width: number
+  rotation?: number
+  flipped?: boolean
+  layer?: 0 | 1
 }
 
 export type Space = {

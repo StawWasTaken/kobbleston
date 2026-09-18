@@ -1452,6 +1452,126 @@ export async function uploadCommunityImage(userId: string, file: File, kind: 'em
 
 export const uploadSpaceImage = uploadCommunityImage
 
+
+// -------------------------------------------------------------- the Style shop
+
+/** One thing in the shop, or one thing you own. */
+export type StyleItem = {
+  id: string
+  content_id: number | null
+  name: string
+  description?: string | null
+  slot: 'hat' | 'hair' | 'face' | 'accessory' | 'frame'
+  image_path: string
+  x: number
+  y: number
+  width: number
+  rotation: number
+  flipped: boolean
+  layer: 0 | 1
+  price: number
+  created_at?: string
+  creator_id?: string
+  creator_name?: string
+  creator_username?: string
+  owned?: boolean
+  worn?: boolean
+  owners?: number
+  paid?: number
+  mine?: boolean
+  is_public?: boolean
+}
+
+/** Where a thing sits on a picture, in fractions of it. */
+export type Placement = {
+  x: number
+  y: number
+  width: number
+  rotation: number
+  flipped: boolean
+  layer: 0 | 1
+}
+
+/**
+ * The picture for an accessory. It lives in the bucket that is already
+ * public, because a hat has to be drawable by anybody looking at anybody.
+ */
+export function styleImage(path: string): string {
+  if (/^https?:\/\//.test(path)) return path
+  return supabase.storage.from('avatars').getPublicUrl(path).data.publicUrl
+}
+
+export async function uploadStyleImage(userId: string, file: File): Promise<string> {
+  const extension = file.name.split('.').pop()?.toLowerCase() ?? 'png'
+  const path = `${userId}/style-${crypto.randomUUID()}.${extension}`
+  const { error } = await supabase.storage
+    .from('avatars').upload(path, file, { contentType: file.type, upsert: false })
+  if (error) throw new Error(error.message)
+  return supabase.storage.from('avatars').getPublicUrl(path).data.publicUrl
+}
+
+export async function publishStyleItem(input: {
+  name: string
+  description?: string | null
+  slot: StyleItem['slot']
+  image: string
+  place: Placement
+  price: number
+}): Promise<string> {
+  return unwrap(await supabase.rpc('publish_style_item', {
+    item_name: input.name.trim(),
+    about: input.description?.trim() ?? null,
+    slot_name: input.slot,
+    image: input.image,
+    place: input.place,
+    cost: Math.max(0, Math.round(input.price)),
+  })) as string
+}
+
+export async function placeStyleItem(id: string, place: Placement) {
+  unwrap(await supabase.rpc('place_style_item', { target: id, place }))
+}
+
+export async function retireStyleItem(id: string) {
+  unwrap(await supabase.rpc('retire_style_item', { target: id }))
+}
+
+export async function buyStyleItem(id: string) {
+  unwrap(await supabase.rpc('buy_style_item', { target: id }))
+}
+
+export async function wearStyleItem(id: string, on: boolean) {
+  unwrap(await supabase.rpc('wear_style_item', { target: id, on_me: on }))
+}
+
+export async function styleShop(
+  { search = '', slot = null, limit = 60 }:
+  { search?: string; slot?: StyleItem['slot'] | null; limit?: number } = {},
+): Promise<StyleItem[]> {
+  return (unwrap(await supabase.rpc('style_shop', {
+    search: search.trim() || null, slot_name: slot, wanted: limit,
+  })) as StyleItem[]) ?? []
+}
+
+export async function myStyle(): Promise<StyleItem[]> {
+  return (unwrap(await supabase.rpc('my_style')) as StyleItem[]) ?? []
+}
+
+/** Turns a shop row into the shape a picture is drawn from. */
+export function asWorn(item: StyleItem) {
+  return {
+    id: item.id,
+    name: item.name,
+    url: styleImage(item.image_path),
+    x: item.x,
+    y: item.y,
+    width: item.width,
+    rotation: item.rotation,
+    flipped: item.flipped,
+    layer: item.layer,
+  }
+}
+
 // ------------------------------------------------------------ space detail
 
 export async function getSpaceStats(spaceId: string): Promise<SpaceStats> {

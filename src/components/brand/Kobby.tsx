@@ -10,6 +10,10 @@ export const kobbyArt = {
   notification: asset('/brand/kobby_notification.png'),
   construction: asset('/brand/kobby_under_construction.png'),
   crown: asset('/brand/kobby_crown.png'),
+  /* Kobby in sunglasses, for the Style shop. The art goes at this address
+     when it lands; until then the crown stands in rather than a broken
+     picture. */
+  style: asset('/brand/kobby_crown.png'),
   emptyBox: asset('/brand/kobby_empty_box.png'),
   noResults: asset('/brand/kobby_no_results.png'),
 } as const

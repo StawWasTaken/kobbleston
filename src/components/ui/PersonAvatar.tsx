@@ -3,11 +3,15 @@ import { Avatar } from '@/components/ui/Avatar'
 import { Tooltip } from '@/components/ui/Tooltip'
 import { useLivePresence } from '@/hooks/usePresenceStore'
 import { avatarOf } from '@/lib/avatars'
+import { StyleLayer } from '@/components/style/StyleLayer'
 import { cn } from '@/lib/cn'
+import type { WornStyle } from '@/types/db'
 
 type Somebody = {
   id?: string
   display_name: string
+  /** What they have on: drawn over the picture, wherever it appears. */
+  style?: WornStyle[] | null
   avatar_url?: string | null
   is_online?: boolean
   in_space_id?: string | null
@@ -73,7 +77,15 @@ export function PersonAvatar({
 
   return (
     <span className={cn('relative inline-block shrink-0', sizes[size], className)}>
-      <span className={cn('block h-full w-full', square ? 'rounded-xl' : 'rounded-full')} style={frame ? { boxShadow: frame } : undefined}>
+      {/* Anything worn behind goes under the picture; the picture itself is
+          clipped to its shape, and anything worn in front sits over the lot
+          without being cut off by that shape. */}
+      <StyleLayer items={person?.style} layer={0} />
+
+      <span
+        className={cn('relative block h-full w-full', square ? 'rounded-xl' : 'rounded-full')}
+        style={frame ? { boxShadow: frame } : undefined}
+      >
         <Avatar
           src={avatarOf(person ?? undefined)}
           name={person?.display_name ?? '?'}
@@ -82,6 +94,8 @@ export function PersonAvatar({
         />
         {overlay}
       </span>
+
+      <StyleLayer items={person?.style} layer={1} />
 
       <Tooltip label={presenceWords[presence]} side="top">
         <StatusDot
