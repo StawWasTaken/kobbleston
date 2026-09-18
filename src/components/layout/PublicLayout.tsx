@@ -9,8 +9,8 @@ import { useAuth } from '@/hooks/useAuth'
  * and the policy pages. The signed-in side has its own layout.
  */
 function PublicTopbar() {
-  const { signIn } = useAuth()
-  const [email, setEmail] = useState('')
+  const { signInWithName } = useAuth()
+  const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
   const [failed, setFailed] = useState(false)
 
@@ -18,7 +18,7 @@ function PublicTopbar() {
     e.preventDefault()
     setFailed(false)
     try {
-      await signIn(email, password)
+      await signInWithName(username.trim(), password)
     } catch {
       setFailed(true)
     }
@@ -35,13 +35,14 @@ function PublicTopbar() {
         </nav>
 
         <form onSubmit={submit} className="ml-auto flex items-center gap-2">
-          <label className="sr-only" htmlFor="public-email">Email</label>
+          <label className="sr-only" htmlFor="public-username">Username</label>
           <input
-            id="public-email"
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            placeholder="Email"
+            id="public-username"
+            type="text"
+            autoComplete="username"
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
+            placeholder="Username"
             className="hidden h-8 w-36 rounded-md border border-white/20 bg-black/30 px-2.5 text-sm text-white placeholder:text-white/40 focus:border-white/50 md:block"
           />
           <label className="sr-only" htmlFor="public-password">Password</label>
@@ -56,7 +57,7 @@ function PublicTopbar() {
           <Button type="submit" size="sm" variant="subtle" className="hidden md:inline-flex">Log In</Button>
           <Button size="sm" to="/login" className="md:hidden">Log In</Button>
           {failed && (
-            <p role="alert" className="hidden text-xs text-danger lg:block">Wrong email or password</p>
+            <p role="alert" className="hidden text-xs text-danger lg:block">Wrong username or password</p>
           )}
         </form>
       </div>

@@ -44,7 +44,7 @@ export function UserMenu() {
     ...(profile
       ? [
           { label: 'Switch Accounts', icon: faRightLeft, onSelect: () => setSwitching(true) },
-          { label: 'Log Out', icon: faRightFromBracket, onSelect: signOut },
+          { label: 'Log Out', icon: faRightFromBracket, onSelect: () => signOut() },
         ]
       : []),
   ]

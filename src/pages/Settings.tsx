@@ -278,7 +278,7 @@ function Security() {
           label="Log out"
           value="Ends this session on this device."
           action={
-            <Button variant="subtle" icon={faRightFromBracket} onClick={signOut}>Log out</Button>
+            <Button variant="subtle" icon={faRightFromBracket} onClick={() => signOut()}>Log out</Button>
           }
         />
       </Card>

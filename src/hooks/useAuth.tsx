@@ -18,7 +18,8 @@ type AuthValue = {
   signInWithName: (username: string, password: string) => Promise<void>
   signInAsGuest: () => Promise<void>
   switchTo: (account: { id: string; session?: { access_token: string; refresh_token: string } }) => Promise<boolean>
-  signOut: () => Promise<void>
+  /** Ending the session. `keep` leaves the tokens so switching back is instant. */
+  signOut: (options?: { keep?: boolean }) => Promise<void>
   refreshProfile: () => Promise<void>
 }
 
@@ -280,11 +281,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         const { error } = await supabase.auth.signInAnonymously()
         if (error) throw error
       },
-      async signOut() {
+      async signOut(options) {
         await supabase.rpc('touch_presence', { online: false })
-        // Logging out has to actually log out, so the stored session goes
-        // with it while the account stays on the switcher.
-        if (userId) clearAccountSession(userId)
+        /*
+         * Logging out has to actually log out, so the tokens go with it while
+         * the account stays on the switcher. Stepping aside to use another
+         * account is not logging out, and keeps them: a local sign out does
+         * not revoke anything server side, so switching back is instant
+         * rather than another password.
+         */
+        if (userId && !options?.keep) clearAccountSession(userId)
         // Local scope only: a global sign out revokes every refresh token for
         // this account, including the ones other accounts on this device are
         // not using yet.

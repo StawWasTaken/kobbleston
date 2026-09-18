@@ -46,10 +46,14 @@ Deno.serve(async (request) => {
   let email = username.includes('@') ? username : ''
 
   if (!email) {
+    // A name is matched whole and without case. The wildcards ilike treats as
+    // special are escaped, so typing % cannot stand for "any account".
+    const exact = username.replace(/([%_\\])/g, '\\$1')
+
     const { data: profile } = await admin
       .from('profiles')
       .select('id, is_guest')
-      .ilike('username', username)
+      .ilike('username', exact)
       .maybeSingle()
 
     // The same answer whether the name exists or the password is wrong, so
