@@ -45,12 +45,9 @@ const sizeLabel = (bytes: number) =>
   bytes > 1_048_576 ? `${(bytes / 1_048_576).toFixed(1)} MB` : `${Math.max(1, Math.round(bytes / 1024))} KB`
 
 /**
- * The thing itself, shown the way that kind of thing wants to be shown.
- *
- * A decal takes its own shape and as much room as the page will give it. A
- * sound is a square cover with the player under it, whatever shape the last
- * thing looked at happened to be. A clip is only the player, in the clip's
- * own shape, with no still of it sitting alongside. A font is set in itself.
+ * The thing itself, on the left, shown the way that kind of thing wants to be
+ * shown: a decal whole rather than cropped, a sound as its square cover with
+ * the player beside it, a clip in its own shape, a font set in itself.
  */
 function Stage({ asset, previewUrl, fileUrl }: {
   asset: AssetPageItem
@@ -59,9 +56,8 @@ function Stage({ asset, previewUrl, fileUrl }: {
 }) {
   const [shape, setShape] = useState<{ w: number; h: number } | null>(null)
 
-
   if (asset.kind === 'video') {
-    return <MediaPlayer src={fileUrl} kind="video" poster={previewUrl} className="mx-auto max-w-4xl" />
+    return <MediaPlayer src={fileUrl} kind="video" poster={previewUrl} />
   }
 
   if (asset.kind === 'font') {
@@ -70,35 +66,31 @@ function Stage({ asset, previewUrl, fileUrl }: {
 
   if (asset.kind === 'audio') {
     return (
-      <div className="mx-auto w-full max-w-sm space-y-3">
-        <div className="grid aspect-square place-items-center overflow-hidden rounded-2xl border border-ink-line bg-ink-raised">
-          {previewUrl ? (
-            <img
-              src={previewUrl}
-              alt=""
-              draggable={false}
-              onContextMenu={(e) => e.preventDefault()}
-              className="h-full w-full select-none object-cover"
-            />
-          ) : (
-            <FontAwesomeIcon icon={kindIcons.audio} className="text-6xl text-white/25" />
-          )}
-        </div>
-        <MediaPlayer src={fileUrl} kind="audio" />
+      <div className="grid aspect-square place-items-center overflow-hidden rounded-2xl border border-ink-line bg-ink-raised">
+        {previewUrl ? (
+          <img
+            src={previewUrl}
+            alt=""
+            draggable={false}
+            onContextMenu={(e) => e.preventDefault()}
+            className="h-full w-full select-none object-cover"
+          />
+        ) : (
+          <FontAwesomeIcon icon={kindIcons.audio} className="text-6xl text-white/25" />
+        )}
       </div>
     )
   }
 
-  // A decal, or a model with a still of it.
+  // A decal, whole: the frame takes the picture's shape, and the picture is
+  // never cropped to fit a frame that is not its own.
   return (
     <div
       className={cn(
-        'mx-auto grid max-h-[70vh] w-full place-items-center overflow-hidden rounded-2xl border border-ink-line bg-ink-raised',
-        previewUrl ? '' : 'aspect-square max-w-sm',
+        'grid w-full place-items-center overflow-hidden rounded-2xl border border-ink-line bg-ink-raised',
+        shape ? '' : 'aspect-square',
       )}
-      style={shape
-        ? { aspectRatio: `${shape.w} / ${shape.h}`, maxWidth: Math.min(shape.w, 1100) }
-        : undefined}
+      style={shape ? { aspectRatio: `${shape.w} / ${shape.h}` } : undefined}
     >
       {previewUrl ? (
         <img
@@ -564,24 +556,34 @@ export default function AssetPage() {
         </p>
       )}
 
-      <div className="space-y-5">
-        {/* Whatever it is, at the size it deserves, with its shape read from
-            the thing itself rather than assumed. */}
-        <Stage key={asset.id} asset={asset} previewUrl={previewUrl} fileUrl={fileUrl} />
+      {/* The thing on the left, what there is to say about it on the right.
+          A clip is given more of the width, because a player squeezed into a
+          column is no use to anybody. */}
+      <div className={cn(
+        'grid gap-6 sm:items-start',
+        asset.kind === 'video'
+          ? 'lg:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)]'
+          : 'sm:grid-cols-[minmax(0,20rem)_minmax(0,1fr)] lg:grid-cols-[minmax(0,26rem)_minmax(0,1fr)]',
+      )}>
+        <div className="space-y-3">
+          <Stage key={asset.id} asset={asset} previewUrl={previewUrl} fileUrl={fileUrl} />
 
-        <Link
-          to={`/create/creator/${asset.creator_username}`}
-          className="flex items-center gap-2 text-sm font-bold hover:text-link"
-        >
-          <Avatar
-            src={avatarOf({ avatar_url: asset.creator_avatar_url })}
-            name={asset.creator_display_name}
-            size="xs"
-          />
-          <span className="truncate">{asset.creator_display_name}</span>
-        </Link>
+          <Link
+            to={`/create/creator/${asset.creator_username}`}
+            className="flex items-center gap-2 text-sm font-bold hover:text-link"
+          >
+            <Avatar
+              src={avatarOf({ avatar_url: asset.creator_avatar_url })}
+              name={asset.creator_display_name}
+              size="xs"
+            />
+            <span className="truncate">{asset.creator_display_name}</span>
+          </Link>
+        </div>
 
         <div className="min-w-0 space-y-5">
+          {asset.kind === 'audio' && <MediaPlayer src={fileUrl} kind="audio" />}
+
           <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
             {[
               { label: 'Type', value: kindLabels[asset.kind] },

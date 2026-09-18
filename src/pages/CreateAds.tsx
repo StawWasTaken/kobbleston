@@ -1,9 +1,8 @@
 import { useState } from 'react'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import {
-  faRectangleAd, faPlus, faStop, faEye, faHandPointer, faCircleCheck,
-  faCubes, faUsers, faCalendarDay, faShapes, faGlobe, faLock, faRotateRight, faHourglassHalf,
-  faTrash,
+  faRectangleAd, faPlus, faStop, faEye, faHandPointer, faCircleCheck, faGlobe,
+  faRotateRight, faHourglassHalf, faTrash, faPen, faPause, faPlay, faPenToSquare,
 } from '@fortawesome/free-solid-svg-icons'
 import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
@@ -12,33 +11,21 @@ import { Input } from '@/components/ui/Input'
 import { EmptyState, ErrorState, Skeleton } from '@/components/ui/States'
 import { useToast } from '@/components/ui/Toast'
 import { Kube } from '@/components/brand/Kube'
-import { UploadDialog } from '@/components/create/UploadDialog'
+import { AdEditor, targetLook } from '@/components/create/AdEditor'
 import { useAuth } from '@/hooks/useAuth'
 import { useAsync } from '@/hooks/useAsync'
 import { useTitle } from '@/hooks/useTitle'
 import { useSignedUrl } from '@/hooks/useSignedUrl'
 import {
-  AD_MAX_KUBES, adDays, buyAd, endAd, listAdvertisable, listMyAds, listOwnAssets, removeAd,
-  renewAd,
+  AD_MAX_KUBES, adDays, createCampaign, endCampaign, listCampaignAds, listCampaigns,
+  pauseAd, removeAd, removeCampaign, renameCampaign, renewCampaign,
 } from '@/lib/api'
-import type { AdSize, AdTarget, Advertisable, MyAd } from '@/lib/api'
+import type { Campaign, CampaignAd } from '@/lib/api'
 import { AD_SIZES } from '@/lib/blocks'
 import { formatCount } from '@/lib/format'
 import { cn } from '@/lib/cn'
-import type { OwnAsset } from '@/types/db'
 
 const CREATE = 'Kobbleston Create'
-
-/** What an ad may be for, and what each of those looks like in a list. */
-const targetLook: Record<AdTarget, { icon: typeof faCubes; label: string }> = {
-  space: { icon: faCubes, label: 'Spaces' },
-  community: { icon: faUsers, label: 'Communities' },
-  event: { icon: faCalendarDay, label: 'Events' },
-  asset: { icon: faShapes, label: 'Marketplace' },
-  link: { icon: faGlobe, label: 'Somewhere else' },
-}
-
-const targetOrder: AdTarget[] = ['space', 'community', 'event', 'asset']
 
 /** How much longer a campaign has, said the way a person would say it. */
 function timeLeft(ends: string | null) {
@@ -57,169 +44,271 @@ const runsFor = (kubes: number) => {
   return `${kubes} views, or ${days} ${days === 1 ? 'day' : 'days'}, whichever goes first`
 }
 
-/** A picture of somebody's own, small, for picking one. */
-function Thumb({ path, on }: { path: string; on: boolean }) {
-  const url = useSignedUrl(path)
+/* -------------------------------------------------------------- one ad */
+
+function AdRow({ ad, onEdit, onChanged }: {
+  ad: CampaignAd
+  onEdit: () => void
+  onChanged: () => void
+}) {
+  const toast = useToast()
+  const picture = useSignedUrl(ad.file_path)
+  const look = targetLook[ad.target_kind] ?? targetLook.link
+
+  const act = async (what: () => Promise<void>, said: string) => {
+    try {
+      await what()
+      toast(said, 'info')
+      onChanged()
+    } catch (err) {
+      toast(err instanceof Error ? err.message : 'That did not go through.', 'error')
+    }
+  }
+
   return (
-    <span
+    <li
       className={cn(
-        'block aspect-video w-full overflow-hidden rounded-lg border bg-media',
-        on ? 'border-brand-bright' : 'border-ink-line',
+        'flex flex-wrap items-center gap-3 rounded-xl border border-ink-line bg-ink-raised p-3',
+        !ad.is_active && 'opacity-60',
       )}
     >
-      {url && <img src={url} alt="" className="h-full w-full object-cover" />}
-    </span>
-  )
-}
-
-function Campaign({ ad, onStop, onRenew, onRemove }: {
-  ad: MyAd
-  onStop: () => void
-  onRenew: () => void
-  onRemove: () => void
-}) {
-  const picture = useSignedUrl(ad.file_path)
-  const left = ad.budget - ad.spent
-  const remaining = ad.is_running ? timeLeft(ad.ends_at) : null
-
-  return (
-    <article className="flex flex-wrap items-center gap-4 rounded-2xl border border-ink-line bg-ink-card p-4">
-      <span className="h-16 w-28 shrink-0 overflow-hidden rounded-lg bg-media">
+      <span className="h-12 w-20 shrink-0 overflow-hidden rounded-lg bg-media">
         {picture && <img src={picture} alt="" className="h-full w-full object-cover" />}
       </span>
 
       <div className="min-w-0 flex-1">
-        <p className="flex items-center gap-2 truncate font-bold">
-          {ad.name}
+        <p className="flex flex-wrap items-center gap-2 text-xs font-bold">
           <span className="rounded-full border border-ink-line px-2 py-0.5 text-[10px] font-extrabold uppercase tracking-wide text-muted">
             {AD_SIZES[ad.size]?.label ?? ad.size}
           </span>
+          {!ad.is_active && (
+            <span className="rounded-full bg-ink-hover px-2 py-0.5 text-[10px] font-extrabold uppercase tracking-wide text-muted">
+              Resting
+            </span>
+          )}
         </p>
-        <p className="mt-0.5 flex items-center gap-1.5 truncate text-xs text-muted">
-          <FontAwesomeIcon icon={targetLook[ad.target_kind]?.icon ?? faGlobe} />
-          Sends people to {ad.target_path}
+        <p className="mt-1 flex items-center gap-1.5 truncate text-[11px] text-muted">
+          <FontAwesomeIcon icon={ad.target_kind === 'link' ? faGlobe : look.icon} />
+          {ad.target_path}
         </p>
-
-        <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs font-bold">
-          <span className="inline-flex items-center gap-1.5 text-muted">
+        <p className="mt-1 flex flex-wrap items-center gap-x-3 text-[11px] font-bold text-muted">
+          <span className="inline-flex items-center gap-1.5">
             <FontAwesomeIcon icon={faEye} />
-            {formatCount(ad.views)} views
-          </span>
-          <span className="inline-flex items-center gap-1.5 text-muted">
-            <FontAwesomeIcon icon={faHandPointer} />
-            {formatCount(ad.clicks)} clicks
+            {formatCount(ad.views)}
           </span>
           <span className="inline-flex items-center gap-1.5">
-            <Kube />
-            {formatCount(left)} left of {formatCount(ad.budget)}
+            <FontAwesomeIcon icon={faHandPointer} />
+            {formatCount(ad.clicks)}
           </span>
-          {remaining && (
-            <span className="inline-flex items-center gap-1.5 text-muted">
-              <FontAwesomeIcon icon={faHourglassHalf} />
-              {remaining}
-            </span>
-          )}
-          {ad.renewed_count > 0 && (
-            <span className="text-muted">
-              Renewed {ad.renewed_count} {ad.renewed_count === 1 ? 'time' : 'times'}
-            </span>
-          )}
-        </div>
-
-        <div className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-ink-raised">
-          <span
-            style={{ width: `${Math.min(100, (ad.spent / ad.budget) * 100)}%` }}
-            className="block h-full bg-brand"
-          />
-        </div>
+        </p>
       </div>
 
-      {ad.is_running ? (
-        <Button size="sm" variant="ghost" icon={faStop} onClick={onStop}>Stop</Button>
-      ) : (
-        <span className="flex flex-col items-end gap-1.5">
-          <span className="inline-flex items-center gap-1.5 text-xs font-bold text-muted">
+      <div className="flex shrink-0 gap-1.5">
+        <Button size="sm" variant="subtle" icon={faPenToSquare} onClick={onEdit}>Change</Button>
+        <Button
+          size="sm"
+          variant="ghost"
+          icon={ad.is_active ? faPause : faPlay}
+          onClick={() => act(
+            () => pauseAd(ad.id, ad.is_active),
+            ad.is_active ? 'Resting. It is not shown until you wake it.' : 'Back in the rotation.',
+          )}
+        >
+          {ad.is_active ? 'Rest' : 'Wake'}
+        </Button>
+        <Button
+          size="sm"
+          variant="ghost"
+          icon={faTrash}
+          onClick={() => act(() => removeAd(ad.id), 'Taken out of the campaign.')}
+        >
+          Remove
+        </Button>
+      </div>
+    </li>
+  )
+}
+
+/* -------------------------------------------------------- one campaign */
+
+function CampaignCard({ campaign, onChanged, onRenew, onRemove, onRename }: {
+  campaign: Campaign
+  onChanged: () => void
+  onRenew: () => void
+  onRemove: () => void
+  onRename: () => void
+}) {
+  const toast = useToast()
+  const ads = useAsync(() => listCampaignAds(campaign.id), [campaign.id])
+  const [adding, setAdding] = useState(false)
+  const [changing, setChanging] = useState<CampaignAd | null>(null)
+
+  const left = campaign.budget - campaign.spent - campaign.refunded
+  const remaining = campaign.is_running ? timeLeft(campaign.ends_at) : null
+
+  const stop = async () => {
+    try {
+      const back = await endCampaign(campaign.id)
+      toast(back > 0 ? `Stopped. ${back} Kubes came back.` : 'Stopped.', 'info')
+      onChanged()
+    } catch (err) {
+      toast(err instanceof Error ? err.message : 'That did not stop.', 'error')
+    }
+  }
+
+  return (
+    <article className="rounded-2xl border border-ink-line bg-ink-card">
+      <header className="flex flex-wrap items-start gap-4 border-b border-ink-line p-4">
+        <div className="min-w-0 flex-1">
+          <p className="flex items-center gap-2 font-display text-lg font-extrabold">
+            <span className="truncate">{campaign.name}</span>
+            <button
+              onClick={onRename}
+              aria-label="Rename this campaign"
+              className="grid h-6 w-6 shrink-0 place-items-center rounded-md text-white/40 hover:bg-ink-hover hover:text-white"
+            >
+              <FontAwesomeIcon icon={faPen} className="text-[10px]" />
+            </button>
+          </p>
+
+          <div className="mt-1.5 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs font-bold">
+            <span className="inline-flex items-center gap-1.5">
+              <Kube />
+              {formatCount(left)} left of {formatCount(campaign.budget - campaign.refunded)}
+            </span>
+            {remaining && (
+              <span className="inline-flex items-center gap-1.5 text-muted">
+                <FontAwesomeIcon icon={faHourglassHalf} />
+                {remaining}
+              </span>
+            )}
+            <span className="inline-flex items-center gap-1.5 text-muted">
+              <FontAwesomeIcon icon={faEye} />
+              {formatCount(campaign.views)} views
+            </span>
+            <span className="inline-flex items-center gap-1.5 text-muted">
+              <FontAwesomeIcon icon={faHandPointer} />
+              {formatCount(campaign.clicks)} presses
+            </span>
+            {campaign.renewed_count > 0 && (
+              <span className="text-muted">
+                Renewed {campaign.renewed_count} {campaign.renewed_count === 1 ? 'time' : 'times'}
+              </span>
+            )}
+          </div>
+
+          <div className="mt-2 h-1.5 w-full max-w-md overflow-hidden rounded-full bg-ink-raised">
+            <span
+              style={{
+                width: `${Math.min(100, (campaign.spent / Math.max(1, campaign.budget - campaign.refunded)) * 100)}%`,
+              }}
+              className="block h-full bg-brand"
+            />
+          </div>
+        </div>
+
+        <div className="flex shrink-0 flex-wrap gap-1.5">
+          <Button size="sm" variant="subtle" icon={faPlus} onClick={() => setAdding(true)}>
+            Add an ad
+          </Button>
+          {campaign.is_running ? (
+            <Button size="sm" variant="ghost" icon={faStop} onClick={stop}>Stop</Button>
+          ) : (
+            <>
+              <Button size="sm" variant="subtle" icon={faRotateRight} onClick={onRenew}>
+                Put it back up
+              </Button>
+              <Button size="sm" variant="ghost" icon={faTrash} onClick={onRemove}>Remove</Button>
+            </>
+          )}
+        </div>
+      </header>
+
+      <div className="p-4">
+        {!campaign.is_running && (
+          <p className="mb-3 inline-flex items-center gap-1.5 text-xs font-bold text-muted">
             <FontAwesomeIcon icon={faCircleCheck} />
-            Finished
-          </span>
-          <span className="flex gap-1.5">
-            <Button size="sm" variant="subtle" icon={faRotateRight} onClick={onRenew}>
-              Put it back up
-            </Button>
-            <Button size="sm" variant="ghost" icon={faTrash} onClick={onRemove}>
-              Remove
-            </Button>
-          </span>
-        </span>
-      )}
+            Finished. Nothing in it is being shown.
+          </p>
+        )}
+
+        {ads.loading && <Skeleton className="h-16 rounded-xl" />}
+
+        {!ads.loading && !ads.data?.length && (
+          <p className="rounded-xl border border-dashed border-ink-line p-4 text-center text-sm text-muted">
+            Nothing in this campaign yet. Add an ad and it starts being shown.
+          </p>
+        )}
+
+        {!!ads.data?.length && (
+          <ul className="space-y-2">
+            {ads.data.map((ad) => (
+              <AdRow
+                key={ad.id}
+                ad={ad}
+                onEdit={() => setChanging(ad)}
+                onChanged={() => { ads.reload(); onChanged() }}
+              />
+            ))}
+          </ul>
+        )}
+      </div>
+
+      <AdEditor
+        open={adding}
+        onClose={() => setAdding(false)}
+        campaignId={campaign.id}
+        onDone={() => { ads.reload(); onChanged() }}
+      />
+
+      <AdEditor
+        open={!!changing}
+        onClose={() => setChanging(null)}
+        campaignId={campaign.id}
+        existing={changing}
+        onDone={() => { ads.reload(); onChanged() }}
+      />
     </article>
   )
 }
+
+/* ------------------------------------------------------------------ page */
 
 export default function CreateAds() {
   useTitle('Ads', CREATE)
   const { profile, refreshProfile } = useAuth()
   const toast = useToast()
 
-  const ads = useAsync(() => (profile ? listMyAds() : Promise.resolve([])), [profile?.id])
-  const targets = useAsync(
-    () => (profile ? listAdvertisable() : Promise.resolve([] as Advertisable[])),
+  const campaigns = useAsync(
+    () => (profile ? listCampaigns() : Promise.resolve([] as Campaign[])),
     [profile?.id],
   )
 
-  // Only Kobbleston's own account may point an ad at another website.
-  const official = profile?.username?.toLowerCase() === 'kobbleston'
-  const pictures = useAsync(
-    async () => (profile
-      ? (await listOwnAssets(profile.id)).filter((a) => a.kind === 'image' && a.status === 'approved')
-      : []),
-    [profile?.id],
-  )
-
-  const [buying, setBuying] = useState(false)
-  const [uploading, setUploading] = useState(false)
+  const [starting, setStarting] = useState(false)
   const [name, setName] = useState('')
-  const [size, setSize] = useState<AdSize>('banner')
-  const [picked, setPicked] = useState<OwnAsset | null>(null)
-  const [forWhat, setForWhat] = useState<Advertisable | null>(null)
-  const [outward, setOutward] = useState('')
   const [budget, setBudget] = useState(50)
-  const [renewing, setRenewing] = useState<MyAd | null>(null)
-  const [removing, setRemoving] = useState<MyAd | null>(null)
-  const [again, setAgain] = useState(50)
   const [pending, setPending] = useState(false)
 
-  const buy = async () => {
+  const [renewing, setRenewing] = useState<Campaign | null>(null)
+  const [again, setAgain] = useState(50)
+  const [removing, setRemoving] = useState<Campaign | null>(null)
+  const [renaming, setRenaming] = useState<Campaign | null>(null)
+  const [newName, setNewName] = useState('')
+
+  const most = Math.max(10, Math.min(AD_MAX_KUBES, profile?.pixels ?? 10))
+
+  const start = async () => {
     if (name.trim().length < 3) {
-      toast('Give the ad a name of at least three letters.', 'error')
+      toast('Give the campaign a name of at least three letters.', 'error')
       return
     }
-    if (!picked) { toast('Pick a decal for the ad.', 'error'); return }
-
-    const away = official && outward.trim()
-    if (!forWhat && !away) {
-      toast('Say what the ad is for.', 'error')
-      return
-    }
-
     setPending(true)
     try {
-      await buyAd({
-        name: name.trim(),
-        size,
-        assetId: picked.id,
-        kind: away ? 'link' : (forWhat as Advertisable).kind,
-        targetId: away ? null : (forWhat as Advertisable).id,
-        outward: away ? outward.trim() : null,
-        kubes: budget,
-      })
-      toast('Your ad is running.', 'success')
-      setBuying(false)
+      await createCampaign(name.trim(), budget)
+      toast('Campaign started. Add an ad to it and it begins showing.', 'success')
+      setStarting(false)
       setName('')
-      setPicked(null)
-      setForWhat(null)
-      setOutward('')
-      ads.reload()
+      campaigns.reload()
       refreshProfile()
     } catch (err) {
       toast(err instanceof Error ? err.message : 'That did not go through.', 'error')
@@ -232,11 +321,11 @@ export default function CreateAds() {
     if (!renewing) return
     setPending(true)
     try {
-      const until = await renewAd(renewing.id, again)
+      const until = await renewCampaign(renewing.id, again)
       const days = Math.max(1, Math.round((new Date(until).getTime() - Date.now()) / 86400000))
       toast(`Back up for ${days} ${days === 1 ? 'day' : 'days'}.`, 'success')
       setRenewing(null)
-      ads.reload()
+      campaigns.reload()
       refreshProfile()
     } catch (err) {
       toast(err instanceof Error ? err.message : 'That did not go through.', 'error')
@@ -249,13 +338,10 @@ export default function CreateAds() {
     if (!removing) return
     setPending(true)
     try {
-      const back = await removeAd(removing.id)
-      toast(
-        back > 0 ? `Removed. ${back} Kubes came back.` : 'Removed.',
-        'success',
-      )
+      const back = await removeCampaign(removing.id)
+      toast(back > 0 ? `Removed. ${back} Kubes came back.` : 'Removed.', 'success')
       setRemoving(null)
-      ads.reload()
+      campaigns.reload()
       refreshProfile()
     } catch (err) {
       toast(err instanceof Error ? err.message : 'That could not be removed.', 'error')
@@ -264,14 +350,18 @@ export default function CreateAds() {
     }
   }
 
-  const stop = async (ad: MyAd) => {
+  const rename = async () => {
+    if (!renaming) return
+    setPending(true)
     try {
-      const back = await endAd(ad.id)
-      toast(back > 0 ? `Stopped. ${back} Kubes came back.` : 'Stopped.', 'info')
-      ads.reload()
-      refreshProfile()
+      await renameCampaign(renaming.id, newName.trim())
+      toast('Renamed.', 'success')
+      setRenaming(null)
+      campaigns.reload()
     } catch (err) {
-      toast(err instanceof Error ? err.message : 'That did not stop.', 'error')
+      toast(err instanceof Error ? err.message : 'That did not save.', 'error')
+    } finally {
+      setPending(false)
     }
   }
 
@@ -281,58 +371,60 @@ export default function CreateAds() {
         <div>
           <h1 className="font-display text-3xl font-extrabold sm:text-4xl">Ads</h1>
           <p className="mt-1.5 max-w-xl text-sm text-muted">
-            Put a decal of yours in front of people, in the Spaces that keep an ad slot and in
-            Kobbleston&rsquo;s own. One Kube a view, paid up front, and whatever is left comes
-            back when you stop. The more Kubes behind it, the longer it runs.
+            A campaign holds the name, the Kubes and the clock. The ads inside it are the work:
+            as many as you like, each with its own decal, shape and destination, changed or
+            rested without touching what you paid.
           </p>
         </div>
 
-        <Button icon={faPlus} onClick={() => setBuying(true)} disabled={!profile}>
-          Buy an ad
+        <Button icon={faPlus} onClick={() => setStarting(true)} disabled={!profile}>
+          Start a campaign
         </Button>
       </header>
 
-      {ads.loading && <Skeleton className="h-28 rounded-2xl" />}
-      {ads.error && <ErrorState message={ads.error} onRetry={ads.reload} />}
+      {campaigns.loading && <Skeleton className="h-40 rounded-2xl" />}
+      {campaigns.error && <ErrorState message={campaigns.error} onRetry={campaigns.reload} />}
 
-      {!ads.loading && !ads.data?.length && (
+      {!campaigns.loading && !campaigns.data?.length && (
         <Card>
           <EmptyState
             mood="emptyBox"
-            title="No ads yet"
-            body="An ad needs a decal you have uploaded to Create, somewhere on Kobbleston to send people, and some Kubes behind it."
-            action={<Button icon={faRectangleAd} onClick={() => setBuying(true)}>Buy one</Button>}
+            title="No campaigns yet"
+            body="A campaign is some Kubes and a fortnight at most. Put ads in it, point them at your Spaces, communities, events or Marketplace work, and they are shown across Kobbleston."
+            action={<Button icon={faRectangleAd} onClick={() => setStarting(true)}>Start one</Button>}
           />
         </Card>
       )}
 
-      {!!ads.data?.length && (
-        <div className="space-y-3">
-          {ads.data.map((ad) => (
-            <Campaign
-              key={ad.id}
-              ad={ad}
-              onStop={() => stop(ad)}
-              onRenew={() => { setRenewing(ad); setAgain(Math.min(50, profile?.pixels ?? 10)) }}
-              onRemove={() => setRemoving(ad)}
+      {!!campaigns.data?.length && (
+        <div className="space-y-4">
+          {campaigns.data.map((campaign) => (
+            <CampaignCard
+              key={campaign.id}
+              campaign={campaign}
+              onChanged={() => { campaigns.reload(); refreshProfile() }}
+              onRenew={() => { setRenewing(campaign); setAgain(Math.min(50, most)) }}
+              onRemove={() => setRemoving(campaign)}
+              onRename={() => { setRenaming(campaign); setNewName(campaign.name) }}
             />
           ))}
         </div>
       )}
 
+      {/* ---------------------------------------------------- starting one */}
       <Dialog
-        open={buying}
-        onClose={() => setBuying(false)}
-        title="Buy an ad"
-        description="It starts running as soon as it is paid for."
-        size="lg"
+        open={starting}
+        onClose={() => setStarting(false)}
+        title="Start a campaign"
+        description="The Kubes are paid now, and they decide how long it runs."
+        size="md"
         footer={
           <>
             <span className="mr-auto inline-flex items-center gap-1.5 text-sm text-muted">
               You have <Kube /> {formatCount(profile?.pixels ?? 0)}
             </span>
-            <Button variant="ghost" onClick={() => setBuying(false)}>Cancel</Button>
-            <Button loading={pending} onClick={buy}>
+            <Button variant="ghost" onClick={() => setStarting(false)}>Cancel</Button>
+            <Button loading={pending} onClick={start}>
               <Kube />
               {budget}
             </Button>
@@ -355,150 +447,18 @@ export default function CreateAds() {
 
           <div>
             <p className="mb-1.5 text-[11px] font-extrabold uppercase tracking-wide text-muted">
-              Size
-            </p>
-            <div className="grid gap-2 sm:grid-cols-3">
-              {(Object.entries(AD_SIZES) as [AdSize, { label: string }][]).map(([value, shape]) => (
-                <button
-                  key={value}
-                  onClick={() => setSize(value)}
-                  className={cn(
-                    'rounded-xl border px-3 py-2.5 text-left text-xs font-bold transition-colors',
-                    size === value
-                      ? 'border-brand-bright bg-brand/15'
-                      : 'border-ink-line bg-ink-raised hover:bg-ink-hover',
-                  )}
-                >
-                  {shape.label}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          <div>
-            <div className="mb-1.5 flex items-center gap-3">
-              <p className="text-[11px] font-extrabold uppercase tracking-wide text-muted">
-                Picture
-              </p>
-              <button
-                onClick={() => setUploading(true)}
-                className="text-xs font-bold text-link hover:underline"
-              >
-                Upload one
-              </button>
-            </div>
-
-            {pictures.loading && <Skeleton className="h-24 rounded-xl" />}
-
-            {!pictures.loading && !pictures.data?.length && (
-              <p className="rounded-xl border border-ink-line bg-ink-raised p-3 text-sm text-muted">
-                You have no approved decals in Create yet. Upload one and it can go in an ad
-                once it has been looked at.
-              </p>
-            )}
-
-            {!!pictures.data?.length && (
-              <div className="grid max-h-56 grid-cols-3 gap-2 overflow-y-auto sm:grid-cols-4 kob-scroll">
-                {pictures.data.map((asset) => (
-                  <button key={asset.id} onClick={() => setPicked(asset)} className="text-left">
-                    <Thumb path={asset.file_path} on={picked?.id === asset.id} />
-                    <span className="mt-1 block truncate text-[11px] font-semibold text-muted">
-                      {asset.name}
-                    </span>
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
-
-          <div>
-            <p className="mb-1.5 text-[11px] font-extrabold uppercase tracking-wide text-muted">
-              What the ad is for
-            </p>
-            <p className="mb-2 text-xs text-muted">
-              An ad points at a Space, a community, an event or something in the Marketplace, and
-              only at one you made or have been given the run of.
-            </p>
-
-            {targets.loading && <Skeleton className="h-24 rounded-xl" />}
-
-            {!targets.loading && !targets.data?.length && (
-              <p className="rounded-xl border border-ink-line bg-ink-raised p-3 text-sm text-muted">
-                There is nothing here to advertise yet. Build a Space, run a community, or put
-                something in the Marketplace, and it turns up in this list.
-              </p>
-            )}
-
-            {!!targets.data?.length && (
-              <div className="max-h-56 space-y-3 overflow-y-auto pr-1 kob-scroll">
-                {targetOrder.map((kind) => {
-                  const rows = (targets.data ?? []).filter((one) => one.kind === kind)
-                  if (!rows.length) return null
-
-                  return (
-                    <div key={kind}>
-                      <p className="mb-1.5 flex items-center gap-1.5 text-[11px] font-extrabold uppercase tracking-wide text-muted">
-                        <FontAwesomeIcon icon={targetLook[kind].icon} />
-                        {targetLook[kind].label}
-                      </p>
-                      <div className="grid gap-1.5 sm:grid-cols-2">
-                        {rows.map((row) => (
-                          <button
-                            key={row.id}
-                            onClick={() => { setForWhat(row); setOutward('') }}
-                            className={cn(
-                              'rounded-xl border px-3 py-2 text-left transition-colors',
-                              forWhat?.id === row.id
-                                ? 'border-brand-bright bg-brand/15'
-                                : 'border-ink-line bg-ink-raised hover:bg-ink-hover',
-                            )}
-                          >
-                            <span className="block truncate text-xs font-bold">{row.label}</span>
-                            <span className="block truncate text-[11px] text-muted">
-                              {row.note} · {row.path}
-                            </span>
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-                  )
-                })}
-              </div>
-            )}
-
-            {official ? (
-              <div className="mt-3">
-                <Input
-                  label="Or somewhere else entirely"
-                  labelNote="Kobbleston only"
-                  value={outward}
-                  onChange={(e) => { setOutward(e.target.value); if (e.target.value) setForWhat(null) }}
-                  placeholder="https://"
-                  hint="This account may point an ad at another website. No other account can."
-                />
-              </div>
-            ) : (
-              <p className="mt-3 inline-flex items-center gap-1.5 text-[11px] text-muted">
-                <FontAwesomeIcon icon={faLock} />
-                Ads cannot be pointed off Kobbleston.
-              </p>
-            )}
-          </div>
-
-          <div>
-            <p className="mb-1.5 text-[11px] font-extrabold uppercase tracking-wide text-muted">
               Kubes behind it
             </p>
             <div className="flex items-center gap-3">
               <input
                 type="range"
                 min={10}
-                max={Math.max(10, Math.min(AD_MAX_KUBES, profile?.pixels ?? 10))}
+                max={most}
                 step={10}
                 value={budget}
                 onChange={(e) => setBudget(Number(e.target.value))}
                 className="h-2 w-full accent-[#1B34E8]"
-                aria-label="Kubes behind this ad"
+                aria-label="Kubes behind this campaign"
               />
               <span className="inline-flex shrink-0 items-center gap-1.5 font-display text-lg font-extrabold tabular-nums">
                 <Kube />
@@ -506,15 +466,38 @@ export default function CreateAds() {
               </span>
             </div>
             <p className="mt-1.5 text-xs text-muted">
-              That is {runsFor(budget)}. The more Kubes behind it, the longer it stays up, to a
-              limit of a fortnight at {AD_MAX_KUBES}. A Space that shows your ad keeps 15% of what
-              each view costs; in Kobbleston&rsquo;s own slots there is nobody whose page it is,
-              so nobody takes a share.
+              That is {runsFor(budget)}, shared by every ad in it. The more Kubes behind it, the
+              longer it stays up, to a limit of a fortnight at {AD_MAX_KUBES}. A Space that shows
+              one of your ads keeps 15% of what that view costs.
             </p>
           </div>
         </div>
       </Dialog>
 
+      {/* ------------------------------------------------------- renaming */}
+      <Dialog
+        open={!!renaming}
+        onClose={() => setRenaming(null)}
+        title="Rename this campaign"
+        description="The name is yours alone: nobody being shown an ad sees it."
+        size="sm"
+        footer={
+          <>
+            <Button variant="ghost" onClick={() => setRenaming(null)}>Cancel</Button>
+            <Button loading={pending} onClick={rename}>Save</Button>
+          </>
+        }
+      >
+        <Input
+          label="Name"
+          value={newName}
+          onChange={(e) => setNewName(e.target.value)}
+          maxLength={60}
+          hint="Between 3 and 60 letters."
+        />
+      </Dialog>
+
+      {/* -------------------------------------------------------- renewing */}
       <Dialog
         open={!!renewing}
         onClose={() => setRenewing(null)}
@@ -539,7 +522,7 @@ export default function CreateAds() {
             <input
               type="range"
               min={10}
-              max={Math.max(10, Math.min(AD_MAX_KUBES, profile?.pixels ?? 10))}
+              max={most}
               step={10}
               value={again}
               onChange={(e) => setAgain(Number(e.target.value))}
@@ -552,17 +535,17 @@ export default function CreateAds() {
             </span>
           </div>
           <p className="text-xs text-muted">
-            That is {runsFor(again)}. Anything left of the old budget stays where it is and these
-            Kubes are added to it, so nothing bought before is lost.
+            That is {runsFor(again)}. Every ad still in the campaign starts being shown again.
           </p>
         </div>
       </Dialog>
 
+      {/* -------------------------------------------------------- removing */}
       <Dialog
         open={!!removing}
         onClose={() => setRemoving(null)}
-        title="Remove this ad?"
-        description={removing ? `${removing.name} comes off the list for good.` : ''}
+        title="Remove this campaign?"
+        description={removing ? `${removing.name}, and every ad in it.` : ''}
         size="sm"
         footer={
           <>
@@ -572,25 +555,11 @@ export default function CreateAds() {
         }
       >
         <p className="text-sm leading-relaxed text-muted">
-          Anything it never spent comes back to you. The decal it was using is free again
-          afterwards, so it can be deleted if you want it gone as well. What it was shown and
+          Anything it never spent comes back to you. The decals its ads were using are free again
+          afterwards, so they can be deleted if you want them gone as well. What was shown and
           pressed is not kept.
         </p>
       </Dialog>
-
-      <UploadDialog
-        open={uploading}
-        onClose={() => setUploading(false)}
-        only="image"
-        onUploaded={(created) => {
-          pictures.reload()
-          if (created?.status === 'approved') {
-            toast('Uploaded and ready to advertise with.', 'success')
-          } else if (created) {
-            toast('Uploaded. It can go in an ad once it has been looked at.', 'info')
-          }
-        }}
-      />
     </div>
   )
 }

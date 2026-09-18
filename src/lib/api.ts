@@ -1310,35 +1310,49 @@ export type Advertisable = {
   path: string
 }
 
-export type MyAd = {
+/** A campaign: the name, the money and the clock that a set of ads share. */
+export type Campaign = {
   id: string
   name: string
-  size: AdSize
-  target_kind: AdTarget
-  target_path: string
   budget: number
   spent: number
-  views: number
-  clicks: number
   is_running: boolean
-  created_at: string
-  file_path: string
-  /** When it comes down, whatever is left of its budget. */
   ends_at: string | null
   renewed_count: number
+  /** What has already been handed back, which is no longer the campaign's. */
+  refunded: number
+  created_at: string
+  ad_count: number
+  views: number
+  clicks: number
+}
+
+/** One ad inside a campaign: a decal, a shape, and somewhere to send people. */
+export type CampaignAd = {
+  id: string
+  size: AdSize
+  asset_id: string
+  file_path: string
+  target_kind: AdTarget
+  target_id: string | null
+  target_path: string
+  views: number
+  clicks: number
+  is_active: boolean
+  created_at: string
 }
 
 /** The most Kubes a campaign can carry, which is also its longest run. */
 export const AD_MAX_KUBES = 2000
 export const AD_MAX_DAYS = 14
 
-/** How long that many Kubes keeps an ad up, the same sum the database does. */
+/** How long that many Kubes keeps a campaign up, the same sum the database does. */
 export const adDays = (kubes: number) =>
   Math.max(1, Math.min(AD_MAX_DAYS, Math.round((AD_MAX_DAYS * kubes) / AD_MAX_KUBES)))
 
 /**
  * An ad to put in a slot of this size. Asking is what counts a view, so this
- * is called once per slot when a Space is drawn and never in a loop.
+ * is called once per slot when a page is drawn and never in a loop.
  */
 export async function pickAd(size: AdSize, spaceId?: string | null): Promise<ShownAd | null> {
   const rows = unwrap(await supabase.rpc('pick_ad', {
@@ -1361,35 +1375,89 @@ export async function listAdvertisable(): Promise<Advertisable[]> {
   return (unwrap(await supabase.rpc('advertisable')) as Advertisable[]) ?? []
 }
 
-export async function buyAd(details: {
-  name: string
+// ------------------------------------------------------------- campaigns
+
+export async function listCampaigns(): Promise<Campaign[]> {
+  return (unwrap(await supabase.rpc('my_campaigns')) as Campaign[]) ?? []
+}
+
+export async function listCampaignAds(campaignId: string): Promise<CampaignAd[]> {
+  return (unwrap(await supabase.rpc('campaign_ads', { campaign: campaignId })) as CampaignAd[]) ?? []
+}
+
+/** Starting a campaign. The budget is paid now and decides how long it runs. */
+export async function createCampaign(name: string, kubes: number): Promise<string> {
+  return unwrap(await supabase.rpc('create_campaign', {
+    campaign_name: name,
+    kubes,
+  })) as string
+}
+
+export async function renameCampaign(campaignId: string, name: string) {
+  unwrap(await supabase.rpc('rename_campaign', { target: campaignId, campaign_name: name }))
+}
+
+/** Stopping a campaign hands back whatever it did not spend. */
+export async function endCampaign(campaignId: string): Promise<number> {
+  return unwrap(await supabase.rpc('end_campaign', { target: campaignId })) as number
+}
+
+/** Putting a finished campaign back up. Returns when it now comes down. */
+export async function renewCampaign(campaignId: string, kubes: number): Promise<string> {
+  return unwrap(await supabase.rpc('renew_campaign', { target: campaignId, kubes })) as string
+}
+
+/** Taking a finished campaign off the list, ads and all. */
+export async function removeCampaign(campaignId: string): Promise<number> {
+  return unwrap(await supabase.rpc('remove_campaign', { target: campaignId })) as number
+}
+
+// ------------------------------------------------------------------ ads
+
+export type AdDetails = {
   size: AdSize
   assetId: string
   kind: AdTarget
   targetId?: string | null
   /** Only Kobbleston's own account may point an ad off the site. */
   outward?: string | null
-  kubes: number
-}): Promise<string> {
-  return unwrap(await supabase.rpc('buy_ad', {
-    ad_name: details.name,
+}
+
+/** Putting an ad into a campaign. It costs nothing: the campaign is paid for. */
+export async function addAd(campaignId: string, details: AdDetails): Promise<string> {
+  return unwrap(await supabase.rpc('add_ad', {
+    campaign: campaignId,
     ad_size: details.size,
     picture: details.assetId,
-    kubes: details.kubes,
     kind: details.kind,
     target: details.targetId ?? null,
     outward: details.outward ?? null,
   })) as string
 }
 
-/** Stopping a campaign hands back whatever it did not spend. */
-export async function endAd(adId: string): Promise<number> {
-  return unwrap(await supabase.rpc('end_ad', { target: adId })) as number
+/** Changing an ad. What it has been shown and pressed stays with it. */
+export async function editAd(adId: string, details: AdDetails) {
+  unwrap(await supabase.rpc('edit_ad', {
+    target_ad: adId,
+    ad_size: details.size,
+    picture: details.assetId,
+    kind: details.kind,
+    target: details.targetId ?? null,
+    outward: details.outward ?? null,
+  }))
 }
 
-export async function listMyAds(): Promise<MyAd[]> {
-  return (unwrap(await supabase.rpc('my_ads')) as MyAd[]) ?? []
+/** Taking one ad out of a campaign. The money is the campaign's, so none moves. */
+export async function removeAd(adId: string) {
+  unwrap(await supabase.rpc('remove_ad', { target: adId }))
 }
+
+/** Resting one ad without touching the rest of the campaign. */
+export async function pauseAd(adId: string, resting: boolean) {
+  unwrap(await supabase.rpc('pause_ad', { target: adId, resting }))
+}
+
+// ------------------------------------------------------------- the shop
 
 /**
  * What it costs to put something up at that price: a tenth of it, never less
@@ -1410,16 +1478,6 @@ export async function listForSale(assetId: string, price: number): Promise<numbe
 /** Taking it back off sale. Returns the Kubes handed back. */
 export async function unlistForSale(assetId: string): Promise<number> {
   return unwrap(await supabase.rpc('unlist_for_sale', { target: assetId })) as number
-}
-
-/** Taking a finished campaign off the list. Returns the Kubes handed back. */
-export async function removeAd(adId: string): Promise<number> {
-  return unwrap(await supabase.rpc('remove_ad', { target: adId })) as number
-}
-
-/** Putting a finished campaign back up. Returns when it now comes down. */
-export async function renewAd(adId: string, kubes: number): Promise<string> {
-  return unwrap(await supabase.rpc('renew_ad', { target: adId, kubes })) as string
 }
 
 /** Giving Kubes to whoever made a Space. Returns what is left. */

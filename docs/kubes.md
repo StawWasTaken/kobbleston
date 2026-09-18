@@ -11,8 +11,9 @@ being burned.
 | Putting something up for sale | a tenth of the asking price, at least 5 and at most 250 | Kobbleston |
 | Taking it back off sale | nothing; a quarter of the listing fee comes back | from Kobbleston to the seller |
 | Buying somebody's work | the asking price | 35% Kobbleston, 65% the creator |
-| Buying an ad | the budget, up front | spent a Kube a view; a Space showing it keeps 15% of that |
-| Stopping or removing an ad | nothing; whatever it never spent comes back | from the ad to the buyer |
+| Starting an ad campaign | the budget, up front | spent a Kube a view; a Space showing one of its ads keeps 15% of that |
+| Adding, changing or resting an ad inside a campaign | nothing | the campaign is already paid for |
+| Stopping or removing a campaign | nothing; whatever it never spent comes back | from the campaign to the buyer |
 | Giving to a Space | what the visitor chose | all of it, to whoever made the Space |
 | Changing your username | what that has always cost | Kobbleston |
 
@@ -50,6 +51,9 @@ mind is not free but is not a punishment either.
 
 - `list_for_sale`, `unlist_for_sale`, `buy_asset`, `burn_kubes` in
   `supabase/migrations/0048_the_economy.sql`.
-- Ads: `buy_ad`, `renew_ad`, `end_ad`, `remove_ad`, `pick_ad`.
+- Ads: `create_campaign`, `renew_campaign`, `end_campaign`, `remove_campaign`,
+  `add_ad`, `edit_ad`, `remove_ad`, `pause_ad`, `pick_ad`. The money and the
+  clock are on the campaign; an ad is only a decal, a shape and a
+  destination.
 - Every movement is a row in `pixel_transactions`, with a kind saying which
   of these it was, so an account can always be explained.

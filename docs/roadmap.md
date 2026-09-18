@@ -55,7 +55,12 @@ anything repeating. The next version wants:
   it, so what is built and what is served cannot drift apart.
 
 ### Ads and gifts
-Built. An ad is bought up front, costs a Kube a view, runs until its budget or
+Built. Ads live in campaigns: the campaign carries the name, the budget and
+the fortnight, and holds as many ads as somebody wants, each with its own
+decal, shape and destination, changed, rested or thrown away without touching
+what was paid. Views and presses are counted per ad, so it is possible to see
+which one is doing the work, while spending comes off the campaign. A
+campaign is bought up front, costs a Kube a view, runs until its budget or
 its fortnight is out, and hands back what it did not spend when it is
 stopped. A finished campaign can be put back up rather than built again. An
 ad names the thing it advertises, and can only be bought by somebody allowed
