@@ -181,6 +181,10 @@ export default function CreateAds() {
   const [pending, setPending] = useState(false)
 
   const buy = async () => {
+    if (name.trim().length < 3) {
+      toast('Give the ad a name of at least three letters.', 'error')
+      return
+    }
     if (!picked) { toast('Pick a picture for the ad.', 'error'); return }
 
     const away = official && outward.trim()
@@ -312,7 +316,12 @@ export default function CreateAds() {
             value={name}
             onChange={(e) => setName(e.target.value)}
             maxLength={60}
-            hint="Only you see this."
+            required
+            hint={
+              name.trim() && name.trim().length < 3
+                ? 'A name needs at least three letters.'
+                : 'Only you see this. Three letters at least.'
+            }
           />
 
           <div>
