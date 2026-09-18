@@ -15,11 +15,13 @@ export function Avatar({
   name,
   size = 'md',
   className,
+  style,
 }: {
   src?: string | null
   name: string
   size?: AvatarSize
   className?: string
+  style?: React.CSSProperties
 }) {
   const initials = name.slice(0, 2).toUpperCase()
   return (
@@ -29,6 +31,7 @@ export function Avatar({
         sizes[size],
         className,
       )}
+      style={style}
       aria-hidden="true"
     >
       {src ? <img src={src} alt="" className="h-full w-full object-cover" loading="lazy" /> : initials}

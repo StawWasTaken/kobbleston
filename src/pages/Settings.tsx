@@ -25,6 +25,7 @@ import { formatCount, timeAgo } from '@/lib/format'
 import { cn } from '@/lib/cn'
 import { useTitle } from '@/hooks/useTitle'
 import { Kube } from '@/components/brand/Kube'
+import { ColourPicker } from '@/components/ui/ColourPicker'
 
 type Section = 'Account info' | 'Security' | 'Appearance' | 'Kubes' | 'Safety'
 
@@ -61,6 +62,7 @@ function AccountInfo() {
 
   const [displayName, setDisplayName] = useState('')
   const [bio, setBio] = useState('')
+  const [accent, setAccent] = useState('#1B34E8')
   const [avatarFile, setAvatarFile] = useState<File | null>(null)
   const [pending, setPending] = useState(false)
   const [renaming, setRenaming] = useState(false)
@@ -76,6 +78,7 @@ function AccountInfo() {
     if (!profile) return
     setDisplayName(profile.display_name)
     setBio(profile.bio ?? '')
+    setAccent(profile.accent_color ?? '#1B34E8')
   }, [profile])
 
   if (!profile) return <Skeleton className="h-64" />
@@ -90,6 +93,7 @@ function AccountInfo() {
       await updateProfile(profile.id, {
         display_name: displayName.trim(),
         bio: bio.trim() || null,
+        accent_color: /^#[0-9a-f]{6}$/i.test(accent) ? accent : null,
         avatar_url,
       })
       setAvatarFile(null)
@@ -154,6 +158,18 @@ function AccountInfo() {
             placeholder="Say something about yourself."
             hint={`${bio.length}/300`}
           />
+
+          {/* One colour, and it runs through your whole page: the ring round
+              your face, the rules under your headings, the rest of it. */}
+          <div>
+            <p className="mb-1.5 text-xs font-bold uppercase tracking-wide text-muted">
+              Your colour
+            </p>
+            <ColourPicker value={accent} onChange={setAccent} className="max-w-xs" />
+            <p className="mt-1.5 text-xs text-muted">
+              Used across your profile. Leave it as it is and you get Kobbleston blue.
+            </p>
+          </div>
 
           <div className="flex justify-end">
             <Button type="submit" loading={pending}>Save changes</Button>

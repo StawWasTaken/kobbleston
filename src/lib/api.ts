@@ -238,7 +238,7 @@ export async function usernameHistory(userId: string): Promise<UsernameRecord[]>
 }
 
 export async function updateProfile(id: string, patch: Partial<Pick<Profile,
-  'display_name' | 'bio' | 'avatar_url' | 'username'>>) {
+  'display_name' | 'bio' | 'avatar_url' | 'username' | 'accent_color'>>) {
   unwrap(await supabase.from('profiles').update(patch).eq('id', id).select('id').single())
 }
 

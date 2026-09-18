@@ -112,27 +112,32 @@ Pages that are still light and need to be made heavy:
 - **Search.** Now searches names, descriptions and creators; it does not
   rank anything.
 
-### Profiles, redone from nothing
-The next thing after the builder, and not a tidy-up: the layout, the design
-and what a profile is for all need doing again. What is there now is a banner,
-an avatar on the seam, four counters, four tabs and a card of facts down the
-side, which is the shape every site has and says nothing about the person
-whose page it is. On a site where people build things, a profile should be the
-best thing they have made, not a form with their name at the top.
+### Profiles, redone from nothing **(done)**
+Rebuilt rather than tidied. The tabs are gone, the counter wall is gone, the
+stock banner everybody shared is gone, and the ads are gone from these pages
+entirely.
 
-What the rewrite is for:
+What it is now:
 
-- **Something of their own on it.** A profile should carry some of what a
-  Space can carry: their own colours, their own arrangement, something they
-  chose rather than a template everyone shares.
-- **The work first.** Spaces, uploads and communities are the reason to be on
-  somebody's page, and they are currently behind tabs under a wall of
-  counters.
-- **A shape that is not the same as everybody else's.** The banner, the round
-  avatar and the counter row are the default internet profile; the whole point
-  of Kobbleston is that pages here do not look like everywhere else.
-- **Counters that earn their place**, or none at all. Four numbers in a row
-  because there were four numbers to hand is not a reason.
+- **Their colour.** One colour, chosen in Settings, kept on the profile row
+  and used across their page: the ring round their face, the rule under every
+  heading, the selected control. It is only a colour, checked as six
+  hexadecimal digits, so the worst anybody can do to their own page is choose
+  something ugly.
+- **Their own face as the backdrop**, blurred out behind the panel, rather
+  than a banner picture the whole site shares.
+- **The work first.** What they have built is the first thing under the
+  panel, as a full grid rather than the fourth tab, then what they have put in
+  the Marketplace, then their badges.
+- **Numbers that earned their place**, in a sentence: how many Spaces, how
+  many visits to them, how long they have been here. Friends, followers and
+  following are faces at the foot of the page with a count on the control, not
+  four figures stacked over everything else.
+- **One page, sections down it**, rather than four filing cabinets.
+
+Still to come, when there is somewhere to keep it: more of a Space's own
+arrangement on a profile, so the page is laid out by its owner rather than
+only coloured by them.
 
 ### Profile and avatar customisation
 Not built. A marketplace for what people wear and how their profile looks,

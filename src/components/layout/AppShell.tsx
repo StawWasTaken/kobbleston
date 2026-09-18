@@ -100,13 +100,19 @@ export function Page({
   children,
   className,
   width = 'wide',
+  style,
 }: {
   children: React.ReactNode
   className?: string
   width?: keyof typeof PAGE_WIDTH
+  /** For a page that carries somebody's own colour. */
+  style?: React.CSSProperties
 }) {
   return (
-    <div className={cn('mx-auto w-full px-4 py-6 sm:px-6', PAGE_WIDTH[width], className)}>
+    <div
+      className={cn('mx-auto w-full px-4 py-6 sm:px-6', PAGE_WIDTH[width], className)}
+      style={style}
+    >
       {children}
     </div>
   )

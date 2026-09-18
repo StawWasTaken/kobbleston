@@ -18,6 +18,8 @@ export type Profile = {
   birth_date: string | null
   gender: 'male' | 'female' | 'other' | null
   content_id: number | null
+  /** The colour somebody chose for their own page. */
+  accent_color: string | null
   created_at: string
 }
 
