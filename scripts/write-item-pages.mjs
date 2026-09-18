@@ -163,6 +163,14 @@ export async function writeItemPages(into = 'dist') {
     writeFileSync(file, html)
   }
 
+  /*
+   * A mark for the publish step: with it, this build knows every card there
+   * should be and may clear the old ones out. Without it, the publish leaves
+   * whatever is already published alone rather than deleting cards it simply
+   * could not read.
+   */
+  writeFileSync(`${into}/.item-pages`, `${pages.length}\n`)
+
   console.log(`Wrote ${pages.length} item pages under ${SITE}.`)
   return pages
 }

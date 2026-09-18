@@ -72,12 +72,15 @@ export default {
         'ticker': { '0%': { transform: 'translateY(0)' }, '100%': { transform: 'translateY(-50%)' } },
         'bob': { '0%,100%': { transform: 'translateY(0)' }, '50%': { transform: 'translateY(-6px)' } },
         'draw': { '0%': { strokeDashoffset: '1200' }, '100%': { strokeDashoffset: '0' } },
+        // Two runs of the same row, so half a loop lands where it started.
+        'drift': { '0%': { transform: 'translateX(0)' }, '100%': { transform: 'translateX(calc(-50% - 0.625rem))' } },
       },
       animation: {
         'pop-in': 'pop-in 180ms cubic-bezier(0.2,0.8,0.2,1) both',
         'slide-up': 'slide-up 420ms cubic-bezier(0.2,0.8,0.2,1) both',
         'pulse-ring': 'pulse-ring 1.8s ease-out infinite',
         bob: 'bob 4s ease-in-out infinite',
+        drift: 'drift 48s linear infinite',
       },
     },
   },

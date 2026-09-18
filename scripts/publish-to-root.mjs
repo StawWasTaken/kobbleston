@@ -8,12 +8,22 @@ import { pageRoots } from './site-pages.mjs'
 // by write-item-pages.mjs before this runs.
 const itemRoots = ['s', 'c', 'u', 'e']
 
+/** Roots that hold item cards as well as pages written from site-pages.mjs. */
+const itemBearing = [...itemRoots, 'create']
+
 const built = ['index.html', '404.html', 'assets', 'brand', ...pageRoots, ...itemRoots]
 
 if (!existsSync('dist/index.html')) {
   console.error('No build to publish. Run `npm run build` first.')
   process.exit(1)
 }
+
+/*
+ * Only a build that could read the database knows the full set of item
+ * cards. One that could not must add to what is published rather than
+ * replace it, or it would delete every card under create/ on its way past.
+ */
+const authoritative = existsSync('dist/.item-pages')
 
 const copied = []
 
@@ -27,7 +37,9 @@ for (const name of built) {
 
   // Asset filenames are content hashed, so stale ones have to go rather than
   // pile up in the repository.
-  rmSync(name, { recursive: true, force: true })
+  if (authoritative || !itemBearing.includes(name)) {
+    rmSync(name, { recursive: true, force: true })
+  }
   cpSync(`dist/${name}`, name, { recursive: true })
   copied.push(name)
 }
