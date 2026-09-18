@@ -362,12 +362,6 @@ export default function Profile() {
                 size="xl"
                 className="h-full w-full rounded-full"
               />
-              <StatusDot
-                presence={presenceOf(user)}
-                size="xl"
-                className="absolute bottom-[7%] right-[7%] translate-x-[18%] translate-y-[18%] ring-[4px] ring-ink"
-              />
-
               {isMe && (
                 <>
                   <button
@@ -390,6 +384,14 @@ export default function Profile() {
                   />
                 </>
               )}
+
+              {/* Last, so it sits over the picture and over the layer that
+                  covers it while you are changing it. */}
+              <StatusDot
+                presence={presenceOf(user)}
+                size="xl"
+                className="absolute bottom-[7%] right-[7%] z-10 translate-x-[18%] translate-y-[18%] ring-[4px] ring-ink"
+              />
             </span>
           </div>
 

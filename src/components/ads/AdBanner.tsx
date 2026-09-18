@@ -100,9 +100,19 @@ export function AdBanner({
   const { ad, picture, asked } = useAd(size, spaceId)
 
   const shape = AD_SIZES[size]
+  /*
+   * A tall one is six hundred pixels high, which is taller than plenty of
+   * screens. Capping its height against the window keeps the whole of it on
+   * screen: the shape is held, so it simply comes out smaller rather than
+   * losing its bottom.
+   */
   const frame = fill
     ? { width: '100%', height: '100%' }
-    : { maxWidth: shape.w, aspectRatio: `${shape.w} / ${shape.h}` }
+    : {
+        maxWidth: shape.w,
+        aspectRatio: `${shape.w} / ${shape.h}`,
+        ...(shape.h > 300 ? { maxHeight: 'calc(100dvh - 7rem)' } : {}),
+      }
 
   if (!asked || (!ad && quiet)) return null
 

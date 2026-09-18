@@ -1439,6 +1439,19 @@ export async function renewCampaign(campaignId: string, kubes: number): Promise<
   return unwrap(await supabase.rpc('renew_campaign', { target: campaignId, kubes })) as string
 }
 
+/** What a run of that many days costs, the same sum the database does. */
+export const adKubesFor = (days: number) =>
+  Math.max(10, Math.min(AD_MAX_KUBES, Math.ceil((AD_MAX_KUBES * Math.max(1, Math.min(30, days))) / 30)))
+
+/**
+ * Changing how long a campaign runs, counted from now. Longer costs the
+ * difference; shorter costs nothing and returns nothing, because a clock you
+ * can wind back for Kubes is a refund with extra steps.
+ */
+export async function setCampaignDays(campaignId: string, days: number): Promise<string> {
+  return unwrap(await supabase.rpc('set_campaign_days', { target: campaignId, days })) as string
+}
+
 /** Taking a finished campaign off the list, ads and all. */
 export async function removeCampaign(campaignId: string): Promise<number> {
   return unwrap(await supabase.rpc('remove_campaign', { target: campaignId })) as number

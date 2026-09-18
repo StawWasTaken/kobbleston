@@ -3,6 +3,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import {
   faRectangleAd, faPlus, faStop, faEye, faHandPointer, faCircleCheck, faGlobe,
   faRotateRight, faHourglassHalf, faTrash, faPen, faPause, faPlay, faPenToSquare,
+  faClock,
 } from '@fortawesome/free-solid-svg-icons'
 import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
@@ -17,8 +18,8 @@ import { useAsync } from '@/hooks/useAsync'
 import { useTitle } from '@/hooks/useTitle'
 import { useSignedUrl } from '@/hooks/useSignedUrl'
 import {
-  AD_MAX_KUBES, adDays, createCampaign, endCampaign, listCampaignAds, listCampaigns,
-  pauseAd, removeAd, removeCampaign, renameCampaign, renewCampaign,
+  AD_MAX_KUBES, adDays, adKubesFor, createCampaign, endCampaign, listCampaignAds, listCampaigns,
+  pauseAd, removeAd, removeCampaign, renameCampaign, renewCampaign, setCampaignDays,
 } from '@/lib/api'
 import type { Campaign, CampaignAd } from '@/lib/api'
 import { AD_SIZES } from '@/lib/blocks'
@@ -131,12 +132,13 @@ function AdRow({ ad, onEdit, onChanged }: {
 
 /* -------------------------------------------------------- one campaign */
 
-function CampaignCard({ campaign, onChanged, onRenew, onRemove, onRename }: {
+function CampaignCard({ campaign, onChanged, onRenew, onRemove, onRename, onClock }: {
   campaign: Campaign
   onChanged: () => void
   onRenew: () => void
   onRemove: () => void
   onRename: () => void
+  onClock: () => void
 }) {
   const toast = useToast()
   const ads = useAsync(() => listCampaignAds(campaign.id), [campaign.id])
@@ -212,7 +214,12 @@ function CampaignCard({ campaign, onChanged, onRenew, onRemove, onRename }: {
             Add an ad
           </Button>
           {campaign.is_running ? (
-            <Button size="sm" variant="ghost" icon={faStop} onClick={stop}>Stop</Button>
+            <>
+              <Button size="sm" variant="ghost" icon={faClock} onClick={onClock}>
+                How long
+              </Button>
+              <Button size="sm" variant="ghost" icon={faStop} onClick={stop}>Stop</Button>
+            </>
           ) : (
             <>
               <Button size="sm" variant="subtle" icon={faRotateRight} onClick={onRenew}>
@@ -294,6 +301,8 @@ export default function CreateAds() {
   const [removing, setRemoving] = useState<Campaign | null>(null)
   const [renaming, setRenaming] = useState<Campaign | null>(null)
   const [newName, setNewName] = useState('')
+  const [clocking, setClocking] = useState<Campaign | null>(null)
+  const [days, setDays] = useState(14)
 
   const most = Math.max(10, Math.min(AD_MAX_KUBES, profile?.pixels ?? 10))
 
@@ -345,6 +354,25 @@ export default function CreateAds() {
       refreshProfile()
     } catch (err) {
       toast(err instanceof Error ? err.message : 'That could not be removed.', 'error')
+    } finally {
+      setPending(false)
+    }
+  }
+
+  const setClock = async () => {
+    if (!clocking) return
+    setPending(true)
+    try {
+      await setCampaignDays(clocking.id, days)
+      toast(
+        `Running for ${days} ${days === 1 ? 'day' : 'days'} from now.`,
+        'success',
+      )
+      setClocking(null)
+      campaigns.reload()
+      refreshProfile()
+    } catch (err) {
+      toast(err instanceof Error ? err.message : 'That did not go through.', 'error')
     } finally {
       setPending(false)
     }
@@ -407,6 +435,10 @@ export default function CreateAds() {
               onRenew={() => { setRenewing(campaign); setAgain(Math.min(50, most)) }}
               onRemove={() => setRemoving(campaign)}
               onRename={() => { setRenaming(campaign); setNewName(campaign.name) }}
+              onClock={() => {
+                setClocking(campaign)
+                setDays(adDays(campaign.budget - campaign.refunded))
+              }}
             />
           ))}
         </div>
@@ -496,6 +528,56 @@ export default function CreateAds() {
           maxLength={60}
           hint="Between 3 and 60 letters."
         />
+      </Dialog>
+
+      {/* ------------------------------------------------------- the clock */}
+      <Dialog
+        open={!!clocking}
+        onClose={() => setClocking(null)}
+        title="How long it runs"
+        description={clocking ? `${clocking.name}, counted from now.` : ''}
+        size="sm"
+        footer={
+          <>
+            <span className="mr-auto inline-flex items-center gap-1.5 text-sm text-muted">
+              You have <Kube /> {formatCount(profile?.pixels ?? 0)}
+            </span>
+            <Button variant="ghost" onClick={() => setClocking(null)}>Cancel</Button>
+            <Button loading={pending} onClick={setClock}>
+              {(() => {
+                const owed = Math.max(
+                  0,
+                  adKubesFor(days) - ((clocking?.budget ?? 0) - (clocking?.refunded ?? 0)),
+                )
+                return owed > 0 ? <><Kube />{owed}</> : 'Set it'
+              })()}
+            </Button>
+          </>
+        }
+      >
+        <div className="space-y-3">
+          <div className="flex items-center gap-3">
+            <input
+              type="range"
+              min={1}
+              max={30}
+              value={days}
+              onChange={(e) => setDays(Number(e.target.value))}
+              className="h-2 w-full accent-[#1B34E8]"
+              aria-label="How many days it runs"
+            />
+            <span className="w-20 shrink-0 text-right font-display text-lg font-extrabold tabular-nums">
+              {days} {days === 1 ? 'day' : 'days'}
+            </span>
+          </div>
+
+          <p className="text-xs leading-relaxed text-muted">
+            Longer costs the difference between what is behind it and what that many days is
+            worth, paid now. Shorter costs nothing and gives nothing back: the Kubes stay behind
+            the campaign as views. Nobody gets Kubes back by moving the clock, which is the whole
+            point of saying so.
+          </p>
+        </div>
       </Dialog>
 
       {/* -------------------------------------------------------- renewing */}

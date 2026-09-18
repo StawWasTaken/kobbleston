@@ -62,7 +62,8 @@ export function PersonAvatar({
         presence={presence}
         size={dots[size]}
         className={cn(
-          'absolute',
+          // Over whatever else is on the picture, and never see through.
+          'absolute z-10',
           square
             ? '-bottom-0.5 -right-0.5'
             : 'bottom-[7%] right-[7%] translate-x-[18%] translate-y-[18%]',

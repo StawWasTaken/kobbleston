@@ -19,6 +19,7 @@ import { useForceDark } from '@/hooks/useTheme'
 import { getPlatformStats, listAssets, listCommunities, listSpaces } from '@/lib/api'
 import { asset } from '@/lib/asset'
 import { formatCount } from '@/lib/format'
+import type { MarketAsset } from '@/types/db'
 
 /* ------------------------------------------------------------------ parts */
 
@@ -103,7 +104,23 @@ export default function Landing() {
 
   const stats = useAsync(getPlatformStats, [])
   const spaces = useAsync(() => listSpaces({ sort: 'trending', limit: 5 }), [])
-  const assets = useAsync(() => listAssets({ limit: 12 }), [])
+  /*
+   * A shelf of one kind of thing is not a shelf, it is a shelf of fonts.
+   * Each kind is asked for on its own and they are dealt out in turn, so what
+   * runs along the page is a mix whatever people happened to upload last.
+   */
+  const assets = useAsync(async () => {
+    const kinds = ['image', 'audio', 'video', 'font', 'model'] as const
+    const lots = await Promise.all(
+      kinds.map((kind) => listAssets({ kind, limit: 6 }).catch(() => [])),
+    )
+
+    const mixed: MarketAsset[] = []
+    for (let i = 0; i < 6; i += 1) {
+      for (const lot of lots) if (lot[i]) mixed.push(lot[i])
+    }
+    return mixed.slice(0, 18)
+  }, [])
   const communities = useAsync(() => listCommunities(''), [])
 
   const biggest = [...(communities.data ?? [])]

@@ -13,12 +13,19 @@ being burned.
 | Buying somebody's work | the asking price | 35% Kobbleston, 65% the creator |
 | Starting an ad campaign | the budget, up front | spent a Kube a view, and it runs up to a month; a Space showing one of its ads keeps 15% of that. Two shapes are sold: the banner and the tall one |
 | Adding, changing or resting an ad inside a campaign | nothing | the campaign is already paid for |
+| Making a campaign run longer | the difference between what is behind it and what those days are worth | Kobbleston, as budget |
+| Making a campaign run shorter | nothing, and nothing comes back | the Kubes stay behind it as views |
 | Stopping or removing a campaign | nothing; whatever it never spent comes back | from the campaign to the buyer |
 | Giving to a Space | what the visitor chose | all of it, to whoever made the Space |
 | Changing your username | what that has always cost | Kobbleston |
 
 A community costs Kubes to make, which is what stops the name space filling
 with throwaways.
+
+A clock that could be wound back for Kubes would be a refund with extra
+steps: buy a month, run it for an hour, shorten it, take the rest back. So
+shortening returns nothing. Stopping a campaign is the one way money comes
+back, and it only ever returns what was never spent on views.
 
 ## The burn
 

@@ -1,1 +1,0 @@
-import{Mn as e,kn as t}from"./free-solid-svg-icons-CjUTYSc8.js";import{t as n}from"./useSignedUrl-Cn6dYSk9.js";var r=e();function i({value:e,alt:i,className:a,fallback:o,style:s}){let c=n(e)??o??null;return c?(0,r.jsx)(`img`,{src:c,alt:i,loading:`lazy`,draggable:!1,onContextMenu:e=>e.preventDefault(),style:s,className:t(`select-none`,a)}):null}export{i as t};
