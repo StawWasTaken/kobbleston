@@ -6,7 +6,7 @@ import { Avatar } from '@/components/ui/Avatar'
 import { Skeleton } from '@/components/ui/States'
 import { useAuth } from '@/hooks/useAuth'
 import { useAsync } from '@/hooks/useAsync'
-import { createGroupConversation, listFriendships } from '@/lib/api'
+import { createGroupConversation, peopleList } from '@/lib/api'
 import { cn } from '@/lib/cn'
 import { avatarOf } from '@/lib/avatars'
 import { LivePresenceLabel } from '@/components/ui/PersonAvatar'
@@ -28,13 +28,11 @@ export function NewGroupDialog({
   const [error, setError] = useState<string | null>(null)
 
   const { data, loading } = useAsync(
-    async () => (profile ? listFriendships(profile.id) : []),
+    async () => (profile ? peopleList(profile.id, 'friends') : []),
     [profile?.id],
   )
 
   const friends = (data ?? [])
-    .filter((edge) => edge.friendship.status === 'accepted')
-    .map((edge) => edge.profile)
     .filter((friend) =>
       friend.display_name.toLowerCase().includes(term.trim().toLowerCase()) ||
       friend.username.toLowerCase().includes(term.trim().toLowerCase()))

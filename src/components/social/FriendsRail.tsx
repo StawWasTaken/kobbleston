@@ -4,7 +4,7 @@ import { faPlus } from '@fortawesome/free-solid-svg-icons'
 import { Skeleton } from '@/components/ui/States'
 import { useAuth } from '@/hooks/useAuth'
 import { useAsync } from '@/hooks/useAsync'
-import { listFriendships } from '@/lib/api'
+import { peopleList } from '@/lib/api'
 import { profileLink } from '@/lib/links'
 import { PersonAvatar } from '@/components/ui/PersonAvatar'
 
@@ -12,13 +12,12 @@ import { PersonAvatar } from '@/components/ui/PersonAvatar'
 export function FriendsRail() {
   const { profile } = useAuth()
   const { data, loading } = useAsync(
-    async () => (profile ? listFriendships(profile.id) : []),
+    async () => (profile ? peopleList(profile.id, 'friends') : []),
     [profile?.id],
   )
 
   const friends = (data ?? [])
-    .filter((edge) => edge.friendship.status === 'accepted')
-    .map((edge) => edge.profile)
+    .slice()
     .sort((a, b) => Number(b.is_online) - Number(a.is_online))
 
   return (

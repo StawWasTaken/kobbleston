@@ -447,6 +447,8 @@ export type Conversation = {
   last_message: string | null
   unread_count: number
   members: ConversationMember[]
+  /** True when you are ignoring the person on the other side of it. */
+  ignored?: boolean
 }
 
 export type SpaceStats = {

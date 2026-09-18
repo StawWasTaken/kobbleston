@@ -3,7 +3,7 @@ import { Link, useNavigate, useParams } from 'react-router-dom'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import {
   faComment, faFlag, faUserPlus, faClock, faUserCheck,
-  faEllipsis, faLink, faCubes, faEye, faAward, faShapes, faUsers,
+  faEllipsis, faLink, faCubes, faEye, faAward, faShapes, faUsers, faBan,
   faPalette, faPen, faCircleInfo,
 } from '@fortawesome/free-solid-svg-icons'
 import type { IconDefinition } from '@fortawesome/fontawesome-svg-core'
@@ -20,6 +20,7 @@ import { BadgeTile } from '@/components/spaces/BadgeGrid'
 import { AssetTile } from '@/components/create/AssetTile'
 import { useChatDock } from '@/components/chat/ChatDock'
 import { Menu } from '@/components/ui/Menu'
+import { usePersonActions } from '@/components/social/personActions'
 import { Dialog } from '@/components/ui/Dialog'
 import { Textarea } from '@/components/ui/Input'
 import { ColourPicker } from '@/components/ui/ColourPicker'
@@ -28,8 +29,9 @@ import { useAuth } from '@/hooks/useAuth'
 import { useAsync } from '@/hooks/useAsync'
 import { useTitle, useSocialCard } from '@/hooks/useTitle'
 import {
-  getProfileByUsername, getProfileOverview, isFollowing, listEarnedBadges, listFriendships,
-  listMemberCommunities, listSpacesByOwner, sendFriendRequest, setFollowing, startConversation,
+  getProfileByUsername, getProfileOverview, isFollowing, listEarnedBadges, peopleList,
+  listMemberCommunities, listSpacesByOwner, sendFriendRequest, setFollowing, standingWith,
+  startConversation,
   usernameHistory, usernameById, listAssetsByCreator, updateProfile, uploadAvatar,
 } from '@/lib/api'
 import { formatCount } from '@/lib/format'
@@ -153,19 +155,17 @@ export default function Profile() {
   const names = useAsync(async () => (user ? usernameHistory(user.id) : []), [user?.id])
 
   const friends = useAsync(
-    async () => {
-      if (!user) return []
-      const edges = await listFriendships(user.id)
-      return edges.filter((e) => e.friendship.status === 'accepted').map((e) => e.profile)
-    },
+    async () => (user ? peopleList(user.id, 'friends') : []),
     [user?.id],
   )
+
+  /*
+   * Where the two of you stand, in one answer: friends, a request either
+   * way, following, blocked, ignored. A profile used to work this out by
+   * reading every friendship you have and looking for their name in it.
+   */
   const relationship = useAsync(
-    async () => {
-      if (!me || !user || isMe) return null
-      const edges = await listFriendships(me.id)
-      return edges.find((e) => e.profile.id === user.id) ?? null
-    },
+    async () => (me && user && !isMe ? standingWith(user.id) : null),
     [me?.id, user?.id, isMe],
   )
 
@@ -304,7 +304,13 @@ export default function Profile() {
     )
   }
 
-  const edge = relationship.data
+  const standing = relationship.data
+
+  // Blocking and ignoring, with the same warnings they carry everywhere else.
+  const people = usePersonActions(() => {
+    relationship.reload()
+    friends.reload()
+  })
   const stats = overview.data
   const visits = (spaces.data ?? []).reduce((sum, space) => sum + (space.visit_count ?? 0), 0)
 
@@ -435,23 +441,39 @@ export default function Profile() {
               </>
             ) : (
               <>
-                {edge?.friendship.status === 'accepted' ? (
-                  <Button icon={faComment} onClick={message}>Chat</Button>
-                ) : edge?.friendship.status === 'pending' ? (
-                  <Button variant="subtle" icon={faClock} disabled>Request pending</Button>
+                {/* Somebody you have blocked is somebody you have no
+                    business doing anything with until you unblock them. */}
+                {standing?.i_blocked ? (
+                  <Button
+                    variant="danger"
+                    icon={faBan}
+                    onClick={() => people.askFor({ kind: 'unblock', person: user })}
+                  >
+                    Blocked
+                  </Button>
                 ) : (
-                  <GuestGate action="add friends">
-                    <Button icon={faUserPlus} onClick={addFriend} disabled={!me}>Add Friend</Button>
-                  </GuestGate>
+                  <>
+                    {standing?.are_friends ? (
+                      <Button icon={faComment} onClick={message}>Chat</Button>
+                    ) : standing?.request_sent ? (
+                      <Button variant="subtle" icon={faClock} disabled>Request pending</Button>
+                    ) : standing?.request_received ? (
+                      <Button icon={faUserPlus} to="/friends?list=requests">Answer their request</Button>
+                    ) : (
+                      <GuestGate action="add friends">
+                        <Button icon={faUserPlus} onClick={addFriend} disabled={!me}>Add Friend</Button>
+                      </GuestGate>
+                    )}
+                    <Button
+                      variant={following ? 'primary' : 'subtle'}
+                      icon={faUserCheck}
+                      onClick={toggleFollow}
+                      disabled={!me}
+                    >
+                      {following ? 'Following' : 'Follow'}
+                    </Button>
+                  </>
                 )}
-                <Button
-                  variant={following ? 'primary' : 'subtle'}
-                  icon={faUserCheck}
-                  onClick={toggleFollow}
-                  disabled={!me}
-                >
-                  {following ? 'Following' : 'Follow'}
-                </Button>
               </>
             )}
 
@@ -473,12 +495,19 @@ export default function Profile() {
                   },
                 },
                 ...(me && !isMe
-                  ? [{
-                      label: 'Report',
-                      icon: faFlag,
-                      danger: true,
-                      onSelect: () => setReporting(true),
-                    }]
+                  ? [
+                      {
+                        label: 'Report',
+                        icon: faFlag,
+                        danger: true,
+                        onSelect: () => setReporting(true),
+                      },
+                      ...people.itemsFor(user, {
+                        are_friends: standing?.are_friends,
+                        i_blocked: standing?.i_blocked,
+                        i_ignore: standing?.i_ignore,
+                      }),
+                    ]
                   : []),
               ]}
             />
@@ -746,6 +775,8 @@ export default function Profile() {
         targetId={user.id}
         targetName={user.display_name}
       />
+
+      {people.dialog}
     </Page>
   )
 }

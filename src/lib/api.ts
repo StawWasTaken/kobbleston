@@ -1,7 +1,7 @@
 import { supabase } from './supabase'
 import { canPreview, previewOf, previewOfUrl } from './preview'
 import type {
-  ActivityEvent, AssetKind, Community, EarnedBadge, Friendship, MarketAsset,
+  ActivityEvent, AssetKind, Community, EarnedBadge, MarketAsset,
   MemberCommunity, Message, Notification, OwnAsset, PixelTransaction, PlatformStats, Profile,
   ProfileOverview, Space, SpaceBadge, SpaceCategory, SpaceMessage, SpaceStats, Conversation,
   CommunityMember, CommunityOverview, CommunityPost, CommunityRank, CommunityRequest,
@@ -259,22 +259,43 @@ export async function sweepPresence() {
 
 // ----------------------------------------------------------------- friends
 
-export type FriendEdge = { friendship: Friendship; profile: Profile }
+/** Where you stand with one person, answered in one go. */
+export type Standing = {
+  are_friends: boolean
+  request_sent: boolean
+  request_received: boolean
+  request_id: string | null
+  friendship_id: string | null
+  i_follow: boolean
+  follows_me: boolean
+  i_blocked: boolean
+  they_blocked: boolean
+  i_ignore: boolean
+}
 
-export async function listFriendships(userId: string): Promise<FriendEdge[]> {
-  const rows = unwrap(await supabase.from('friendships').select('*')
-    .or(`requester_id.eq.${userId},addressee_id.eq.${userId}`)
-    .order('created_at', { ascending: false })) as Friendship[]
-  if (!rows?.length) return []
+/** One person in one of the lists on the friends page. */
+export type PersonRow = Profile & {
+  since: string
+  link_id: string | null
+  i_ignore: boolean
+}
 
-  const otherIds = rows.map((f) => (f.requester_id === userId ? f.addressee_id : f.requester_id))
-  const profiles = unwrap(await supabase.from('profiles').select('*').in('id', otherIds)) as Profile[]
-  const byId = new Map(profiles.map((p) => [p.id, p]))
+/** The lists a friends page can draw. */
+export type PeopleList =
+  'friends' | 'requests' | 'sent' | 'followers' | 'following' | 'blocked' | 'ignored'
 
-  return rows.flatMap((friendship) => {
-    const other = byId.get(friendship.requester_id === userId ? friendship.addressee_id : friendship.requester_id)
-    return other ? [{ friendship, profile: other }] : []
-  })
+export async function standingWith(target: string): Promise<Standing> {
+  const rows = unwrap(await supabase.rpc('standing_with', { target }))
+  const row = (Array.isArray(rows) ? rows[0] : rows) as Standing | undefined
+  return row ?? {
+    are_friends: false, request_sent: false, request_received: false,
+    request_id: null, friendship_id: null, i_follow: false, follows_me: false,
+    i_blocked: false, they_blocked: false, i_ignore: false,
+  }
+}
+
+export async function peopleList(target: string, which: PeopleList): Promise<PersonRow[]> {
+  return (unwrap(await supabase.rpc('people_list', { target, which })) as PersonRow[]) ?? []
 }
 
 export async function sendFriendRequest(requesterId: string, addresseeId: string) {
@@ -296,6 +317,37 @@ export async function respondToFriendRequest(id: string, accept: boolean) {
 export async function removeFriendship(id: string) {
   const { error } = await supabase.from('friendships').delete().eq('id', id)
   if (error) throw new Error(error.message)
+}
+
+/** Stopping being friends with somebody whose friendship you have not got to hand. */
+export async function unfriend(userId: string, otherId: string) {
+  const { error } = await supabase.from('friendships').delete()
+    .or(`and(requester_id.eq.${userId},addressee_id.eq.${otherId}),` +
+        `and(requester_id.eq.${otherId},addressee_id.eq.${userId})`)
+  if (error) throw new Error(error.message)
+}
+
+// ------------------------------------------------------- blocking, ignoring
+
+/**
+ * Blocking undoes the friendship, both follows and any request either way,
+ * and nothing can be built back across it until it is lifted. Ignoring leaves
+ * all of that standing and only stops them reaching you.
+ */
+export async function blockPerson(targetId: string) {
+  unwrap(await supabase.rpc('block_person', { target: targetId }))
+}
+
+export async function unblockPerson(targetId: string) {
+  unwrap(await supabase.rpc('unblock_person', { target: targetId }))
+}
+
+export async function ignorePerson(targetId: string) {
+  unwrap(await supabase.rpc('ignore_person', { target: targetId }))
+}
+
+export async function unignorePerson(targetId: string) {
+  unwrap(await supabase.rpc('unignore_person', { target: targetId }))
 }
 
 // -------------------------------------------------------------------- chat
@@ -327,32 +379,35 @@ export async function deleteMessage(id: number) {
  * existing conversation carry it; the rest open one on first message.
  */
 export async function chatRoster(): Promise<Conversation[]> {
-  const [conversations, edges] = await Promise.all([
+  const [conversations, friends] = await Promise.all([
     myConversations(),
     supabase.auth.getUser().then(({ data }) =>
-      data.user ? listFriendships(data.user.id) : []),
+      data.user ? peopleList(data.user.id, 'friends') : []),
   ])
 
   const spokenTo = new Set(
     conversations.flatMap((c) => (c.is_group ? [] : c.members.map((m) => m.id))),
   )
 
-  const quiet = edges
-    .filter((edge) => edge.friendship.status === 'accepted' && !spokenTo.has(edge.profile.id))
-    .map<Conversation>((edge) => ({
-      id: `friend:${edge.profile.id}`,
+  // Friends you have never written to still belong in the list; somebody who
+  // is no longer a friend does not, and the database leaves their chat out.
+  const quiet = friends
+    .filter((person) => !spokenTo.has(person.id))
+    .map<Conversation>((person) => ({
+      id: `friend:${person.id}`,
       title: null,
       is_group: false,
-      last_message_at: edge.friendship.created_at,
+      last_message_at: person.since,
       last_message: null,
       unread_count: 0,
+      ignored: person.i_ignore,
       members: [{
-        id: edge.profile.id,
-        username: edge.profile.username,
-        display_name: edge.profile.display_name,
-        avatar_url: edge.profile.avatar_url,
-        is_online: edge.profile.is_online,
-        in_space_id: edge.profile.in_space_id,
+        id: person.id,
+        username: person.username,
+        display_name: person.display_name,
+        avatar_url: person.avatar_url,
+        is_online: person.is_online,
+        in_space_id: person.in_space_id,
       }],
     }))
 
@@ -1395,10 +1450,6 @@ export async function uploadCommunityImage(userId: string, file: File, kind: 'em
 }
 
 export const uploadSpaceImage = uploadCommunityImage
-
-export async function blockPerson(targetId: string) {
-  unwrap(await supabase.rpc('block_person', { target: targetId }))
-}
 
 // ------------------------------------------------------------ space detail
 

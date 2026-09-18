@@ -13,19 +13,28 @@ import { avatarOf } from '@/lib/avatars'
  * or taken back from the buttons that appear on hover.
  */
 export function MessageRow({
-  message, sender, mine, grouped, onEdit, onDelete,
+  message, sender, mine, grouped, covered, onEdit, onDelete,
 }: {
   message: Message
   sender?: ConversationMember
   mine: boolean
   /** Follows another message from the same person, so it needs no picture. */
   grouped?: boolean
+  /** From somebody you are ignoring: kept covered until you ask to see it. */
+  covered?: boolean
   onEdit: (body: string) => Promise<void>
   onDelete: () => Promise<void>
 }) {
   const [editing, setEditing] = useState(false)
   const [draft, setDraft] = useState(message.body)
   const [busy, setBusy] = useState(false)
+  /*
+   * Ignoring somebody does not delete what they said, it keeps it out of
+   * your way. A covered message is behind a blur until you tap it, and it
+   * goes back under when the chat is next opened.
+   */
+  const [shown, setShown] = useState(false)
+  const hidden = Boolean(covered) && !mine && !shown
 
   if (message.is_removed) {
     return (
@@ -105,11 +114,20 @@ export function MessageRow({
         ) : (
           <div
             className={cn(
-              'rounded-2xl px-3 py-1.5 text-sm leading-snug',
+              'relative rounded-2xl px-3 py-1.5 text-sm leading-snug',
               mine ? 'bg-brand text-white' : 'bg-ink-hover text-white/90',
+              hidden && 'cursor-pointer select-none',
             )}
+            onClick={hidden ? () => setShown(true) : undefined}
+            role={hidden ? 'button' : undefined}
+            tabIndex={hidden ? 0 : undefined}
+            onKeyDown={hidden ? (e) => { if (e.key === 'Enter' || e.key === ' ') setShown(true) } : undefined}
+            aria-label={hidden ? 'Message from somebody you are ignoring. Show it?' : undefined}
+            title={hidden ? 'You are ignoring this person. Tap to read.' : undefined}
           >
-            <p className="whitespace-pre-wrap break-words">{message.body}</p>
+            <p className={cn('whitespace-pre-wrap break-words', hidden && 'blur-[5px]')}>
+              {message.body}
+            </p>
             {message.edited_at && (
               <span className={cn('text-[10px]', mine ? 'text-white/55' : 'text-white/35')}>
                 edited

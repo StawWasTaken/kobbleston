@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import {
   faChevronDown, faChevronUp, faXmark, faPaperPlane, faMagnifyingGlass, faPenToSquare,
-  faGear, faArrowLeft, faUserGroup,
+  faGear, faArrowLeft, faUserGroup, faEyeSlash,
 } from '@fortawesome/free-solid-svg-icons'
 import { Avatar } from '@/components/ui/Avatar'
 import { Skeleton } from '@/components/ui/States'
@@ -12,14 +12,14 @@ import { Tooltip } from '@/components/ui/Tooltip'
 import { NewGroupDialog } from './NewGroupDialog'
 import { MessageRow } from './MessageRow'
 import { SafetyNote } from './SafetyNote'
+import { usePersonActions } from '@/components/social/personActions'
 import { TimeSeparator } from './TimeSeparator'
 import { ReportDialog } from '@/components/social/ReportDialog'
 import { useAuth } from '@/hooks/useAuth'
 import {
-  chatRoster, conversationName, deleteMessage, editMessage, listMessages,
-  markConversationRead, sendMessage, startConversation,
+  chatRoster, conversationName, deleteMessage, editMessage, ignorePerson, listMessages,
+  markConversationRead, sendMessage, startConversation, unignorePerson,
 } from '@/lib/api'
-import { blockPerson } from '@/lib/api'
 import { supabase } from '@/lib/supabase'
 import { timeAgo } from '@/lib/format'
 import { cn } from '@/lib/cn'
@@ -83,10 +83,23 @@ function Window({
   // until the first message opens one.
   const pending = conversation.id.startsWith('friend:')
 
-  const onBlock = async (targetId: string) => {
+  /*
+   * Ignoring somebody from inside the chat itself, which is where you
+   * usually decide you have had enough of it. Blocking asks first, because
+   * it ends the friendship and empties the chat out of both lists.
+   */
+  const [covered, setCovered] = useState(Boolean(conversation.ignored))
+  const people = usePersonActions(() => onClose())
+
+  const toggleIgnore = async (targetId: string) => {
     try {
-      await blockPerson(targetId)
-      onClose()
+      if (covered) {
+        await unignorePerson(targetId)
+        setCovered(false)
+      } else {
+        await ignorePerson(targetId)
+        setCovered(true)
+      }
     } catch {
       setError('That did not work.')
     }
@@ -242,7 +255,9 @@ function Window({
               <SafetyNote
                 className="mb-1"
                 person={solo}
-                onBlock={() => onBlock(solo.id)}
+                ignored={covered}
+                onIgnore={() => toggleIgnore(solo.id)}
+                onBlock={() => people.askFor({ kind: 'block', person: solo })}
                 onReport={() => setReporting(true)}
               />
             )}
@@ -269,6 +284,7 @@ function Window({
                     message={m}
                     mine={m.sender_id === profile?.id}
                     grouped={grouped}
+                    covered={covered}
                     sender={
                       m.sender_id === profile?.id
                         ? {
@@ -334,6 +350,8 @@ function Window({
           targetName={solo.display_name}
         />
       )}
+
+      {people.dialog}
     </section>
   )
 }
@@ -439,8 +457,24 @@ function List({
                     )}
                   </span>
                   <span className="min-w-0 flex-1">
-                    <span className="block truncate text-sm font-bold">{conversationName(c)}</span>
-                    <span className="block truncate text-xs text-muted">
+                    <span className="flex items-center gap-1.5">
+                      <span className="truncate text-sm font-bold">{conversationName(c)}</span>
+                      {c.ignored && (
+                        <FontAwesomeIcon
+                          icon={faEyeSlash}
+                          title="You are ignoring this person"
+                          className="shrink-0 text-[10px] text-white/35"
+                        />
+                      )}
+                    </span>
+                    {/* What somebody you are ignoring said stays covered here
+                        as well, not only inside the chat. */}
+                    <span
+                      className={cn(
+                        'block truncate text-xs text-muted',
+                        c.ignored && c.last_message && 'blur-[3px]',
+                      )}
+                    >
                       {c.last_message ?? 'No messages yet'}
                     </span>
                   </span>

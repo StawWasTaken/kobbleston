@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import {
-  faMagnifyingGlass, faXmark, faUserPlus, faCheck, faComment, faBolt, faSeedling, faArrowDownAZ,
+  faMagnifyingGlass, faXmark, faUserPlus, faCheck, faEllipsis, faUser, faBolt, faSeedling, faArrowDownAZ,
 } from '@fortawesome/free-solid-svg-icons'
 import type { IconDefinition } from '@fortawesome/fontawesome-svg-core'
 import { Button } from '@/components/ui/Button'
@@ -10,11 +10,12 @@ import { Card } from '@/components/ui/Card'
 import { EmptyState, ErrorState, Skeleton } from '@/components/ui/States'
 import { Verified, isVerified } from '@/components/brand/Verified'
 import { useToast } from '@/components/ui/Toast'
-import { useChatDock } from '@/components/chat/ChatDock'
 import { useAuth } from '@/hooks/useAuth'
 import { useAsync } from '@/hooks/useAsync'
 import { useTitle } from '@/hooks/useTitle'
-import { listPeople, sendFriendRequest, startConversation } from '@/lib/api'
+import { listPeople, sendFriendRequest } from '@/lib/api'
+import { Menu } from '@/components/ui/Menu'
+import { usePersonActions } from '@/components/social/personActions'
 import type { PeopleSort } from '@/lib/api'
 import { profileLink } from '@/lib/links'
 import { formatCount } from '@/lib/format'
@@ -34,13 +35,13 @@ const sorts: { value: PeopleSort; label: string; icon: IconDefinition }[] = [
  * recognise, whether they are about, and the start of their bio.
  */
 function PersonCard({
-  person, isYou, sent, onAdd, onChat,
+  person, isYou, sent, onAdd, menu,
 }: {
   person: Profile
   isYou: boolean
   sent: boolean
   onAdd: () => void
-  onChat: () => void
+  menu?: React.ReactNode
 }) {
 
   return (
@@ -76,7 +77,10 @@ function PersonCard({
             >
               {sent ? 'Sent' : 'Add'}
             </Button>
-            <Button size="sm" variant="ghost" icon={faComment} onClick={onChat}>Chat</Button>
+            {/* Writing to somebody is something friends do, so this is a
+                request first. What is here instead is the quiet half:
+                ignoring and blocking, which need no introduction. */}
+            {menu}
           </div>
         )}
       </div>
@@ -87,7 +91,6 @@ function PersonCard({
 export default function People() {
   useTitle('People')
   const { profile } = useAuth()
-  const { openConversation } = useChatDock()
   const toast = useToast()
 
   const [params, setParams] = useSearchParams()
@@ -130,13 +133,22 @@ export default function People() {
     }
   }
 
-  const chat = async (otherId: string) => {
-    try {
-      openConversation(await startConversation(otherId))
-    } catch (err) {
-      toast(err instanceof Error ? err.message : 'Could not open that chat.', 'error')
-    }
-  }
+  const actions = usePersonActions(() => people.reload())
+
+  const menuFor = (person: Profile) => (
+    <Menu
+      label={`Options for ${person.display_name}`}
+      trigger={
+        <span className="grid h-8 w-8 place-items-center rounded-lg text-white/45 transition-colors hover:bg-ink-hover hover:text-white">
+          <FontAwesomeIcon icon={faEllipsis} />
+        </span>
+      }
+      items={[
+        { label: 'Open profile', icon: faUser, to: profileLink(person) },
+        ...actions.itemsFor(person, {}),
+      ]}
+    />
+  )
 
   const found = people.data ?? []
 
@@ -247,7 +259,7 @@ export default function People() {
                 isYou={person.id === profile?.id}
                 sent={sent.includes(person.id)}
                 onAdd={() => add(person)}
-                onChat={() => chat(person.id)}
+                menu={menuFor(person)}
               />
             ))}
           </div>
@@ -264,7 +276,7 @@ export default function People() {
                     isYou={person.id === profile?.id}
                     sent={sent.includes(person.id)}
                     onAdd={() => add(person)}
-                    onChat={() => chat(person.id)}
+                    menu={menuFor(person)}
                   />
                 ))}
               </div>
@@ -276,6 +288,8 @@ export default function People() {
 
         <AdBanner size="tall" quiet className="hidden xl:sticky xl:top-[4.5rem] xl:block" />
       </div>
+
+      {actions.dialog}
     </div>
   )
 }

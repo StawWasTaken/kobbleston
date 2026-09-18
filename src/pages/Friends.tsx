@@ -2,8 +2,8 @@ import { useEffect, useState } from 'react'
 import { Link, useParams, useSearchParams } from 'react-router-dom'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import {
-  faCheck, faComment, faEllipsis, faFilter, faInbox, faUserGroup, faUserMinus, faUserPlus,
-  faUsers, faXmark, faHeart, faStar,
+  faCheck, faComment, faEllipsis, faFilter, faInbox, faUserGroup, faUserPlus,
+  faUsers, faXmark, faHeart, faStar, faBan, faEyeSlash, faUser,
 } from '@fortawesome/free-solid-svg-icons'
 import type { IconDefinition } from '@fortawesome/fontawesome-svg-core'
 import { Page } from '@/components/layout/AppShell'
@@ -17,28 +17,45 @@ import { useLivePresence } from '@/hooks/usePresenceStore'
 import { EmptyState, ErrorState, Skeleton } from '@/components/ui/States'
 import { useToast } from '@/components/ui/Toast'
 import { useChatDock } from '@/components/chat/ChatDock'
+import { usePersonActions } from '@/components/social/personActions'
 import { useAuth } from '@/hooks/useAuth'
 import { useAsync } from '@/hooks/useAsync'
 import { useTitle } from '@/hooks/useTitle'
 import {
-  getProfileByUsername, listFollows, listFriendships, removeFriendship, respondToFriendRequest,
+  getProfileByUsername, peopleList, removeFriendship, respondToFriendRequest,
   startConversation, usernameById,
 } from '@/lib/api'
+import type { PeopleList, PersonRow as Person } from '@/lib/api'
 import { avatarOf } from '@/lib/avatars'
 import { profileLink } from '@/lib/links'
 import { timeAgo } from '@/lib/format'
 import { cn } from '@/lib/cn'
-import type { Profile } from '@/types/db'
 import { Verified, isVerified } from '@/components/brand/Verified'
 import { PersonAvatar } from '@/components/ui/PersonAvatar'
 
+/*
+ * One page for everybody you are tied to, and everybody you are not.
+ *
+ * Friends, the requests either way, the two sides of following, and, on your
+ * own page only, the people you have shut out. Blocking and ignoring belong
+ * here rather than buried in settings: they are about people, so they live
+ * with the people.
+ */
 const tabs = [
-  { name: 'Friends', icon: faUserGroup },
-  { name: 'Followers', icon: faStar },
-  { name: 'Following', icon: faHeart },
-  { name: 'Requests', icon: faInbox },
+  { name: 'Friends', icon: faUserGroup, list: 'friends' },
+  { name: 'Requests', icon: faInbox, list: 'requests', mineOnly: true },
+  { name: 'Followers', icon: faStar, list: 'followers' },
+  { name: 'Following', icon: faHeart, list: 'following' },
+  { name: 'Ignored', icon: faEyeSlash, list: 'ignored', mineOnly: true },
+  { name: 'Blocked', icon: faBan, list: 'blocked', mineOnly: true },
 ] as const
+
 type Tab = (typeof tabs)[number]['name']
+
+const fromQuery: Record<string, Tab> = {
+  friends: 'Friends', requests: 'Requests', followers: 'Followers',
+  following: 'Following', ignored: 'Ignored', blocked: 'Blocked',
+}
 
 const presenceWord: Record<Presence, string> = {
   'in-space': 'In a Space',
@@ -51,18 +68,24 @@ const presenceWord: Record<Presence, string> = {
  * A person in one of your lists: the picture, whether they are about, and
  * what you can do with them, on a single line you can run your eye down.
  */
-function PersonRow({
-  person, note, actions, menu,
+function PersonLine({
+  person, note, actions, menu, quiet,
 }: {
-  person: Profile
+  person: Person
   note?: string
   actions?: React.ReactNode
   menu?: React.ReactNode
+  quiet?: boolean
 }) {
   const presence = useLivePresence(person)
 
   return (
-    <li className="flex items-center gap-3 rounded-2xl border border-ink-line bg-ink-card p-3 transition-colors hover:border-brand/60">
+    <li
+      className={cn(
+        'flex items-center gap-3 rounded-2xl border border-ink-line bg-ink-card p-3 transition-colors hover:border-brand/60',
+        quiet && 'opacity-70',
+      )}
+    >
       <Link to={profileLink(person)} className="shrink-0">
         <PersonAvatar person={person} size="md" square ring="ring-ink-card" />
       </Link>
@@ -71,6 +94,14 @@ function PersonRow({
         <Link to={profileLink(person)} className="flex items-center gap-1.5 hover:text-link">
           <span className="truncate text-sm font-bold">{person.display_name}</span>
           {isVerified(person) && <Verified className="text-[11px]" />}
+          {person.i_ignore && (
+            <span
+              title="You are ignoring this person"
+              className="shrink-0 rounded-md bg-white/10 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide text-muted"
+            >
+              Ignored
+            </span>
+          )}
         </Link>
         <p className="truncate text-xs text-muted">
           @{person.username}
@@ -134,8 +165,8 @@ export default function Friends() {
    *
    * Reached at /friends it is yours; reached from a profile it is theirs,
    * which is why the counts on a profile are links rather than lists opened
-   * in place. Nobody else's requests are anybody's business, so that list is
-   * only there when the page is your own.
+   * in place. Nobody else's requests, and nobody else's blocked list, is
+   * anybody's business, so those are only there when the page is your own.
    */
   const { id } = useParams()
   const [search] = useSearchParams()
@@ -152,16 +183,18 @@ export default function Friends() {
   const who = id ? viewed.data : profile
   const isMe = !id || who?.id === profile?.id
 
-  const wanted = (search.get('list') ?? '').toLowerCase()
   const [tab, setTab] = useState<Tab>(
-    wanted === 'followers' ? 'Followers' : wanted === 'following' ? 'Following' : 'Friends',
+    fromQuery[(search.get('list') ?? '').toLowerCase()] ?? 'Friends',
   )
+  const shownTabs = tabs.filter((one) => isMe || !('mineOnly' in one && one.mineOnly))
+  const current = shownTabs.find((one) => one.name === tab) ?? shownTabs[0]
 
   useTitle(
     !who ? 'Friends'
       : isMe ? 'My friends'
         : `${who.display_name}'s friends`,
   )
+
   const [term, setTerm] = useState('')
   const [filter, setFilter] = useState('')
 
@@ -170,47 +203,61 @@ export default function Friends() {
     return () => window.clearTimeout(timer)
   }, [term])
 
-  const { data, error, loading, reload } = useAsync(
-    async () => (who ? listFriendships(who.id) : []),
-    [who?.id],
-  )
-  // Both sides of following are asked for at once, so the counts on the page
-  // are the lists themselves rather than a separate number to go stale.
-  const following = useAsync(
-    async () => (who ? listFollows(who.id, 'following') : []),
-    [who?.id],
-  )
-  const followers = useAsync(
-    async () => (who ? listFollows(who.id, 'followers') : []),
-    [who?.id],
+  /** One list per kind, each asked for as it is needed and reloaded together. */
+  const ask = (which: PeopleList) => useAsync(
+    async () => (who ? peopleList(who.id, which) : []),
+    [who?.id, which],
   )
 
-  const edges = data ?? []
-  const friends = edges
-    .filter((e) => e.friendship.status === 'accepted')
-    .sort((a, b) => Number(b.profile.is_online) - Number(a.profile.is_online))
-  const incoming = edges.filter(
-    (e) => e.friendship.status === 'pending' && e.friendship.addressee_id === who?.id,
-  )
-  const outgoing = edges.filter(
-    (e) => e.friendship.status === 'pending' && e.friendship.requester_id === who?.id,
-  )
-  const online = friends.filter((f) => f.profile.is_online).length
+  const friends = ask('friends')
+  const incoming = ask('requests')
+  const outgoing = ask('sent')
+  const followers = ask('followers')
+  const following = ask('following')
+  const ignored = ask('ignored')
+  const blocked = ask('blocked')
 
-  const matches = (person: Profile) =>
+  const reloadAll = () => {
+    friends.reload()
+    incoming.reload()
+    outgoing.reload()
+    followers.reload()
+    following.reload()
+    ignored.reload()
+    blocked.reload()
+  }
+
+  const people = usePersonActions(reloadAll)
+
+  const source = {
+    Friends: friends, Requests: incoming, Followers: followers,
+    Following: following, Ignored: ignored, Blocked: blocked,
+  }[current.name]
+
+  const matches = (person: Person) =>
     !filter
     || person.display_name.toLowerCase().includes(filter)
     || person.username.toLowerCase().includes(filter)
 
-  const shownFriends = friends.filter((f) => matches(f.profile))
-  const shownFollowing = (following.data ?? []).filter(matches)
-  const shownFollowers = (followers.data ?? []).filter(matches)
+  const shown = (source.data ?? []).filter(matches)
+  const online = (friends.data ?? []).filter((one) => one.is_online).length
+  const waiting = incoming.data?.length ?? 0
 
-  const respond = async (id: string, accept: boolean) => {
+  const respond = async (requestId: string, accept: boolean) => {
     try {
-      await respondToFriendRequest(id, accept)
+      await respondToFriendRequest(requestId, accept)
       toast(accept ? 'You two are friends now.' : 'Request declined.', accept ? 'success' : 'info')
-      reload()
+      reloadAll()
+    } catch (err) {
+      toast(err instanceof Error ? err.message : 'That did not work.', 'error')
+    }
+  }
+
+  const cancel = async (requestId: string) => {
+    try {
+      await removeFriendship(requestId)
+      toast('Request taken back.', 'info')
+      reloadAll()
     } catch (err) {
       toast(err instanceof Error ? err.message : 'That did not work.', 'error')
     }
@@ -224,17 +271,38 @@ export default function Friends() {
     }
   }
 
-  const drop = async (id: string, name: string) => {
-    try {
-      await removeFriendship(id)
-      toast(`${name} is no longer a friend.`, 'info')
-      reload()
-    } catch (err) {
-      toast(err instanceof Error ? err.message : 'That did not work.', 'error')
-    }
+  /** The "..." behind every line on your own page. */
+  const menuFor = (person: Person, standing: {
+    are_friends?: boolean; i_blocked?: boolean; i_ignore?: boolean
+  }) => {
+    const items = [
+      { label: 'Open profile', icon: faUser, to: profileLink(person) },
+      ...people.itemsFor(person, standing),
+    ]
+    return (
+      <Menu
+        label={`Options for ${person.display_name}`}
+        trigger={
+          <span className="grid h-8 w-8 place-items-center rounded-lg text-white/45 transition-colors hover:bg-ink-hover hover:text-white">
+            <FontAwesomeIcon icon={faEllipsis} />
+          </span>
+        }
+        items={items}
+      />
+    )
   }
 
-  const waiting = incoming.length
+  const emptyFor: Record<Tab, { title: string; body: string }> = {
+    Friends: {
+      title: 'No friends yet',
+      body: 'People is everybody on Kobbleston. Send somebody a request and they turn up here.',
+    },
+    Requests: { title: 'Nothing waiting', body: 'Nobody has asked, and you have not asked anybody.' },
+    Followers: { title: 'No followers yet', body: 'Publish something and people start following you.' },
+    Following: { title: 'Not following anybody', body: 'Following somebody puts their new Spaces in front of you.' },
+    Ignored: { title: 'Nobody ignored', body: 'Ignoring somebody keeps them as a friend and keeps them quiet.' },
+    Blocked: { title: 'Nobody blocked', body: 'Blocking ends everything between you and somebody, both ways.' },
+  }
 
   return (
     <Page className="space-y-5">
@@ -242,12 +310,7 @@ export default function Friends() {
         <div className="flex items-center gap-3">
           {!isMe && who && (
             <Link to={profileLink(who)} className="shrink-0">
-              <Avatar
-                src={avatarOf(who)}
-                name={who.display_name}
-                size="lg"
-                className="rounded-2xl"
-              />
+              <Avatar src={avatarOf(who)} name={who.display_name} size="lg" className="rounded-2xl" />
             </Link>
           )}
           <div>
@@ -255,8 +318,8 @@ export default function Friends() {
               {isMe ? 'My friends' : who ? `${who.display_name}'s friends` : 'Friends'}
             </h1>
             <p className="mt-1.5 text-sm text-muted">
-              {friends.length
-                ? `${friends.length} ${friends.length === 1 ? 'friend' : 'friends'}${isMe ? `, ${online} online` : ''}.`
+              {friends.data?.length
+                ? `${friends.data.length} ${friends.data.length === 1 ? 'friend' : 'friends'}${isMe ? `, ${online} online` : ''}.`
                 : isMe
                   ? 'Nobody yet. People is where you find somebody.'
                   : 'No friends yet.'}
@@ -269,143 +332,93 @@ export default function Friends() {
           : who && <Button variant="subtle" to={profileLink(who)}>Back to their profile</Button>}
       </header>
 
-      {/* The numbers are the lists, and each one is the way in. Friends,
-          then followers, then following, and requests only on your own. */}
-      <div className={cn('grid gap-2.5 grid-cols-2', isMe ? 'sm:grid-cols-4' : 'sm:grid-cols-3')}>
+      {/* The numbers are the lists, and each one is the way in. */}
+      <div className={cn('grid grid-cols-2 gap-2.5', isMe ? 'sm:grid-cols-3 xl:grid-cols-6' : 'sm:grid-cols-3')}>
         <Count
           icon={faUserGroup}
-          value={loading ? null : friends.length}
-          label="Friends"
-          active={tab === 'Friends'}
-          onClick={() => setTab('Friends')}
-        />
-        <Count
-          icon={faStar}
-          value={followers.loading ? null : followers.data?.length ?? 0}
-          label="Followers"
-          active={tab === 'Followers'}
-          onClick={() => setTab('Followers')}
-        />
-        <Count
-          icon={faHeart}
-          value={following.loading ? null : following.data?.length ?? 0}
-          label="Following"
-          active={tab === 'Following'}
-          onClick={() => setTab('Following')}
+          value={friends.loading ? null : friends.data?.length ?? 0}
+          label="Friends" active={current.name === 'Friends'} onClick={() => setTab('Friends')}
         />
         {isMe && (
           <Count
             icon={faInbox}
-            value={loading ? null : waiting}
+            value={incoming.loading ? null : waiting}
             label={waiting === 1 ? 'Request' : 'Requests'}
-            active={tab === 'Requests'}
-            onClick={() => setTab('Requests')}
+            active={current.name === 'Requests'} onClick={() => setTab('Requests')}
           />
+        )}
+        <Count
+          icon={faStar}
+          value={followers.loading ? null : followers.data?.length ?? 0}
+          label="Followers" active={current.name === 'Followers'} onClick={() => setTab('Followers')}
+        />
+        <Count
+          icon={faHeart}
+          value={following.loading ? null : following.data?.length ?? 0}
+          label="Following" active={current.name === 'Following'} onClick={() => setTab('Following')}
+        />
+        {isMe && (
+          <>
+            <Count
+              icon={faEyeSlash}
+              value={ignored.loading ? null : ignored.data?.length ?? 0}
+              label="Ignored" active={current.name === 'Ignored'} onClick={() => setTab('Ignored')}
+            />
+            <Count
+              icon={faBan}
+              value={blocked.loading ? null : blocked.data?.length ?? 0}
+              label="Blocked" active={current.name === 'Blocked'} onClick={() => setTab('Blocked')}
+            />
+          </>
         )}
       </div>
 
-      {tab !== 'Requests' && (
+      {current.name !== 'Requests' && (
         <Input
           icon={faFilter}
           value={term}
           onChange={(e) => setTerm(e.target.value)}
-          placeholder={`Filter your ${tab.toLowerCase()}`}
-          aria-label={`Filter your ${tab.toLowerCase()}`}
+          placeholder={`Filter ${current.name.toLowerCase()}`}
+          aria-label={`Filter ${current.name.toLowerCase()}`}
         />
       )}
 
-      {error && <ErrorState message={error} onRetry={reload} />}
+      {source.error && <ErrorState message={source.error} onRetry={source.reload} />}
+      {source.loading && <Loading />}
 
-      {tab === 'Friends' && (
-        <>
-          {loading && <Loading />}
-
-          {!loading && !shownFriends.length && (
-            <Card>
-              <EmptyState
-                mood={filter ? 'noResults' : 'emptyBox'}
-                title={filter ? 'None of your friends match' : 'No friends yet'}
-                body={
-                  filter
-                    ? 'Try fewer letters.'
-                    : 'People is everybody on Kobbleston. Send somebody a request and they turn up here.'
-                }
-                action={
-                  filter
-                    ? <Button variant="subtle" onClick={() => setTerm('')}>Clear the filter</Button>
-                    : <Button icon={faUsers} to="/people">Find people</Button>
-                }
-              />
-            </Card>
-          )}
-
-          {!!shownFriends.length && (
-            <List>
-              {shownFriends.map(({ friendship, profile: person }) => (
-                <PersonRow
-                  key={friendship.id}
-                  person={person}
-                  actions={isMe
-                    ? <Button size="sm" icon={faComment} onClick={() => chat(person.id)}>Chat</Button>
-                    : <Button size="sm" variant="subtle" to={profileLink(person)}>Profile</Button>}
-                  menu={isMe ? (
-                    <Menu
-                      label={`Options for ${person.display_name}`}
-                      trigger={
-                        <span className="grid h-8 w-8 place-items-center rounded-lg text-white/45 transition-colors hover:bg-ink-hover hover:text-white">
-                          <FontAwesomeIcon icon={faEllipsis} />
-                        </span>
-                      }
-                      items={[
-                        { label: 'Open profile', icon: faUserGroup, to: profileLink(person) },
-                        {
-                          label: 'Remove friend',
-                          icon: faUserMinus,
-                          danger: true,
-                          onSelect: () => drop(friendship.id, person.display_name),
-                        },
-                      ]}
-                    />
-                  ) : undefined}
-                />
-              ))}
-            </List>
-          )}
-        </>
-      )}
-
-      {tab === 'Requests' && isMe && (
+      {current.name === 'Requests' && isMe ? (
         <div className="space-y-6">
           <section>
             <h2 className="mb-3 flex items-center gap-2 text-sm font-extrabold uppercase tracking-wide text-muted">
               <FontAwesomeIcon icon={faInbox} />
               Waiting on you
             </h2>
-            {loading && <Loading />}
-            {!loading && !incoming.length && (
+            {!incoming.loading && !incoming.data?.length && (
               <p className="text-sm text-muted">Nobody has asked.</p>
             )}
-            {!!incoming.length && (
+            {!!incoming.data?.length && (
               <List>
-                {incoming.map(({ friendship, profile: person }) => (
-                  <PersonRow
-                    key={friendship.id}
+                {incoming.data.map((person) => (
+                  <PersonLine
+                    key={person.id}
                     person={person}
-                    note={`Asked ${timeAgo(friendship.created_at)}`}
+                    note={`Asked ${timeAgo(person.since)}`}
                     actions={
                       <>
-                        <Button size="sm" icon={faCheck} onClick={() => respond(friendship.id, true)}>
+                        <Button
+                          size="sm" icon={faCheck}
+                          onClick={() => person.link_id && respond(person.link_id, true)}
+                        >
                           Accept
                         </Button>
                         <Button
-                          size="sm"
-                          variant="ghost"
-                          icon={faXmark}
+                          size="sm" variant="ghost" icon={faXmark}
                           aria-label={`Decline ${person.display_name}`}
-                          onClick={() => respond(friendship.id, false)}
+                          onClick={() => person.link_id && respond(person.link_id, false)}
                         />
                       </>
                     }
+                    menu={menuFor(person, { i_ignore: person.i_ignore })}
                   />
                 ))}
               </List>
@@ -417,22 +430,21 @@ export default function Friends() {
               <FontAwesomeIcon icon={faUserPlus} />
               You asked
             </h2>
-            {!outgoing.length ? (
+            {!outgoing.data?.length ? (
               <p className="text-sm text-muted">You have not asked anybody.</p>
             ) : (
               <List>
-                {outgoing.map(({ friendship, profile: person }) => (
-                  <PersonRow
-                    key={friendship.id}
+                {outgoing.data.map((person) => (
+                  <PersonLine
+                    key={person.id}
                     person={person}
-                    note={`Sent ${timeAgo(friendship.created_at)}`}
+                    note={`Sent ${timeAgo(person.since)}`}
                     actions={
                       <Button
-                        size="sm"
-                        variant="subtle"
-                        onClick={() => drop(friendship.id, person.display_name)}
+                        size="sm" variant="subtle"
+                        onClick={() => person.link_id && cancel(person.link_id)}
                       >
-                        Cancel
+                        Take back
                       </Button>
                     }
                   />
@@ -441,64 +453,74 @@ export default function Friends() {
             )}
           </section>
         </div>
-      )}
+      ) : (
+        <>
+          {!source.loading && !shown.length && (
+            <Card>
+              <EmptyState
+                mood={filter ? 'noResults' : 'emptyBox'}
+                title={filter ? 'Nobody here matches' : emptyFor[current.name].title}
+                body={filter ? 'Try fewer letters.' : emptyFor[current.name].body}
+                action={
+                  filter
+                    ? <Button variant="subtle" onClick={() => setTerm('')}>Clear the filter</Button>
+                    : current.name === 'Friends'
+                      ? <Button icon={faUsers} to="/people">Find people</Button>
+                      : undefined
+                }
+              />
+            </Card>
+          )}
 
-      {(tab === 'Following' || tab === 'Followers') && (() => {
-        const source = tab === 'Following' ? following : followers
-        const shown = tab === 'Following' ? shownFollowing : shownFollowers
-
-        return (
-          <>
-            {source.loading && <Loading />}
-            {source.error && <ErrorState message={source.error} onRetry={source.reload} />}
-
-            {!source.loading && !shown.length && (
-              <Card>
-                <EmptyState
-                  mood={filter ? 'noResults' : 'emptyBox'}
-                  title={
-                    filter
-                      ? 'Nobody here matches'
-                      : tab === 'Following' ? 'Not following anybody' : 'No followers yet'
+          {!!shown.length && (
+            <List>
+              {shown.map((person) => (
+                <PersonLine
+                  key={person.id}
+                  person={person}
+                  quiet={current.name === 'Blocked' || person.i_ignore}
+                  note={
+                    current.name === 'Blocked' ? `Blocked ${timeAgo(person.since)}`
+                      : current.name === 'Ignored' ? `Ignored ${timeAgo(person.since)}`
+                        : undefined
                   }
-                  body={
-                    filter
-                      ? 'Try fewer letters.'
-                      : tab === 'Following'
-                        ? 'Following somebody puts their new Spaces in front of you.'
-                        : 'Publish something and people will start following you.'
-                  }
-                  action={
-                    filter
-                      ? <Button variant="subtle" onClick={() => setTerm('')}>Clear the filter</Button>
-                      : tab === 'Following'
-                        ? <Button icon={faUsers} to="/people">Find people</Button>
-                        : <Button to="/create/spaces">Make a Space</Button>
-                  }
-                />
-              </Card>
-            )}
-
-            {!!shown.length && (
-              <List>
-                {shown.map((person) => (
-                  <PersonRow
-                    key={person.id}
-                    person={person}
-                    actions={isMe
+                  actions={
+                    current.name === 'Blocked'
                       ? (
-                        <Button size="sm" variant="ghost" icon={faComment} onClick={() => chat(person.id)}>
-                          Chat
+                        <Button
+                          size="sm" variant="subtle"
+                          onClick={() => people.askFor({ kind: 'unblock', person })}
+                        >
+                          Unblock
                         </Button>
                       )
-                      : <Button size="sm" variant="subtle" to={profileLink(person)}>Profile</Button>}
-                  />
-                ))}
-              </List>
-            )}
-          </>
-        )
-      })()}
+                      : current.name === 'Ignored'
+                        ? (
+                          <Button
+                            size="sm" variant="subtle"
+                            onClick={() => people.act('unignore', person)}
+                          >
+                            Stop ignoring
+                          </Button>
+                        )
+                        : current.name === 'Friends' && isMe
+                          ? <Button size="sm" icon={faComment} onClick={() => chat(person.id)}>Chat</Button>
+                          : <Button size="sm" variant="subtle" to={profileLink(person)}>Profile</Button>
+                  }
+                  menu={isMe && current.name !== 'Blocked' && current.name !== 'Ignored'
+                    ? menuFor(person, {
+                      are_friends: current.name === 'Friends',
+                      i_ignore: person.i_ignore,
+                    })
+                    : undefined}
+                />
+              ))}
+            </List>
+          )}
+        </>
+      )}
+
+      {people.dialog}
     </Page>
   )
 }

@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faBan, faFlag } from '@fortawesome/free-solid-svg-icons'
+import { faBan, faFlag, faEye, faEyeSlash } from '@fortawesome/free-solid-svg-icons'
 import { Avatar } from '@/components/ui/Avatar'
 import { cn } from '@/lib/cn'
 import type { ConversationMember } from '@/types/db'
@@ -12,11 +12,14 @@ import { profileLink } from '@/lib/links'
  * reminder is there the tenth time as well as the first.
  */
 export function SafetyNote({
-  person, onBlock, onReport, className,
+  person, onBlock, onReport, onIgnore, ignored, className,
 }: {
   person: ConversationMember
   onBlock: () => void
   onReport: () => void
+  onIgnore?: () => void
+  /** You are ignoring them, so their messages here are covered. */
+  ignored?: boolean
   className?: string
 }) {
   return (
@@ -30,10 +33,21 @@ export function SafetyNote({
       </Link>
 
       <p className="mt-2.5 text-xs leading-relaxed text-muted">
-        Watch who you chat with. Keep personal details private, and block or report anytime.
+        {ignored
+          ? 'You are ignoring this person. What they write stays covered until you tap it, and none of it reaches you as a notification.'
+          : 'Watch who you chat with. Keep personal details private, and block or report anytime.'}
       </p>
 
       <div className="mt-2.5 flex gap-2">
+        {onIgnore && (
+          <button
+            onClick={onIgnore}
+            className="inline-flex h-7 flex-1 items-center justify-center gap-1.5 rounded-lg border border-ink-line bg-ink-card text-xs font-bold text-white/70 transition-colors hover:bg-ink-hover hover:text-white"
+          >
+            <FontAwesomeIcon icon={ignored ? faEye : faEyeSlash} className="text-[10px]" />
+            {ignored ? 'Unignore' : 'Ignore'}
+          </button>
+        )}
         <button
           onClick={onBlock}
           className="inline-flex h-7 flex-1 items-center justify-center gap-1.5 rounded-lg border border-ink-line bg-ink-card text-xs font-bold text-white/70 transition-colors hover:bg-ink-hover hover:text-white"
