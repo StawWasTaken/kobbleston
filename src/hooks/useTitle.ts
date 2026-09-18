@@ -4,6 +4,9 @@ import { asset } from '@/lib/asset'
 const DEFAULT_TITLE = 'Kobbleston'
 const DEFAULT_ICON = asset('/brand/favicon.png')
 
+/** Create has a mark of its own, and every page of it wears it. */
+export const CREATE_ICON = asset('/brand/favicon-create.png')
+
 /**
  * What the browser tab says. Every page names itself, and the name goes back
  * to plain Kobbleston when you leave. Parts of the site that have a name of

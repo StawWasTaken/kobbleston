@@ -18,7 +18,7 @@ import { Inspector } from '@/components/builder/Inspector'
 import { compilePage, emptyPage, newBlock, readPage } from '@/lib/blocks'
 import type { Block, BlockKind, Page } from '@/lib/blocks'
 import { useAsync } from '@/hooks/useAsync'
-import { useTitle } from '@/hooks/useTitle'
+import { CREATE_ICON, useFavicon, useTitle } from '@/hooks/useTitle'
 import {
   getSpaceById, listSpaceFiles, publishSpaceFiles, revertSpaceFiles, saveSpaceFile,
 } from '@/lib/api'
@@ -55,6 +55,8 @@ export default function BuildSpace() {
   const stored = useAsync(() => listSpaceFiles(spaceId, 'draft'), [spaceId])
 
   useTitle(space.data ? `Building ${space.data.name}` : 'Building')
+  // Building a Space is Create's work, so the tab wears Create's mark.
+  useFavicon(CREATE_ICON)
 
   const [files, setFiles] = useState<SpaceFile[]>([])
   const [page, setPage] = useState<Page | null>(null)

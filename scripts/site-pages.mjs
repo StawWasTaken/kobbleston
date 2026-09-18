@@ -75,12 +75,25 @@ const escape = (value) =>
   value.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')
 
 /** Rewrites the shared card in a built document with one page's own. */
+/**
+ * Create wears its own mark, so a page under it carries that icon in the file
+ * itself rather than only once the app has started. A tab should not have to
+ * wait for JavaScript to know where it is.
+ */
+const iconFor = (path) => (
+  String(path ?? '').startsWith('create') ? '/brand/favicon-create.png' : '/brand/favicon.png'
+)
+
 export function describe(html, page) {
   const url = `${SITE}/${page.path}${page.path ? '/' : ''}`
   const title = escape(page.title)
   const description = escape(page.description)
 
   return html
+    .replace(
+      /<link rel="icon" type="image\/png" href="[^"]*" \/>/,
+      `<link rel="icon" type="image/png" href="${iconFor(page.path)}" />`,
+    )
     .replace(
       /<meta property="og:type" content="[^"]*" \/>/,
       `<meta property="og:type" content="${escape(page.type ?? 'website')}" />`,

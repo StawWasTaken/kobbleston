@@ -18,7 +18,7 @@ import { WorkingAsProvider, useWorkingAs } from '@/components/create/WorkingAs'
 import { UploadDialog } from '@/components/create/UploadDialog'
 import { useAuth } from '@/hooks/useAuth'
 import { useAsync } from '@/hooks/useAsync'
-import { useTitle } from '@/hooks/useTitle'
+import { CREATE_ICON, useFavicon, useTitle } from '@/hooks/useTitle'
 
 /** Everything under Create names itself inside Create, not inside the site. */
 const CREATE = 'Kobbleston Create'
@@ -41,6 +41,9 @@ export const useHub = () => useOutletContext<HubContext>()
 /* ------------------------------------------------------------------ shell */
 
 export default function CreateHub() {
+  // The mark on the tab says which half of Kobbleston you are in.
+  useFavicon(CREATE_ICON)
+
   const { profile } = useAuth()
   const [uploading, setUploading] = useState(false)
 
