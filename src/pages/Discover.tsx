@@ -86,6 +86,8 @@ export default function Discover() {
         <p className="mt-1.5 text-muted">What people are building right now.</p>
       </header>
 
+      <AdBanner className="mb-6" />
+
       <div className="sticky top-14 z-20 -mx-4 mb-6 space-y-3 bg-ink/95 px-4 py-3 backdrop-blur sm:-mx-6 sm:px-6">
         <Input
           icon={faMagnifyingGlass}
@@ -148,13 +150,24 @@ export default function Discover() {
         </Card>
       )}
 
+      {/* A long list gets one in the middle of it as well, where a person
+          reading their way down actually is. */}
       {!browsing && !!data?.length && (
-        <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
-          {data.map((space) => <SpaceCard key={space.id} space={space} />)}
-        </div>
-      )}
+        <>
+          <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
+            {data.slice(0, 10).map((space) => <SpaceCard key={space.id} space={space} />)}
+          </div>
 
-      <AdBanner className="mx-auto mt-8" />
+          {data.length > 10 && (
+            <>
+              <AdBanner className="my-8" />
+              <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
+                {data.slice(10).map((space) => <SpaceCard key={space.id} space={space} />)}
+              </div>
+            </>
+          )}
+        </>
+      )}
     </Page>
   )
 }

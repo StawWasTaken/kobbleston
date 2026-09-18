@@ -12,7 +12,7 @@ import { cn } from '@/lib/cn'
 import type { AssetKind, MarketAsset } from '@/types/db'
 
 const look: Record<AssetKind, { icon: IconDefinition; word: string; wash: string }> = {
-  image: { icon: faImage, word: 'Image', wash: 'from-brand/40' },
+  image: { icon: faImage, word: 'Decal', wash: 'from-brand/40' },
   audio: { icon: faMusic, word: 'Sound', wash: 'from-space/35' },
   video: { icon: faVideo, word: 'Video', wash: 'from-fuchsia-500/30' },
   font: { icon: faFont, word: 'Font', wash: 'from-amber-400/30' },

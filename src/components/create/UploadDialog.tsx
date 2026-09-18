@@ -101,7 +101,7 @@ export function UploadDialog({
       open={open}
       onClose={onClose}
       title="Upload to Create"
-      description="Images, sounds, video, fonts and models. 25 MB per file."
+      description="Decals, sounds, video, fonts and models. 25 MB per file."
       footer={
         <>
           <Button variant="ghost" onClick={onClose}>Cancel</Button>

@@ -343,7 +343,7 @@ export function Inspector({
 
       {block.kind === 'image' && (
         <>
-          <AssetField label="Picture" kind="image" value={String(p.tag)} onChange={(tag) => set('tag', tag)} />
+          <AssetField label="Decal" kind="image" value={String(p.tag)} onChange={(tag) => set('tag', tag)} />
           <Row label="Description for screen readers">
             <Input value={String(p.alt)} onChange={(e) => set('alt', e.target.value)} />
           </Row>
@@ -363,7 +363,7 @@ export function Inspector({
 
       {block.kind === 'gallery' && (
         <>
-          <Row label="Pictures, one number per line">
+          <Row label="Decals, one number per line">
             <Textarea
               value={(Array.isArray(p.tags) ? p.tags : []).join('\n')}
               onChange={(e) => set('tags', e.target.value.split('\n').map((t) => t.trim()).filter(Boolean))}

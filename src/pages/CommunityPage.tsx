@@ -168,7 +168,10 @@ export default function CommunityPage() {
         </div>
 
         {tab === 'About' && (
-          <div className="mt-6 space-y-8">
+          <div className="mt-6 grid gap-8 xl:grid-cols-[minmax(0,1fr)_160px] xl:items-start">
+            <div className="min-w-0 space-y-8">
+            <AdBanner />
+
             <Announcements communityId={group.id} rights={rights.data} />
 
             {/* What is on, kept short here with the rest under its own tab. */}
@@ -221,8 +224,6 @@ export default function CommunityPage() {
                 </div>
               )}
             </section>
-            <AdBanner className="mx-auto" />
-
             {!!store.data?.length && (
               <section>
                 <h2 className="mb-3 font-display text-xl font-extrabold">
@@ -235,6 +236,10 @@ export default function CommunityPage() {
             )}
 
             <CommunityWall communityId={group.id} rights={rights.data} />
+            </div>
+
+            {/* A tall one down the side, where there is room for it. */}
+            <AdBanner size="tall" className="hidden xl:block xl:sticky xl:top-20" />
           </div>
         )}
 

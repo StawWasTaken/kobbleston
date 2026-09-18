@@ -1,7 +1,9 @@
 import { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faRectangleAd, faArrowRight } from '@fortawesome/free-solid-svg-icons'
+import { faRectangleAd, faArrowRight, faFlag } from '@fortawesome/free-solid-svg-icons'
+import { ReportDialog } from '@/components/social/ReportDialog'
+import { useAuth } from '@/hooks/useAuth'
 import { assetUrl, pickAd, recordAdClick } from '@/lib/api'
 import type { AdSize, ShownAd } from '@/lib/api'
 import { AD_SIZES } from '@/lib/blocks'
@@ -27,7 +29,9 @@ export function AdBanner({
   quiet?: boolean
 }) {
   const navigate = useNavigate()
+  const { profile } = useAuth()
   const [ad, setAd] = useState<ShownAd | null>(null)
+  const [reporting, setReporting] = useState(false)
   const [picture, setPicture] = useState<string | null>(null)
   const [asked, setAsked] = useState(false)
 
@@ -54,7 +58,8 @@ export function AdBanner({
 
   if (ad && picture) {
     return (
-      <aside className={cn('w-full', className)} aria-label="Advertisement">
+      <aside className={cn('mx-auto w-full', className)} aria-label="Advertisement">
+        <div className="relative mx-auto" style={{ maxWidth: shape.w }}>
         <button
           onClick={async () => {
             await recordAdClick(ad.id).catch(() => {})
@@ -76,6 +81,27 @@ export function AdBanner({
             Ad
           </span>
         </button>
+
+        {/* Anybody who is shown an ad can say something about it. */}
+        {profile && (
+          <button
+            onClick={() => setReporting(true)}
+            aria-label={`Report the ad ${ad.name}`}
+            title="Report this ad"
+            className="absolute right-2 top-2 grid h-6 w-6 place-items-center rounded-md bg-black/60 text-[10px] text-white/70 backdrop-blur transition-colors hover:text-white"
+          >
+            <FontAwesomeIcon icon={faFlag} />
+          </button>
+        )}
+
+        <ReportDialog
+          open={reporting}
+          onClose={() => setReporting(false)}
+          targetType="ad"
+          targetId={ad.id}
+          targetName={`the ad "${ad.name}"`}
+        />
+        </div>
       </aside>
     )
   }
@@ -83,10 +109,10 @@ export function AdBanner({
   if (!asked || quiet) return null
 
   return (
-    <aside className={cn('w-full', className)} aria-label="Advertisement space">
+    <aside className={cn('mx-auto w-full', className)} aria-label="Advertisement space">
       <Link
         to="/create/ads"
-        style={frame}
+        style={{ ...frame, marginInline: 'auto' }}
         className="group flex w-full flex-col items-center justify-center gap-1.5 rounded-xl border border-dashed border-ink-line bg-ink-card/50 px-4 text-center transition-colors hover:border-brand/60 hover:bg-ink-hover"
       >
         <FontAwesomeIcon icon={faRectangleAd} className="text-base text-white/30" />

@@ -154,7 +154,7 @@ export default function Auth({ mode }: { mode: 'login' | 'signup' }) {
               <Promise_
                 icon={faShapes}
                 title="Everything in Create"
-                body="Images, sounds, video and fonts made by people here, used by their number so the credit sticks."
+                body="Decals, sounds, video and fonts made by people here, used by their number so the credit sticks."
               />
               <Promise_
                 icon={faUsers}

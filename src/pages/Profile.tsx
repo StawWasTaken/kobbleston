@@ -378,6 +378,9 @@ export default function Profile() {
         </div>
 
         {tab === 'About' && (
+          <>
+          <AdBanner className="mt-6" />
+
           <div className="mt-6 grid gap-6 lg:grid-cols-[1fr_18rem] lg:items-start">
             <div className="min-w-0 space-y-8">
               <div>
@@ -446,8 +449,6 @@ export default function Profile() {
               )}
             </section>
 
-            <AdBanner className="mx-auto" />
-
             <section>
               <h2 className="mb-3 font-display text-xl font-extrabold">Communities</h2>
               {communities.loading && (
@@ -507,7 +508,10 @@ export default function Profile() {
                 value={formatCount(communities.data?.length ?? 0)}
               />
             </Card>
+
+            <AdBanner size="box" className="lg:col-start-2" />
           </div>
+          </>
         )}
 
 

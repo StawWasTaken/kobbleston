@@ -217,7 +217,7 @@ export default function Landing() {
             kicker="Kobbleston Create"
             title="Built From"
             accent="Real Work"
-            body="Images, sounds, video and fonts, made by people here and checked before anybody sees them. Take what you need, use it by its number, and sell what you make for Kubes."
+            body="Decals, sounds, video and fonts, made by people here and checked before anybody sees them. Take what you need, use it by its number, and sell what you make for Kubes."
             to="/create/marketplace"
             action="Open the marketplace"
           />

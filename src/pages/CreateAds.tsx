@@ -3,6 +3,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import {
   faRectangleAd, faPlus, faStop, faEye, faHandPointer, faCircleCheck,
   faCubes, faUsers, faCalendarDay, faShapes, faGlobe, faLock, faRotateRight, faHourglassHalf,
+  faTrash,
 } from '@fortawesome/free-solid-svg-icons'
 import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
@@ -17,7 +18,8 @@ import { useAsync } from '@/hooks/useAsync'
 import { useTitle } from '@/hooks/useTitle'
 import { useSignedUrl } from '@/hooks/useSignedUrl'
 import {
-  AD_MAX_KUBES, adDays, buyAd, endAd, listAdvertisable, listMyAds, listOwnAssets, renewAd,
+  AD_MAX_KUBES, adDays, buyAd, endAd, listAdvertisable, listMyAds, listOwnAssets, removeAd,
+  renewAd,
 } from '@/lib/api'
 import type { AdSize, AdTarget, Advertisable, MyAd } from '@/lib/api'
 import { AD_SIZES } from '@/lib/blocks'
@@ -70,10 +72,11 @@ function Thumb({ path, on }: { path: string; on: boolean }) {
   )
 }
 
-function Campaign({ ad, onStop, onRenew }: {
+function Campaign({ ad, onStop, onRenew, onRemove }: {
   ad: MyAd
   onStop: () => void
   onRenew: () => void
+  onRemove: () => void
 }) {
   const picture = useSignedUrl(ad.file_path)
   const left = ad.budget - ad.spent
@@ -139,9 +142,14 @@ function Campaign({ ad, onStop, onRenew }: {
             <FontAwesomeIcon icon={faCircleCheck} />
             Finished
           </span>
-          <Button size="sm" variant="subtle" icon={faRotateRight} onClick={onRenew}>
-            Put it back up
-          </Button>
+          <span className="flex gap-1.5">
+            <Button size="sm" variant="subtle" icon={faRotateRight} onClick={onRenew}>
+              Put it back up
+            </Button>
+            <Button size="sm" variant="ghost" icon={faTrash} onClick={onRemove}>
+              Remove
+            </Button>
+          </span>
         </span>
       )}
     </article>
@@ -177,6 +185,7 @@ export default function CreateAds() {
   const [outward, setOutward] = useState('')
   const [budget, setBudget] = useState(50)
   const [renewing, setRenewing] = useState<MyAd | null>(null)
+  const [removing, setRemoving] = useState<MyAd | null>(null)
   const [again, setAgain] = useState(50)
   const [pending, setPending] = useState(false)
 
@@ -185,7 +194,7 @@ export default function CreateAds() {
       toast('Give the ad a name of at least three letters.', 'error')
       return
     }
-    if (!picked) { toast('Pick a picture for the ad.', 'error'); return }
+    if (!picked) { toast('Pick a decal for the ad.', 'error'); return }
 
     const away = official && outward.trim()
     if (!forWhat && !away) {
@@ -236,6 +245,25 @@ export default function CreateAds() {
     }
   }
 
+  const remove = async () => {
+    if (!removing) return
+    setPending(true)
+    try {
+      const back = await removeAd(removing.id)
+      toast(
+        back > 0 ? `Removed. ${back} Kubes came back.` : 'Removed.',
+        'success',
+      )
+      setRemoving(null)
+      ads.reload()
+      refreshProfile()
+    } catch (err) {
+      toast(err instanceof Error ? err.message : 'That could not be removed.', 'error')
+    } finally {
+      setPending(false)
+    }
+  }
+
   const stop = async (ad: MyAd) => {
     try {
       const back = await endAd(ad.id)
@@ -253,7 +281,7 @@ export default function CreateAds() {
         <div>
           <h1 className="font-display text-3xl font-extrabold sm:text-4xl">Ads</h1>
           <p className="mt-1.5 max-w-xl text-sm text-muted">
-            Put a picture of yours in front of people, in the Spaces that keep an ad slot and in
+            Put a decal of yours in front of people, in the Spaces that keep an ad slot and in
             Kobbleston&rsquo;s own. One Kube a view, paid up front, and whatever is left comes
             back when you stop. The more Kubes behind it, the longer it runs.
           </p>
@@ -272,7 +300,7 @@ export default function CreateAds() {
           <EmptyState
             mood="emptyBox"
             title="No ads yet"
-            body="An ad needs a picture you have uploaded to Create, somewhere on Kobbleston to send people, and some Kubes behind it."
+            body="An ad needs a decal you have uploaded to Create, somewhere on Kobbleston to send people, and some Kubes behind it."
             action={<Button icon={faRectangleAd} onClick={() => setBuying(true)}>Buy one</Button>}
           />
         </Card>
@@ -286,6 +314,7 @@ export default function CreateAds() {
               ad={ad}
               onStop={() => stop(ad)}
               onRenew={() => { setRenewing(ad); setAgain(Math.min(50, profile?.pixels ?? 10)) }}
+              onRemove={() => setRemoving(ad)}
             />
           ))}
         </div>
@@ -363,7 +392,7 @@ export default function CreateAds() {
 
             {!pictures.loading && !pictures.data?.length && (
               <p className="rounded-xl border border-ink-line bg-ink-raised p-3 text-sm text-muted">
-                You have no approved pictures in Create yet. Upload one and it can go in an ad
+                You have no approved decals in Create yet. Upload one and it can go in an ad
                 once it has been looked at.
               </p>
             )}
@@ -527,6 +556,26 @@ export default function CreateAds() {
             Kubes are added to it, so nothing bought before is lost.
           </p>
         </div>
+      </Dialog>
+
+      <Dialog
+        open={!!removing}
+        onClose={() => setRemoving(null)}
+        title="Remove this ad?"
+        description={removing ? `${removing.name} comes off the list for good.` : ''}
+        size="sm"
+        footer={
+          <>
+            <Button variant="ghost" onClick={() => setRemoving(null)}>Keep it</Button>
+            <Button variant="danger" loading={pending} onClick={remove}>Remove it</Button>
+          </>
+        }
+      >
+        <p className="text-sm leading-relaxed text-muted">
+          Anything it never spent comes back to you. The decal it was using is free again
+          afterwards, so it can be deleted if you want it gone as well. What it was shown and
+          pressed is not kept.
+        </p>
       </Dialog>
 
       <UploadDialog

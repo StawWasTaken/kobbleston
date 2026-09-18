@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/Input'
 import { UploadDialog } from '@/components/create/UploadDialog'
 import { contentTag } from '@/components/create/AssetTile'
 import { useToast } from '@/components/ui/Toast'
+import { kindLabels } from '@/components/create/AssetTile'
 import type { AssetKind } from '@/types/db'
 
 /**
@@ -34,7 +35,7 @@ export function AssetField({
     <div>
       <Input
         label={label}
-        labelNote={`a ${kind} from Create`}
+        labelNote={`a ${kindLabels[kind].toLowerCase()} from Create`}
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder={kind === 'image' ? 'IMG-1042' : kind === 'audio' ? 'SND-1033' : 'VID-1020'}

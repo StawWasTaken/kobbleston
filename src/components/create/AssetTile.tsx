@@ -19,7 +19,7 @@ export const kindIcons: Record<AssetKind, IconDefinition> = {
 }
 
 export const kindLabels: Record<AssetKind, string> = {
-  image: 'Image',
+  image: 'Decal',
   audio: 'Audio',
   video: 'Video',
   font: 'Font',

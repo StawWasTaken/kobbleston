@@ -36,9 +36,9 @@ export default function Home() {
         {profile ? `Welcome back, ${profile.display_name}` : 'Home'}
       </h1>
 
-      {profile && <FriendsRail />}
+      <AdBanner className="mb-6" />
 
-      <AdBanner className="mx-auto mb-8" />
+      {profile && <FriendsRail />}
 
       <SpaceRail
         title="Your Spaces"

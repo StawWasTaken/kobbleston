@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { Link, useParams } from 'react-router-dom'
+import { Link, useNavigate, useParams } from 'react-router-dom'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import {
   faCopy, faLock, faLockOpen, faPen, faTrash, faShieldHalved,
@@ -24,7 +24,7 @@ import { useAsync } from '@/hooks/useAsync'
 import {
   assetAnalytics, deleteAsset, getAsset, listAssetReviews, listAssetsByCreator, rateAsset,
   recordAssetEvent, removeAssetReview, updateAsset, writeAssetReview, buyAsset, priceCeilings,
-  dropFromInventory,
+  dropFromInventory, listForSale, unlistForSale, listingFee, PLATFORM_SHARE,
 } from '@/lib/api'
 import { useSignedUrl } from '@/hooks/useSignedUrl'
 import { useTitle } from '@/hooks/useTitle'
@@ -43,6 +43,81 @@ const prefixes: Record<string, string> = {
 
 const sizeLabel = (bytes: number) =>
   bytes > 1_048_576 ? `${(bytes / 1_048_576).toFixed(1)} MB` : `${Math.max(1, Math.round(bytes / 1024))} KB`
+
+/**
+ * The thing itself, shown the way that kind of thing wants to be shown.
+ *
+ * A decal takes its own shape and as much room as the page will give it. A
+ * sound is a square cover with the player under it, whatever shape the last
+ * thing looked at happened to be. A clip is only the player, in the clip's
+ * own shape, with no still of it sitting alongside. A font is set in itself.
+ */
+function Stage({ asset, previewUrl, fileUrl }: {
+  asset: AssetPageItem
+  previewUrl: string | null
+  fileUrl: string | null
+}) {
+  const [shape, setShape] = useState<{ w: number; h: number } | null>(null)
+
+
+  if (asset.kind === 'video') {
+    return <MediaPlayer src={fileUrl} kind="video" poster={previewUrl} className="mx-auto max-w-4xl" />
+  }
+
+  if (asset.kind === 'font') {
+    return <FontPreview src={fileUrl} name={asset.name} />
+  }
+
+  if (asset.kind === 'audio') {
+    return (
+      <div className="mx-auto w-full max-w-sm space-y-3">
+        <div className="grid aspect-square place-items-center overflow-hidden rounded-2xl border border-ink-line bg-ink-raised">
+          {previewUrl ? (
+            <img
+              src={previewUrl}
+              alt=""
+              draggable={false}
+              onContextMenu={(e) => e.preventDefault()}
+              className="h-full w-full select-none object-cover"
+            />
+          ) : (
+            <FontAwesomeIcon icon={kindIcons.audio} className="text-6xl text-white/25" />
+          )}
+        </div>
+        <MediaPlayer src={fileUrl} kind="audio" />
+      </div>
+    )
+  }
+
+  // A decal, or a model with a still of it.
+  return (
+    <div
+      className={cn(
+        'mx-auto grid max-h-[70vh] w-full place-items-center overflow-hidden rounded-2xl border border-ink-line bg-ink-raised',
+        previewUrl ? '' : 'aspect-square max-w-sm',
+      )}
+      style={shape
+        ? { aspectRatio: `${shape.w} / ${shape.h}`, maxWidth: Math.min(shape.w, 1100) }
+        : undefined}
+    >
+      {previewUrl ? (
+        <img
+          src={previewUrl}
+          alt={asset.name}
+          draggable={false}
+          onLoad={(e) => setShape({
+            w: e.currentTarget.naturalWidth,
+            h: e.currentTarget.naturalHeight,
+          })}
+          onContextMenu={(e) => e.preventDefault()}
+          className="h-full w-full select-none object-contain"
+        />
+      ) : (
+        <FontAwesomeIcon icon={kindIcons[asset.kind]} className="text-5xl text-white/25" />
+      )}
+    </div>
+  )
+}
 
 /** Thirty days of use, drawn from the numbers themselves rather than invented. */
 function UseChart({ days }: { days: AssetDay[] }) {
@@ -159,7 +234,7 @@ function UsePanel({ asset, onChanged }: { asset: AssetPageItem; onChanged: () =>
 
 export default function AssetPage() {
   const { tag = '' } = useParams()
-  const { profile } = useAuth()
+  const { profile, refreshProfile } = useAuth()
   const toast = useToast()
   const [editing, setEditing] = useState(false)
   const [name, setName] = useState('')
@@ -168,8 +243,10 @@ export default function AssetPage() {
   const [pending, setPending] = useState(false)
   const [panel, setPanel] = useState<'Description' | 'Reviews' | 'Numbers'>('Description')
   // The picture tells us its own proportions once it loads.
-  const [shape, setShape] = useState<{ w: number; h: number } | null>(null)
   const [dropping, setDropping] = useState(false)
+  const navigate = useNavigate()
+  const [deleting, setDeleting] = useState(false)
+  const [erasing, setErasing] = useState(false)
 
   const [prefix, number] = useMemo(() => {
     const match = tag.toUpperCase().match(/^([A-Z]{3})-(\d+)$/)
@@ -255,9 +332,28 @@ export default function AssetPage() {
       await updateAsset(asset.id, {
         name: name.trim(),
         description: description.trim() || null,
-        price: asked,
       })
-      toast('Saved.', 'success')
+
+      /*
+       * The price is not an ordinary field: putting something up for sale
+       * costs Kubes and taking it down hands a quarter of that back, so it
+       * goes through its own doors rather than being written to the row.
+       */
+      if (asked !== asset.price) {
+        if (asked > 0) {
+          const fee = await listForSale(asset.id, asked)
+          toast(`Up for sale at ${asked}. Putting it up cost ${fee} Kubes.`, 'success')
+        } else {
+          const back = await unlistForSale(asset.id)
+          toast(
+            back > 0 ? `Off sale. ${back} Kubes came back.` : 'Off sale.',
+            'success',
+          )
+        }
+        refreshProfile()
+      } else {
+        toast('Saved.', 'success')
+      }
       setEditing(false)
       item.reload()
     } catch (err) {
@@ -372,11 +468,7 @@ export default function AssetPage() {
                       label: 'Delete',
                       icon: faTrash,
                       danger: true,
-                      onSelect: async () => {
-                        await deleteAsset(asset.id, asset.file_path)
-                        toast('Deleted.', 'success')
-                        item.reload()
-                      },
+                      onSelect: () => setDeleting(true),
                     },
                   ]
                 : []),
@@ -384,6 +476,45 @@ export default function AssetPage() {
           />
         </div>
       </header>
+
+      {/* Deleting is asked about, and when it cannot go the reason is shown
+          here rather than disappearing into the console. */}
+      <Dialog
+        open={deleting}
+        onClose={() => setDeleting(false)}
+        title={`Delete ${asset.name}?`}
+        description="This takes the file away as well. Anything already using it stops working, and the number is not given out again."
+        size="sm"
+        footer={
+          <>
+            <Button variant="ghost" onClick={() => setDeleting(false)}>Keep it</Button>
+            <Button
+              variant="danger"
+              loading={erasing}
+              onClick={async () => {
+                setErasing(true)
+                try {
+                  await deleteAsset(asset.id)
+                  toast('Deleted.', 'success')
+                  setDeleting(false)
+                  navigate('/create/uploads')
+                } catch (err) {
+                  toast(err instanceof Error ? err.message : 'That could not be deleted.', 'error')
+                } finally {
+                  setErasing(false)
+                }
+              }}
+            >
+              Delete it
+            </Button>
+          </>
+        }
+      >
+        <p className="text-sm leading-relaxed text-muted">
+          If an ad of yours is using this, it has to be removed first: the ad would be left
+          pointing at nothing otherwise.
+        </p>
+      </Dialog>
 
       <Dialog
         open={dropping}
@@ -433,53 +564,24 @@ export default function AssetPage() {
         </p>
       )}
 
-      <div className="grid gap-5 sm:grid-cols-[14rem_1fr] sm:items-start">
-        <div>
-          {/* The frame takes the shape of the picture rather than posting it
-              into a square with bars either side. */}
-          <div
-            className={cn(
-              'grid place-items-center overflow-hidden rounded-2xl border border-ink-line bg-ink-raised',
-              previewUrl ? '' : 'aspect-square',
-            )}
-            style={shape ? { aspectRatio: `${shape.w} / ${shape.h}` } : undefined}
-          >
-            {previewUrl ? (
-              <img
-                src={previewUrl}
-                alt={asset.name}
-                draggable={false}
-                onLoad={(e) => setShape({
-                  w: e.currentTarget.naturalWidth,
-                  h: e.currentTarget.naturalHeight,
-                })}
-                onContextMenu={(e) => e.preventDefault()}
-                className="h-full w-full select-none object-cover"
-              />
-            ) : (
-              <FontAwesomeIcon icon={kindIcons[asset.kind]} className="text-5xl text-white/25" />
-            )}
-          </div>
-          <Link
-            to={`/create/creator/${asset.creator_username}`}
-            className="mt-2 flex items-center gap-2 text-sm font-bold hover:text-link"
-          >
-            <Avatar
-              src={avatarOf({ avatar_url: asset.creator_avatar_url })}
-              name={asset.creator_display_name}
-              size="xs"
-            />
-            <span className="truncate">{asset.creator_display_name}</span>
-          </Link>
-        </div>
+      <div className="space-y-5">
+        {/* Whatever it is, at the size it deserves, with its shape read from
+            the thing itself rather than assumed. */}
+        <Stage key={asset.id} asset={asset} previewUrl={previewUrl} fileUrl={fileUrl} />
+
+        <Link
+          to={`/create/creator/${asset.creator_username}`}
+          className="flex items-center gap-2 text-sm font-bold hover:text-link"
+        >
+          <Avatar
+            src={avatarOf({ avatar_url: asset.creator_avatar_url })}
+            name={asset.creator_display_name}
+            size="xs"
+          />
+          <span className="truncate">{asset.creator_display_name}</span>
+        </Link>
 
         <div className="min-w-0 space-y-5">
-          {(asset.kind === 'audio' || asset.kind === 'video') && (
-            <MediaPlayer src={fileUrl} kind={asset.kind} poster={previewUrl} />
-          )}
-
-          {asset.kind === 'font' && <FontPreview src={fileUrl} name={asset.name} />}
-
           <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
             {[
               { label: 'Type', value: kindLabels[asset.kind] },
@@ -544,6 +646,33 @@ export default function AssetPage() {
                       hint={`0 means free. The most you can charge for ${kindLabels[asset.kind].toLowerCase()} is ${priceCeilings[asset.kind]} Kubes.`}
                       className="max-w-xs"
                     />
+
+                    {/* What it costs to sell, said before it is agreed to. */}
+                    {(() => {
+                      const asked = Math.max(0, Math.round(Number(price) || 0))
+                      if (asked === asset.price) return null
+
+                      if (asked > 0) {
+                        const fee = listingFee(asked)
+                        const keeps = asked - Math.round((asked * PLATFORM_SHARE) / 100)
+                        return (
+                          <p className="rounded-xl border border-ink-line bg-ink-raised p-3 text-xs leading-relaxed text-muted">
+                            Putting this up for sale costs <span className="font-bold text-white">{fee}</span>{' '}
+                            Kubes, paid to Kobbleston now. Taking it back off sale later hands a
+                            quarter of that back. On each sale you keep{' '}
+                            <span className="font-bold text-white">{keeps}</span> of the{' '}
+                            {asked}; the other {PLATFORM_SHARE}% is Kobbleston&rsquo;s share.
+                          </p>
+                        )
+                      }
+
+                      return (
+                        <p className="rounded-xl border border-ink-line bg-ink-raised p-3 text-xs leading-relaxed text-muted">
+                          Taking it off sale hands back a quarter of what putting it up cost.
+                          Anybody who has already bought it keeps it.
+                        </p>
+                      )
+                    })()}
                     <div className="flex gap-2">
                       <Button loading={pending} onClick={save}>Save</Button>
                       <Button variant="ghost" onClick={() => setEditing(false)}>Cancel</Button>

@@ -137,6 +137,11 @@ export function MediaPlayer({
   const [length, setLength] = useState(0)
   const [buffered, setBuffered] = useState(0)
   const [ended, setEnded] = useState(false)
+  // A clip is shown in its own shape rather than posted into a widescreen
+  // box, so nothing is letterboxed that was never wide.
+  const [shape, setShape] = useState<{ w: number; h: number } | null>(null)
+
+  useEffect(() => { setShape(null); setTime(0); setEnded(false) }, [src])
 
   useEffect(() => { setNode(media.current) }, [src])
 
@@ -154,7 +159,13 @@ export function MediaPlayer({
     onPause: () => setPlaying(false),
     onEnded: () => { setPlaying(false); setEnded(true) },
     onTimeUpdate: () => setTime(media.current?.currentTime ?? 0),
-    onLoadedMetadata: () => setLength(media.current?.duration ?? 0),
+    onLoadedMetadata: () => {
+      const element = media.current
+      setLength(element?.duration ?? 0)
+      if (element?.videoWidth && element?.videoHeight) {
+        setShape({ w: element.videoWidth, h: element.videoHeight })
+      }
+    },
     onProgress: () => {
       const element = media.current
       if (element?.buffered.length) setBuffered(element.buffered.end(element.buffered.length - 1))
@@ -207,20 +218,28 @@ export function MediaPlayer({
   }
 
   return (
-    <div className={cn('overflow-hidden rounded-xl border border-ink-line bg-black', className)}>
+    <div
+      // The menu is blocked over the whole picture, not only the video
+      // element, so pausing does not open a way to save the file.
+      onContextMenu={(e) => e.preventDefault()}
+      className={cn('overflow-hidden rounded-xl border border-ink-line bg-black', className)}
+    >
       <div className="relative">
         <video
           {...shared}
           poster={poster ?? undefined}
           playsInline
           disablePictureInPicture
+          controlsList="nodownload noplaybackrate"
           onClick={toggle}
-          className="aspect-video w-full cursor-pointer select-none bg-black"
+          style={{ aspectRatio: shape ? `${shape.w} / ${shape.h}` : '16 / 9' }}
+          className="w-full cursor-pointer select-none bg-black object-contain"
         />
         {!playing && (
           <button
             onClick={toggle}
             aria-label="Play"
+            onContextMenu={(e) => e.preventDefault()}
             className="absolute inset-0 grid place-items-center bg-black/30 transition-colors hover:bg-black/20"
           >
             <span className="grid h-16 w-16 place-items-center rounded-full bg-brand text-[#fff] shadow-pop">

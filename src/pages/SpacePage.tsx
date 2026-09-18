@@ -172,6 +172,8 @@ export default function SpacePage() {
   return (
     <>
       <Page>
+        <AdBanner className="mb-6" />
+
         <div className="grid gap-6 lg:grid-cols-[1.7fr_1fr]">
           <Carousel images={shots} alt={`Pictures of ${space.name}`} />
 
@@ -363,7 +365,7 @@ export default function SpacePage() {
           </div>
         )}
 
-        <AdBanner className="mx-auto mt-8" />
+        <AdBanner size="box" className="mt-8" />
       </Page>
 
       <ReportDialog

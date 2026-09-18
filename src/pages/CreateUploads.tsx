@@ -198,7 +198,7 @@ export default function CreateUploads() {
           <EmptyState
             mood="emptyBox"
             title="Nothing uploaded yet"
-            body="Images, sounds, video, fonts and models. Everything you upload gets its own number, and that number is how it is used everywhere else."
+            body="Decals, sounds, video, fonts and models. Everything you upload gets its own number, and that number is how it is used everywhere else."
             action={<Button icon={faUpload} onClick={openUpload}>Upload something</Button>}
           />
         </Card>

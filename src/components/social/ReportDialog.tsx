@@ -9,7 +9,7 @@ import { cn } from '@/lib/cn'
 
 const reasons = [
   { value: 'harassment', label: 'Harassment or bullying' },
-  { value: 'spam', label: 'Spam' },
+  { value: 'spam', label: 'Spam, or an ad that will not say what it is' },
   { value: 'sexual', label: 'Sexual content' },
   { value: 'violence', label: 'Threats or violence' },
   { value: 'impersonation', label: 'Pretending to be someone' },
@@ -22,7 +22,7 @@ export function ReportDialog({
 }: {
   open: boolean
   onClose: () => void
-  targetType: 'profile' | 'space' | 'message'
+  targetType: 'profile' | 'space' | 'message' | 'ad' | 'asset' | 'community'
   targetId: string
   targetName: string
 }) {

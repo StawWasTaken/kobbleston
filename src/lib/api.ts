@@ -373,7 +373,7 @@ export async function markNotificationsRead(userId: string) {
 
 export async function submitReport(input: {
   reporterId: string
-  targetType: 'profile' | 'space' | 'message'
+  targetType: 'profile' | 'space' | 'message' | 'ad' | 'asset' | 'community'
   targetId: string
   reason: string
   details: string
@@ -602,11 +602,15 @@ export async function creatorAnalytics(userId: string): Promise<CreatorAssetRow[
  * A creator may rename, re-describe and unlist their own upload. Everything
  * else on the row is pinned by the database, so this cannot publish anything.
  */
+/**
+ * The details of an upload. Not the price: selling costs Kubes, so that goes
+ * through listForSale and unlistForSale, and the database ignores a price
+ * written straight to the row.
+ */
 export async function updateAsset(id: string, patch: {
   name?: string
   description?: string | null
   is_public?: boolean
-  price?: number
 }) {
   unwrap(await supabase.from('assets').update(patch).eq('id', id).select('id').single())
 }
@@ -672,10 +676,15 @@ export async function uploadAsset(input: {
   }
 }
 
-export async function deleteAsset(id: string, filePath: string) {
-  const { error } = await supabase.from('assets').delete().eq('id', id)
-  if (error) throw new Error(error.message)
-  await supabase.storage.from(assetBucket).remove([filePath])
+/**
+ * Deleting an upload. The database decides whether it may go and says why
+ * when it may not, so a picture an ad is holding refuses with the name of the
+ * ad rather than failing silently. It hands back the stored file, which is
+ * taken away afterwards.
+ */
+export async function deleteAsset(id: string) {
+  const path = unwrap(await supabase.rpc('delete_asset', { target: id })) as string
+  if (path) await supabase.storage.from(assetBucket).remove([path])
 }
 
 // --------------------------------------------------------- profile picture
@@ -1380,6 +1389,32 @@ export async function endAd(adId: string): Promise<number> {
 
 export async function listMyAds(): Promise<MyAd[]> {
   return (unwrap(await supabase.rpc('my_ads')) as MyAd[]) ?? []
+}
+
+/**
+ * What it costs to put something up at that price: a tenth of it, never less
+ * than five and never more than 250. The same sum the database does, so the
+ * price can be shown before anybody commits to it.
+ */
+export const listingFee = (price: number) =>
+  Math.max(5, Math.min(250, Math.round((Number(price) || 0) * 0.1)))
+
+/** The share of a sale Kobbleston keeps; the rest reaches the creator. */
+export const PLATFORM_SHARE = 35
+
+/** Putting something up for sale. Returns the fee that was paid. */
+export async function listForSale(assetId: string, price: number): Promise<number> {
+  return unwrap(await supabase.rpc('list_for_sale', { target: assetId, asking: price })) as number
+}
+
+/** Taking it back off sale. Returns the Kubes handed back. */
+export async function unlistForSale(assetId: string): Promise<number> {
+  return unwrap(await supabase.rpc('unlist_for_sale', { target: assetId })) as number
+}
+
+/** Taking a finished campaign off the list. Returns the Kubes handed back. */
+export async function removeAd(adId: string): Promise<number> {
+  return unwrap(await supabase.rpc('remove_ad', { target: adId })) as number
 }
 
 /** Putting a finished campaign back up. Returns when it now comes down. */
