@@ -13,6 +13,7 @@ import type { SpaceSort } from '@/lib/api'
 import type { SpaceCategory } from '@/types/db'
 import { cn } from '@/lib/cn'
 import { useTitle } from '@/hooks/useTitle'
+import { AdBanner } from '@/components/ads/AdBanner'
 
 const sorts: { value: SpaceSort; label: string }[] = [
   { value: 'trending', label: 'Trending' },
@@ -152,6 +153,8 @@ export default function Discover() {
           {data.map((space) => <SpaceCard key={space.id} space={space} />)}
         </div>
       )}
+
+      <AdBanner className="mx-auto mt-8" />
     </Page>
   )
 }

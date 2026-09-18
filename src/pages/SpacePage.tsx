@@ -32,6 +32,7 @@ import { formatCount, timeAgo } from '@/lib/format'
 import { cn } from '@/lib/cn'
 import { avatarOf } from '@/lib/avatars'
 import { Verified } from '@/components/brand/Verified'
+import { AdBanner } from '@/components/ads/AdBanner'
 
 const tabs = ['About', 'Badges'] as const
 type Tab = (typeof tabs)[number]
@@ -361,6 +362,8 @@ export default function SpacePage() {
             )}
           </div>
         )}
+
+        <AdBanner className="mx-auto mt-8" />
       </Page>
 
       <ReportDialog

@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import {
   faRectangleAd, faPlus, faStop, faEye, faHandPointer, faCircleCheck,
-  faCubes, faUsers, faCalendarDay, faShapes, faGlobe, faLock,
+  faCubes, faUsers, faCalendarDay, faShapes, faGlobe, faLock, faRotateRight, faHourglassHalf,
 } from '@fortawesome/free-solid-svg-icons'
 import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
@@ -16,7 +16,9 @@ import { useAuth } from '@/hooks/useAuth'
 import { useAsync } from '@/hooks/useAsync'
 import { useTitle } from '@/hooks/useTitle'
 import { useSignedUrl } from '@/hooks/useSignedUrl'
-import { buyAd, endAd, listAdvertisable, listMyAds, listOwnAssets } from '@/lib/api'
+import {
+  AD_MAX_KUBES, adDays, buyAd, endAd, listAdvertisable, listMyAds, listOwnAssets, renewAd,
+} from '@/lib/api'
 import type { AdSize, AdTarget, Advertisable, MyAd } from '@/lib/api'
 import { AD_SIZES } from '@/lib/blocks'
 import { formatCount } from '@/lib/format'
@@ -36,6 +38,23 @@ const targetLook: Record<AdTarget, { icon: typeof faCubes; label: string }> = {
 
 const targetOrder: AdTarget[] = ['space', 'community', 'event', 'asset']
 
+/** How much longer a campaign has, said the way a person would say it. */
+function timeLeft(ends: string | null) {
+  if (!ends) return null
+  const hours = (new Date(ends).getTime() - Date.now()) / 3600000
+  if (hours <= 0) return null
+  if (hours < 1) return 'Less than an hour left'
+  if (hours < 24) return `${Math.round(hours)} ${Math.round(hours) === 1 ? 'hour' : 'hours'} left`
+  const days = Math.round(hours / 24)
+  return `${days} ${days === 1 ? 'day' : 'days'} left`
+}
+
+/** What a number of Kubes buys, in both of the ways it runs out. */
+const runsFor = (kubes: number) => {
+  const days = adDays(kubes)
+  return `${kubes} views, or ${days} ${days === 1 ? 'day' : 'days'}, whichever goes first`
+}
+
 /** A picture of somebody's own, small, for picking one. */
 function Thumb({ path, on }: { path: string; on: boolean }) {
   const url = useSignedUrl(path)
@@ -51,9 +70,14 @@ function Thumb({ path, on }: { path: string; on: boolean }) {
   )
 }
 
-function Campaign({ ad, onStop }: { ad: MyAd; onStop: () => void }) {
+function Campaign({ ad, onStop, onRenew }: {
+  ad: MyAd
+  onStop: () => void
+  onRenew: () => void
+}) {
   const picture = useSignedUrl(ad.file_path)
   const left = ad.budget - ad.spent
+  const remaining = ad.is_running ? timeLeft(ad.ends_at) : null
 
   return (
     <article className="flex flex-wrap items-center gap-4 rounded-2xl border border-ink-line bg-ink-card p-4">
@@ -86,6 +110,17 @@ function Campaign({ ad, onStop }: { ad: MyAd; onStop: () => void }) {
             <Kube />
             {formatCount(left)} left of {formatCount(ad.budget)}
           </span>
+          {remaining && (
+            <span className="inline-flex items-center gap-1.5 text-muted">
+              <FontAwesomeIcon icon={faHourglassHalf} />
+              {remaining}
+            </span>
+          )}
+          {ad.renewed_count > 0 && (
+            <span className="text-muted">
+              Renewed {ad.renewed_count} {ad.renewed_count === 1 ? 'time' : 'times'}
+            </span>
+          )}
         </div>
 
         <div className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-ink-raised">
@@ -99,9 +134,14 @@ function Campaign({ ad, onStop }: { ad: MyAd; onStop: () => void }) {
       {ad.is_running ? (
         <Button size="sm" variant="ghost" icon={faStop} onClick={onStop}>Stop</Button>
       ) : (
-        <span className="inline-flex items-center gap-1.5 text-xs font-bold text-muted">
-          <FontAwesomeIcon icon={faCircleCheck} />
-          Finished
+        <span className="flex flex-col items-end gap-1.5">
+          <span className="inline-flex items-center gap-1.5 text-xs font-bold text-muted">
+            <FontAwesomeIcon icon={faCircleCheck} />
+            Finished
+          </span>
+          <Button size="sm" variant="subtle" icon={faRotateRight} onClick={onRenew}>
+            Put it back up
+          </Button>
         </span>
       )}
     </article>
@@ -136,6 +176,8 @@ export default function CreateAds() {
   const [forWhat, setForWhat] = useState<Advertisable | null>(null)
   const [outward, setOutward] = useState('')
   const [budget, setBudget] = useState(50)
+  const [renewing, setRenewing] = useState<MyAd | null>(null)
+  const [again, setAgain] = useState(50)
   const [pending, setPending] = useState(false)
 
   const buy = async () => {
@@ -173,6 +215,23 @@ export default function CreateAds() {
     }
   }
 
+  const renew = async () => {
+    if (!renewing) return
+    setPending(true)
+    try {
+      const until = await renewAd(renewing.id, again)
+      const days = Math.max(1, Math.round((new Date(until).getTime() - Date.now()) / 86400000))
+      toast(`Back up for ${days} ${days === 1 ? 'day' : 'days'}.`, 'success')
+      setRenewing(null)
+      ads.reload()
+      refreshProfile()
+    } catch (err) {
+      toast(err instanceof Error ? err.message : 'That did not go through.', 'error')
+    } finally {
+      setPending(false)
+    }
+  }
+
   const stop = async (ad: MyAd) => {
     try {
       const back = await endAd(ad.id)
@@ -190,8 +249,9 @@ export default function CreateAds() {
         <div>
           <h1 className="font-display text-3xl font-extrabold sm:text-4xl">Ads</h1>
           <p className="mt-1.5 max-w-xl text-sm text-muted">
-            Put a picture of yours in front of people, in the Spaces that keep an ad slot. One
-            Kube a view, paid up front, and whatever is left comes back when you stop.
+            Put a picture of yours in front of people, in the Spaces that keep an ad slot and in
+            Kobbleston&rsquo;s own. One Kube a view, paid up front, and whatever is left comes
+            back when you stop. The more Kubes behind it, the longer it runs.
           </p>
         </div>
 
@@ -216,7 +276,14 @@ export default function CreateAds() {
 
       {!!ads.data?.length && (
         <div className="space-y-3">
-          {ads.data.map((ad) => <Campaign key={ad.id} ad={ad} onStop={() => stop(ad)} />)}
+          {ads.data.map((ad) => (
+            <Campaign
+              key={ad.id}
+              ad={ad}
+              onStop={() => stop(ad)}
+              onRenew={() => { setRenewing(ad); setAgain(Math.min(50, profile?.pixels ?? 10)) }}
+            />
+          ))}
         </div>
       )}
 
@@ -388,7 +455,7 @@ export default function CreateAds() {
               <input
                 type="range"
                 min={10}
-                max={Math.max(10, Math.min(2000, profile?.pixels ?? 10))}
+                max={Math.max(10, Math.min(AD_MAX_KUBES, profile?.pixels ?? 10))}
                 step={10}
                 value={budget}
                 onChange={(e) => setBudget(Number(e.target.value))}
@@ -401,9 +468,55 @@ export default function CreateAds() {
               </span>
             </div>
             <p className="mt-1.5 text-xs text-muted">
-              That is {budget} views. A Space that shows your ad keeps 15% of what each view costs.
+              That is {runsFor(budget)}. The more Kubes behind it, the longer it stays up, to a
+              limit of a fortnight at {AD_MAX_KUBES}. A Space that shows your ad keeps 15% of what
+              each view costs; in Kobbleston&rsquo;s own slots there is nobody whose page it is,
+              so nobody takes a share.
             </p>
           </div>
+        </div>
+      </Dialog>
+
+      <Dialog
+        open={!!renewing}
+        onClose={() => setRenewing(null)}
+        title="Put it back up"
+        description={renewing ? `${renewing.name}, running again from today.` : ''}
+        size="sm"
+        footer={
+          <>
+            <span className="mr-auto inline-flex items-center gap-1.5 text-sm text-muted">
+              You have <Kube /> {formatCount(profile?.pixels ?? 0)}
+            </span>
+            <Button variant="ghost" onClick={() => setRenewing(null)}>Cancel</Button>
+            <Button loading={pending} onClick={renew}>
+              <Kube />
+              {again}
+            </Button>
+          </>
+        }
+      >
+        <div className="space-y-3">
+          <div className="flex items-center gap-3">
+            <input
+              type="range"
+              min={10}
+              max={Math.max(10, Math.min(AD_MAX_KUBES, profile?.pixels ?? 10))}
+              step={10}
+              value={again}
+              onChange={(e) => setAgain(Number(e.target.value))}
+              className="h-2 w-full accent-[#1B34E8]"
+              aria-label="Kubes behind this renewal"
+            />
+            <span className="inline-flex shrink-0 items-center gap-1.5 font-display text-lg font-extrabold tabular-nums">
+              <Kube />
+              {again}
+            </span>
+          </div>
+          <p className="text-xs text-muted">
+            That is {runsFor(again)}. Anything left of the old budget stays where it is and these
+            Kubes are added to it, so nothing bought before is lost.
+          </p>
         </div>
       </Dialog>
 

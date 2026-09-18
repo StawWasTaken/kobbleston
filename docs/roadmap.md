@@ -26,13 +26,44 @@ have files, and there is an editor for them.
   scripts, and the database refuses to store one.
 - **The bridge (partly built).** Donate buttons and ad presses cross it, both
   handled outside the frame. Badges awarding themselves is not built.
-- **Richer blocks**: a guestbook, a wall of links, a music player that is more
-  than an audio element. Not built.
+- **Richer blocks (mostly built).** A wall of links, a quote, a marquee and
+  the Create player, in three shapes, plus a sound that simply runs and
+  loops. A guestbook is not built: it needs a table behind it.
+- **Fonts you own (built).** The four the site comes with, plus any font in
+  your inventory, for the page or one block. More of them come from the
+  Marketplace.
+
+#### Redo the whole builder
+The next big piece of work, and a rewrite rather than another round of
+additions. What is there now grew one feature at a time and shows it: the
+canvas, the inspector and the compiler each know too much about the others,
+there is one way to arrange things and it is absolute positions on a grid,
+and a page is a single screen with no notion of sections, templates or
+anything repeating. The next version wants:
+
+- **A layout that is not only absolute positions**: sections down the page,
+  with things arranged inside them, so a Space holds up on a phone by
+  construction rather than by a media query at the end.
+- **More than one page per Space**, with links between them.
+- **Templates and parts worth starting from**, including ones other people
+  made, since that is what the Marketplace is for.
+- **A model that can be versioned**: `page.json` is already the source, but
+  it has no migrations, so every new property is a default in the reader.
+- **Undo and redo**, selecting more than one block, grouping, proper
+  alignment guides.
+- **A preview that is the real thing** rather than a canvas approximation of
+  it, so what is built and what is served cannot drift apart.
 
 ### Ads and gifts
-Built. An ad is bought up front, costs a Kube a view, is shown in the ad
-blocks Spaces choose to keep, and hands back what it did not spend when it is
-stopped. The Space showing it keeps 15%, counted in hundredths and paid in
+Built. An ad is bought up front, costs a Kube a view, runs until its budget or
+its fortnight is out, and hands back what it did not spend when it is
+stopped. A finished campaign can be put back up rather than built again. An
+ad names the thing it advertises, and can only be bought by somebody allowed
+to advertise that thing; Kobbleston's own account is the only one that may
+point one off the site. Ads are shown in the blocks Spaces choose to keep and
+in Kobbleston's own slots, on the home page, in Discover, on profiles,
+community pages and Space pages, where nobody takes a share because nobody
+owns the page. The Space showing it keeps 15%, counted in hundredths and paid in
 whole Kubes. A donate block gives Kubes straight to whoever made the Space,
 confirmed outside the page so the amount cannot be misrepresented.
 
@@ -71,6 +102,12 @@ Pages that are still light and need to be made heavy:
   events, the store and payouts from the reference are not built.
 - **Search.** Now searches names, descriptions and creators; it does not
   rank anything.
+
+### Profile and avatar customisation
+Not built. A marketplace for what people wear and how their profile looks,
+which is where the Kobby with sunglasses belongs on the front page. Needs
+somewhere to keep what somebody owns, somewhere to put it on, and a way for
+creators to sell into it.
 
 ## Create
 

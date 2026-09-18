@@ -1314,14 +1314,28 @@ export type MyAd = {
   is_running: boolean
   created_at: string
   file_path: string
+  /** When it comes down, whatever is left of its budget. */
+  ends_at: string | null
+  renewed_count: number
 }
+
+/** The most Kubes a campaign can carry, which is also its longest run. */
+export const AD_MAX_KUBES = 2000
+export const AD_MAX_DAYS = 14
+
+/** How long that many Kubes keeps an ad up, the same sum the database does. */
+export const adDays = (kubes: number) =>
+  Math.max(1, Math.min(AD_MAX_DAYS, Math.round((AD_MAX_DAYS * kubes) / AD_MAX_KUBES)))
 
 /**
  * An ad to put in a slot of this size. Asking is what counts a view, so this
  * is called once per slot when a Space is drawn and never in a loop.
  */
-export async function pickAd(size: AdSize, spaceId: string): Promise<ShownAd | null> {
-  const rows = unwrap(await supabase.rpc('pick_ad', { slot: size, space: spaceId })) as ShownAd[]
+export async function pickAd(size: AdSize, spaceId?: string | null): Promise<ShownAd | null> {
+  const rows = unwrap(await supabase.rpc('pick_ad', {
+    slot: size,
+    space: spaceId ?? null,
+  })) as ShownAd[]
   return rows?.[0] ?? null
 }
 
@@ -1366,6 +1380,11 @@ export async function endAd(adId: string): Promise<number> {
 
 export async function listMyAds(): Promise<MyAd[]> {
   return (unwrap(await supabase.rpc('my_ads')) as MyAd[]) ?? []
+}
+
+/** Putting a finished campaign back up. Returns when it now comes down. */
+export async function renewAd(adId: string, kubes: number): Promise<string> {
+  return unwrap(await supabase.rpc('renew_ad', { target: adId, kubes })) as string
 }
 
 /** Giving Kubes to whoever made a Space. Returns what is left. */

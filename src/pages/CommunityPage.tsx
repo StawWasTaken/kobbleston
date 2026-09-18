@@ -27,6 +27,7 @@ import {
 import { supabase } from '@/lib/supabase'
 import { cn } from '@/lib/cn'
 import { communityLink } from '@/lib/links'
+import { AdBanner } from '@/components/ads/AdBanner'
 
 const tabs = ['About', 'Events', 'Members', 'Affiliates'] as const
 type Tab = (typeof tabs)[number]
@@ -220,6 +221,8 @@ export default function CommunityPage() {
                 </div>
               )}
             </section>
+            <AdBanner className="mx-auto" />
+
             {!!store.data?.length && (
               <section>
                 <h2 className="mb-3 font-display text-xl font-extrabold">

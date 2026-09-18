@@ -2,8 +2,8 @@ import { useEffect, useRef, useState } from 'react'
 import { Link, Outlet, useOutletContext, useSearchParams } from 'react-router-dom'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import {
-  faUpload, faPlus, faMagnifyingGlass, faClock, faCircleCheck, faCircleXmark,
-  faEye, faHandPointUp, faBoxOpen, faLock, faXmark,
+  faUpload, faPlus, faMagnifyingGlass, faCircleCheck,
+  faEye, faHandPointUp, faBoxOpen, faXmark,
 } from '@fortawesome/free-solid-svg-icons'
 import type { IconDefinition } from '@fortawesome/fontawesome-svg-core'
 import { Button } from '@/components/ui/Button'
@@ -12,6 +12,7 @@ import { Select } from '@/components/ui/Select'
 import { EmptyState, ErrorState, Skeleton } from '@/components/ui/States'
 import { GuestGate } from '@/components/ui/GuestGate'
 import { AssetTile, contentTag, kindIcons, kindLabels } from '@/components/create/AssetTile'
+import { UploadLine } from '@/components/create/UploadFace'
 import { CreateRail } from '@/components/create/CreateRail'
 import { WorkingAsProvider, useWorkingAs } from '@/components/create/WorkingAs'
 import { UploadDialog } from '@/components/create/UploadDialog'
@@ -26,9 +27,9 @@ import {
   listCommunityUploads, listInventory, listOwnAssets, listSharedSpaces, listSpacesByOwner,
 } from '@/lib/api'
 import type { AssetSort } from '@/lib/api'
-import { formatCount, timeAgo } from '@/lib/format'
+import { formatCount } from '@/lib/format'
 import { cn } from '@/lib/cn'
-import type { AssetKind, OwnAsset } from '@/types/db'
+import type { AssetKind } from '@/types/db'
 
 type HubContext = {
   openUpload: () => void
@@ -36,12 +37,6 @@ type HubContext = {
 }
 
 export const useHub = () => useOutletContext<HubContext>()
-
-const statusLook: Record<string, { icon: IconDefinition; tone: string; label: string }> = {
-  pending: { icon: faClock, tone: 'text-amber-300', label: 'In review' },
-  approved: { icon: faCircleCheck, tone: 'text-space-bright', label: 'Live' },
-  rejected: { icon: faCircleXmark, tone: 'text-danger', label: 'Turned down' },
-}
 
 /* ------------------------------------------------------------------ shell */
 
@@ -167,7 +162,7 @@ export function CreateOverview() {
             <p className="px-4 py-8 text-center text-sm text-muted">Nothing uploaded yet.</p>
           )}
           <ul>
-            {(mine.data ?? []).slice(0, 5).map((item) => <UploadRow key={item.id} item={item} />)}
+            {(mine.data ?? []).slice(0, 5).map((item) => <UploadLine key={item.id} item={item} />)}
           </ul>
         </Card>
 
@@ -194,98 +189,6 @@ export function CreateOverview() {
           )}
         </Card>
       </div>
-    </div>
-  )
-}
-
-/* ---------------------------------------------------------------- uploads */
-
-function UploadRow({ item }: { item: OwnAsset }) {
-  const look = statusLook[item.status]
-  const tag = contentTag(item.kind, item.content_id)
-
-  return (
-    <li className="flex items-center gap-3 border-b border-ink-line/70 px-4 py-3 last:border-0">
-      <span className="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-ink-hover text-white/60">
-        <FontAwesomeIcon icon={kindIcons[item.kind]} />
-      </span>
-      <div className="min-w-0 flex-1">
-        <Link
-          to={tag ? `/create/${tag}` : '/create'}
-          className="block truncate text-sm font-bold hover:text-link"
-        >
-          {item.name}
-        </Link>
-        <p className={cn('flex flex-wrap items-center gap-1.5 text-xs', look.tone)}>
-          <FontAwesomeIcon icon={look.icon} />
-          {look.label}
-          <span className="text-muted">· {timeAgo(item.created_at)}</span>
-          {!item.is_public && (
-            <span className="inline-flex items-center gap-1 text-muted">
-              <FontAwesomeIcon icon={faLock} /> Unlisted
-            </span>
-          )}
-        </p>
-        {item.status === 'rejected' && item.review_note && (
-          <p className="mt-1 text-xs text-white/50">{item.review_note}</p>
-        )}
-      </div>
-      <span className="hidden font-mono text-xs text-muted sm:block">{tag}</span>
-    </li>
-  )
-}
-
-export function CreateUploads() {
-  useTitle('My Uploads', CREATE)
-  const { profile } = useAuth()
-  const { openUpload } = useHub()
-  const { target } = useWorkingAs()
-  const mine = useAsync(
-    async () => (target ? listCommunityUploads(target.id) : profile ? listOwnAssets(profile.id) : []),
-    [profile?.id, target?.id],
-  )
-
-  useEffect(() => {
-    const reload = () => mine.reload()
-    window.addEventListener('kobbleston:uploaded', reload)
-    return () => window.removeEventListener('kobbleston:uploaded', reload)
-  }, [mine])
-
-  return (
-    <div className="space-y-5">
-      <header className="flex flex-wrap items-end justify-between gap-4">
-        <div>
-          <h1 className="font-display text-2xl font-extrabold sm:text-3xl">
-            {target ? `${target.name}'s uploads` : 'My Uploads'}
-          </h1>
-          <p className="mt-1 text-sm text-muted">
-            Every upload keeps its number. Open one to rename it, unlist it or see who is asking.
-          </p>
-        </div>
-        <GuestGate action="upload">
-          <Button icon={faUpload} onClick={openUpload} disabled={!profile}>Upload</Button>
-        </GuestGate>
-      </header>
-
-      {mine.loading && <Skeleton className="h-40" />}
-      {mine.error && <ErrorState message={mine.error} onRetry={mine.reload} />}
-
-      {!mine.loading && !mine.data?.length && (
-        <Card>
-          <EmptyState
-            mood="emptyBox"
-            title="Nothing uploaded yet"
-            body="Images, sounds, video, fonts and models. Everything you upload gets its own number."
-            action={<Button icon={faUpload} onClick={openUpload}>Upload something</Button>}
-          />
-        </Card>
-      )}
-
-      {!!mine.data?.length && (
-        <Card className="overflow-hidden">
-          <ul>{mine.data.map((item) => <UploadRow key={item.id} item={item} />)}</ul>
-        </Card>
-      )}
     </div>
   )
 }

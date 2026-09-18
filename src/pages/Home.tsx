@@ -12,6 +12,7 @@ import { Link } from 'react-router-dom'
 import { formatCount } from '@/lib/format'
 import { communityLink } from '@/lib/links'
 import { useTitle } from '@/hooks/useTitle'
+import { AdBanner } from '@/components/ads/AdBanner'
 
 export default function Home() {
   useTitle('Home')
@@ -36,6 +37,8 @@ export default function Home() {
       </h1>
 
       {profile && <FriendsRail />}
+
+      <AdBanner className="mx-auto mb-8" />
 
       <SpaceRail
         title="Your Spaces"
