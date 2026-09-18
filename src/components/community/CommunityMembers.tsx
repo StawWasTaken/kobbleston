@@ -4,7 +4,6 @@ import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
 import { Avatar } from '@/components/ui/Avatar'
 import { Badge } from '@/components/ui/Badge'
-import { PresenceLabel, presenceOf } from '@/components/ui/StatusDot'
 import { Skeleton } from '@/components/ui/States'
 import { Tooltip } from '@/components/ui/Tooltip'
 import { Select } from '@/components/ui/Select'
@@ -19,6 +18,7 @@ import type { CommunityOverview } from '@/types/db'
 import { avatarOf } from '@/lib/avatars'
 import { profileLink } from '@/lib/links'
 import { Verified, isVerified } from '@/components/brand/Verified'
+import { LivePresenceLabel } from '@/components/ui/PersonAvatar'
 
 export function CommunityMembers({
   communityId, ownerId, rights, onChanged,
@@ -117,7 +117,7 @@ export function CommunityMembers({
                       <span className="truncate">{member.display_name}</span>
                       {isVerified(member) && <Verified className="text-xs" />}
                     </Link>
-                    <PresenceLabel presence={presenceOf(member)} />
+                    <LivePresenceLabel person={member} />
                   </div>
 
                   {rights?.can_manage_ranks && member.id !== ownerId ? (

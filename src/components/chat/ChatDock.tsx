@@ -7,7 +7,6 @@ import {
   faGear, faArrowLeft, faUserGroup,
 } from '@fortawesome/free-solid-svg-icons'
 import { Avatar } from '@/components/ui/Avatar'
-import { PresenceLabel, presenceOf } from '@/components/ui/StatusDot'
 import { Skeleton } from '@/components/ui/States'
 import { Tooltip } from '@/components/ui/Tooltip'
 import { NewGroupDialog } from './NewGroupDialog'
@@ -27,7 +26,7 @@ import { cn } from '@/lib/cn'
 import type { Conversation, Message } from '@/types/db'
 import { avatarOf } from '@/lib/avatars'
 import { profileLink } from '@/lib/links'
-import { PersonAvatar } from '@/components/ui/PersonAvatar'
+import { LivePresenceLabel, PersonAvatar } from '@/components/ui/PersonAvatar'
 
 type ChatValue = { openConversation: (id: string) => void }
 const ChatContext = createContext<ChatValue>({ openConversation: () => {} })
@@ -219,7 +218,7 @@ function Window({
                   <Avatar src={avatarOf(member)} name={member.display_name} size="sm" />
                   <span className="min-w-0 flex-1">
                     <span className="block truncate text-sm font-bold">{member.display_name}</span>
-                    <PresenceLabel presence={presenceOf(member)} />
+                    <LivePresenceLabel person={member} />
                   </span>
                 </Link>
               </li>

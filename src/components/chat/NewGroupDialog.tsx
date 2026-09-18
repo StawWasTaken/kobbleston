@@ -4,12 +4,12 @@ import { faMagnifyingGlass, faUserGroup, faCheck } from '@fortawesome/free-solid
 import { Button } from '@/components/ui/Button'
 import { Avatar } from '@/components/ui/Avatar'
 import { Skeleton } from '@/components/ui/States'
-import { PresenceLabel, presenceOf } from '@/components/ui/StatusDot'
 import { useAuth } from '@/hooks/useAuth'
 import { useAsync } from '@/hooks/useAsync'
 import { createGroupConversation, listFriendships } from '@/lib/api'
 import { cn } from '@/lib/cn'
 import { avatarOf } from '@/lib/avatars'
+import { LivePresenceLabel } from '@/components/ui/PersonAvatar'
 
 const MAX = 5
 
@@ -125,7 +125,7 @@ export function NewGroupDialog({
               <Avatar src={avatarOf(friend)} name={friend.display_name} size="sm" />
               <span className="min-w-0 flex-1">
                 <span className="block truncate text-sm font-bold">{friend.display_name}</span>
-                <PresenceLabel presence={presenceOf(friend)} />
+                <LivePresenceLabel person={friend} />
               </span>
               <span
                 className={cn(

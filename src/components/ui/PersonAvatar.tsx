@@ -1,9 +1,7 @@
-import { StatusDot, presenceOf, presenceWords } from '@/components/ui/StatusDot'
-import type { Presence } from '@/components/ui/StatusDot'
+import { PresenceLabel, StatusDot, presenceWords } from '@/components/ui/StatusDot'
 import { Avatar } from '@/components/ui/Avatar'
 import { Tooltip } from '@/components/ui/Tooltip'
-import { useAuth } from '@/hooks/useAuth'
-import { useMyActivity } from '@/hooks/usePresence'
+import { useLivePresence } from '@/hooks/usePresenceStore'
 import { avatarOf } from '@/lib/avatars'
 import { cn } from '@/lib/cn'
 
@@ -46,6 +44,11 @@ const dots: Record<keyof typeof sizes, 'sm' | 'md' | 'lg' | 'xl' | '2xl'> = {
  * because the corner of a circle is empty; a square one takes the corner
  * itself.
  */
+/** The words for somebody's state, kept live the same way the dot is. */
+export function LivePresenceLabel({ person }: { person: Parameters<typeof useLivePresence>[0] }) {
+  return <PresenceLabel presence={useLivePresence(person)} />
+}
+
 export function PersonAvatar({
   person, size = 'md', square, className, ring = 'ring-ink', frame, overlay,
 }: {
@@ -61,19 +64,12 @@ export function PersonAvatar({
   /** Something drawn over the picture, under the dot. */
   overlay?: React.ReactNode
 }) {
-  const { profile: me } = useAuth()
-
   /*
-   * Your own dot is read from the account this tab is signed in as, not from
-   * whatever row a page happened to fetch a minute ago. Otherwise the sidebar
-   * says one thing about you and your profile says another, which is exactly
-   * what was happening.
+   * One place decides what somebody's dot says, and it changes while you are
+   * looking at it. A row fetched by a page is only the fallback, for people
+   * who are not here to speak for themselves.
    */
-  const mine = useMyActivity()
-  const live = person?.id && me?.id === person.id
-    ? { ...person, ...me, is_online: true, activity: mine, last_seen_at: new Date().toISOString() }
-    : person
-  const presence: Presence = presenceOf(live)
+  const presence = useLivePresence(person)
 
   return (
     <span className={cn('relative inline-block shrink-0', sizes[size], className)}>

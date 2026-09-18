@@ -146,6 +146,13 @@ arrangement on a profile, so the page is laid out by its owner rather than
 only coloured by them.
 
 ### Presence **(done)**
+Presence is a channel now, not a column somebody fetched once. Everybody with
+Kobbleston open joins one channel and says what they are doing; everybody
+subscribed hears it as it changes, so a dot moves while you are looking at it
+and every dot for the same person says the same thing on every page. The row
+and its heartbeat are still written, as the answer for anybody who is not
+there to speak for themselves, and for sorting people by who was about.
+
 There was a `touch_presence` function from the beginning that nothing ever
 called, so "online" meant whatever the last sign in happened to set and stayed
 that way. The page says so every minute now, while the tab is being looked at,

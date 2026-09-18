@@ -12,7 +12,8 @@ import { Card } from '@/components/ui/Card'
 import { Input } from '@/components/ui/Input'
 import { Menu } from '@/components/ui/Menu'
 import { Avatar } from '@/components/ui/Avatar'
-import { presenceOf } from '@/components/ui/StatusDot'
+import type { Presence } from '@/components/ui/StatusDot'
+import { useLivePresence } from '@/hooks/usePresenceStore'
 import { EmptyState, ErrorState, Skeleton } from '@/components/ui/States'
 import { useToast } from '@/components/ui/Toast'
 import { useChatDock } from '@/components/chat/ChatDock'
@@ -39,7 +40,7 @@ const tabs = [
 ] as const
 type Tab = (typeof tabs)[number]['name']
 
-const presenceWord: Record<ReturnType<typeof presenceOf>, string> = {
+const presenceWord: Record<Presence, string> = {
   'in-space': 'In a Space',
   building: 'Building something',
   online: 'Online',
@@ -58,7 +59,7 @@ function PersonRow({
   actions?: React.ReactNode
   menu?: React.ReactNode
 }) {
-  const presence = presenceOf(person)
+  const presence = useLivePresence(person)
 
   return (
     <li className="flex items-center gap-3 rounded-2xl border border-ink-line bg-ink-card p-3 transition-colors hover:border-brand/60">

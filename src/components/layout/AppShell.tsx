@@ -7,17 +7,21 @@ import { ChatDock } from '@/components/chat/ChatDock'
 import { mobileNav } from './nav'
 import { cn } from '@/lib/cn'
 import { AdsProvider } from '@/components/ads/AdBanner'
-import { usePresence } from '@/hooks/usePresence'
+import { usePresence, useMyActivity } from '@/hooks/usePresence'
+import { usePresenceChannel } from '@/hooks/usePresenceStore'
 import { useAuth } from '@/hooks/useAuth'
 
 export function AppShell() {
   const [navOpen, setNavOpen] = useState(false)
   const location = useLocation()
-  const { session } = useAuth()
+  const { session, profile } = useAuth()
 
   // The dots on everybody's picture are only worth anything if the page
-  // keeps saying that its person is here.
+  // keeps saying that its person is here: once a minute into the row, for
+  // anybody who looks later, and continuously into the channel, for anybody
+  // looking now.
   usePresence(!!session)
+  usePresenceChannel(profile?.id, useMyActivity(), profile?.in_space_id)
 
   useEffect(() => { setNavOpen(false) }, [location.pathname])
 
