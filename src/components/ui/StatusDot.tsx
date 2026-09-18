@@ -1,11 +1,14 @@
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faDoorOpen, faHammer, faMinus } from '@fortawesome/free-solid-svg-icons'
+import { Kube } from '@/components/brand/Kube'
 import { cn } from '@/lib/cn'
 
 /**
- * Presence, in four states that never share a colour.
+ * Presence, in four states that never share a colour or a mark.
  *
- * Blue: on Kobbleston. Green: inside a Space, which is the colour Spaces
- * always get. Orange: building or making something, which is worth knowing
- * about somebody. Grey: not here.
+ * Blue and a Kube: on Kobbleston. Green and a door: inside a Space, which is
+ * the colour and the word Spaces always get. Orange and a hammer: building
+ * something. Grey and a dash: not here.
  *
  * Anybody who has not said anything for a few minutes is treated as gone,
  * whatever their flag says, so a browser closed mid-sentence does not leave
@@ -14,24 +17,26 @@ import { cn } from '@/lib/cn'
 export type Presence = 'online' | 'in-space' | 'building' | 'offline'
 
 const tone: Record<Presence, string> = {
-  online: 'bg-brand-bright',
-  'in-space': 'bg-space',
-  building: 'bg-[#FFB020]',
-  offline: 'bg-white/30',
+  online: 'bg-brand-bright text-[#fff]',
+  'in-space': 'bg-space text-[#fff]',
+  building: 'bg-[#FFB020] text-[#2a1a00]',
+  offline: 'bg-[#8A8A94] text-[#20202a]',
 }
 
-const label: Record<Presence, string> = {
+export const presenceWords: Record<Presence, string> = {
   online: 'Online',
   'in-space': 'In a Space',
   building: 'Building',
   offline: 'Offline',
 }
 
+/** Every dot is the same dot: one size chart, one set of marks. */
 const sizes = {
-  sm: 'h-2 w-2',
-  md: 'h-2.5 w-2.5',
-  lg: 'h-3.5 w-3.5',
-  xl: 'h-5 w-5',
+  sm: 'h-2.5 w-2.5 text-[0px]',
+  md: 'h-3.5 w-3.5 text-[7px]',
+  lg: 'h-4 w-4 text-[8px]',
+  xl: 'h-5 w-5 text-[10px]',
+  '2xl': 'h-7 w-7 text-[13px]',
 }
 
 /** How long somebody can be quiet before they count as gone. */
@@ -55,21 +60,32 @@ export function presenceOf(p?: {
   return 'online'
 }
 
+function Mark({ presence }: { presence: Presence }) {
+  if (presence === 'online') return <Kube />
+  if (presence === 'in-space') return <FontAwesomeIcon icon={faDoorOpen} />
+  if (presence === 'building') return <FontAwesomeIcon icon={faHammer} />
+  return <FontAwesomeIcon icon={faMinus} />
+}
+
 export function StatusDot({
   presence,
   size = 'md',
   ring,
   className,
+  // Whatever is put on it from outside, so a tooltip can hand it the handlers
+  // it needs without a wrapper getting between the dot and its corner.
+  ...rest
 }: {
   presence: Presence
   size?: keyof typeof sizes
   ring?: boolean
   className?: string
-}) {
+} & React.ComponentPropsWithoutRef<'span'>) {
   return (
     <span
+      {...rest}
       className={cn(
-        'inline-block rounded-full',
+        'inline-grid place-items-center rounded-full leading-none',
         tone[presence],
         sizes[size],
         // The ring is the page behind it, so the dot reads as sitting on the
@@ -78,17 +94,19 @@ export function StatusDot({
         className,
       )}
       role="img"
-      aria-label={label[presence]}
-      title={label[presence]}
-    />
+      aria-label={presenceWords[presence]}
+    >
+      {/* Too small to hold a mark is still big enough to hold a colour. */}
+      {size !== 'sm' && <Mark presence={presence} />}
+    </span>
   )
 }
 
 export function PresenceLabel({ presence }: { presence: Presence }) {
   return (
     <span className="inline-flex items-center gap-1.5 text-xs text-muted">
-      <StatusDot presence={presence} size="sm" />
-      {label[presence]}
+      <StatusDot presence={presence} size="md" />
+      {presenceWords[presence]}
     </span>
   )
 }

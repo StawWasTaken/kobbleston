@@ -10,9 +10,8 @@ import type { IconDefinition } from '@fortawesome/fontawesome-svg-core'
 import { Page } from '@/components/layout/AppShell'
 import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
-import { Avatar } from '@/components/ui/Avatar'
 import { Badge } from '@/components/ui/Badge'
-import { StatusDot, presenceOf } from '@/components/ui/StatusDot'
+import { PersonAvatar } from '@/components/ui/PersonAvatar'
 import { EmptyState, ErrorState, SpaceCardSkeleton, Skeleton } from '@/components/ui/States'
 import { useToast } from '@/components/ui/Toast'
 import { ReportDialog } from '@/components/social/ReportDialog'
@@ -104,20 +103,7 @@ function Faces({ people }: { people: Face[] }) {
           to={profileLink(person)}
           className="w-24 shrink-0 rounded-xl p-2 text-center transition-colors hover:bg-ink-hover"
         >
-          <span className="relative inline-block">
-            <Avatar
-              src={avatarOf(person)}
-              name={person.display_name}
-              size="lg"
-              className="rounded-xl"
-            />
-            <StatusDot
-              presence={presenceOf(person)}
-              size="md"
-              ring
-              className="absolute -bottom-0.5 -right-0.5"
-            />
-          </span>
+          <PersonAvatar person={person} size="lg" square />
           <p className="mt-1.5 truncate text-xs font-bold">{person.display_name}</p>
           <p className="truncate text-[11px] text-muted">@{person.username}</p>
         </Link>
@@ -351,18 +337,13 @@ export default function Profile() {
         <div className="relative z-10 flex flex-col gap-5 p-5 sm:flex-row sm:p-7">
           {/* The picture, with the dot on its edge, and a way to change it
               when it is yours: your profile is where you edit your profile. */}
-          <div className="relative shrink-0">
-            <span
-              className="relative block h-28 w-28 rounded-full sm:h-32 sm:w-32"
-              style={{ boxShadow: `0 0 0 3px ${accent}` }}
-            >
-              <Avatar
-                src={avatarOf(user)}
-                name={user.display_name}
-                size="xl"
-                className="h-full w-full rounded-full"
-              />
-              {isMe && (
+          <div className="shrink-0">
+            <PersonAvatar
+              person={user}
+              size="3xl"
+              className="h-28 w-28 sm:h-32 sm:w-32"
+              frame={`0 0 0 3px ${accent}`}
+              overlay={isMe ? (
                 <>
                   <button
                     onClick={() => picker.current?.click()}
@@ -383,16 +364,8 @@ export default function Profile() {
                     }}
                   />
                 </>
-              )}
-
-              {/* Last, so it sits over the picture and over the layer that
-                  covers it while you are changing it. */}
-              <StatusDot
-                presence={presenceOf(user)}
-                size="xl"
-                className="absolute bottom-[7%] right-[7%] z-10 translate-x-[18%] translate-y-[18%] ring-[4px] ring-ink"
-              />
-            </span>
+              ) : undefined}
+            />
           </div>
 
           <div className="min-w-0 flex-1">

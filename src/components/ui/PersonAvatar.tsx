@@ -1,6 +1,7 @@
-import { Avatar } from '@/components/ui/Avatar'
-import { StatusDot, presenceOf } from '@/components/ui/StatusDot'
+import { StatusDot, presenceOf, presenceWords } from '@/components/ui/StatusDot'
 import type { Presence } from '@/components/ui/StatusDot'
+import { Avatar } from '@/components/ui/Avatar'
+import { Tooltip } from '@/components/ui/Tooltip'
 import { avatarOf } from '@/lib/avatars'
 import { cn } from '@/lib/cn'
 
@@ -19,12 +20,17 @@ const sizes = {
   md: 'h-10 w-10',
   lg: 'h-12 w-12',
   xl: 'h-16 w-16',
-  '2xl': 'h-24 w-24',
+  '2xl': 'h-20 w-20',
   '3xl': 'h-32 w-32',
 }
 
-const dots: Record<keyof typeof sizes, 'sm' | 'md' | 'lg' | 'xl'> = {
-  xs: 'sm', sm: 'sm', md: 'md', lg: 'md', xl: 'lg', '2xl': 'lg', '3xl': 'xl',
+/**
+ * One chart for the whole site: how big the dot is beside how big the face
+ * is. It was different in every place before, which is why no two of them
+ * looked alike.
+ */
+const dots: Record<keyof typeof sizes, 'sm' | 'md' | 'lg' | 'xl' | '2xl'> = {
+  xs: 'sm', sm: 'sm', md: 'md', lg: 'md', xl: 'lg', '2xl': 'xl', '3xl': '2xl',
 }
 
 /**
@@ -32,13 +38,13 @@ const dots: Record<keyof typeof sizes, 'sm' | 'md' | 'lg' | 'xl'> = {
  * ever appear.
  *
  * The dot sits on the edge of the picture, half on and half off, the way it
- * does everywhere people already know it from. A round picture needs it
- * pushed in towards the corner, because the corner of a circle is empty; a
- * square one takes it on the corner itself. It is the same dot, in the same
- * place, at every size and on every page.
+ * does everywhere people already know it from, and says what it means when
+ * you rest on it. A round picture needs it pushed in towards the corner,
+ * because the corner of a circle is empty; a square one takes the corner
+ * itself.
  */
 export function PersonAvatar({
-  person, size = 'md', square, className, ring = 'ring-ink',
+  person, size = 'md', square, className, ring = 'ring-ink', frame, overlay,
 }: {
   person: Somebody | null | undefined
   size?: keyof typeof sizes
@@ -47,30 +53,40 @@ export function PersonAvatar({
   className?: string
   /** What the dot is cut out of: whatever the picture sits on. */
   ring?: string
+  /** A ring of somebody's own colour, on their own page. */
+  frame?: string
+  /** Something drawn over the picture, under the dot. */
+  overlay?: React.ReactNode
 }) {
   const presence: Presence = presenceOf(person)
 
   return (
     <span className={cn('relative inline-block shrink-0', sizes[size], className)}>
-      <Avatar
-        src={avatarOf(person ?? undefined)}
-        name={person?.display_name ?? '?'}
-        size="md"
-        className={cn('h-full w-full', square ? 'rounded-xl' : 'rounded-full')}
-      />
-      <StatusDot
-        presence={presence}
-        size={dots[size]}
-        className={cn(
-          // Over whatever else is on the picture, and never see through.
-          'absolute z-10',
-          square
-            ? '-bottom-0.5 -right-0.5'
-            : 'bottom-[7%] right-[7%] translate-x-[18%] translate-y-[18%]',
-          'ring-[3px]',
-          ring,
-        )}
-      />
+      <span className={cn('block h-full w-full', square ? 'rounded-xl' : 'rounded-full')} style={frame ? { boxShadow: frame } : undefined}>
+        <Avatar
+          src={avatarOf(person ?? undefined)}
+          name={person?.display_name ?? '?'}
+          size="md"
+          className={cn('h-full w-full', square ? 'rounded-xl' : 'rounded-full')}
+        />
+        {overlay}
+      </span>
+
+      <Tooltip label={presenceWords[presence]} side="top">
+        <StatusDot
+          presence={presence}
+          size={dots[size]}
+          className={cn(
+            // Over whatever else is on the picture, and never see through.
+            'absolute z-10 cursor-default',
+            square
+              ? '-bottom-0.5 -right-0.5'
+              : 'bottom-[7%] right-[7%] translate-x-[18%] translate-y-[18%]',
+            'ring-[3px]',
+            ring,
+          )}
+        />
+      </Tooltip>
     </span>
   )
 }
