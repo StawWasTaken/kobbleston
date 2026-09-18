@@ -22,7 +22,7 @@ export function StyleStrip() {
   const face = avatarOf(profile)
   const items = data ?? []
 
-  if (!loading && !items.length) return null
+  const canMake = Boolean(profile?.is_verified || profile?.is_admin)
 
   return (
     <section className="mb-8">
@@ -31,6 +31,19 @@ export function StyleStrip() {
           {loading && [0, 1, 2, 3].map((i) => (
             <Skeleton key={i} className="aspect-[4/5] rounded-2xl" />
           ))}
+
+          {/* An empty shop is still worth saying out loud: the panel is how
+              anybody finds out Style is there at all. */}
+          {!loading && !items.length && (
+            <div className="col-span-2 grid place-items-center rounded-2xl border border-dashed border-ink-line bg-ink-raised p-8 text-center sm:col-span-4">
+              <p className="text-sm font-bold">Nothing in the shop yet</p>
+              <p className="mt-1 max-w-sm text-xs text-muted">
+                {canMake
+                  ? 'You are verified, so you can put the first thing in it.'
+                  : 'Verified accounts put things here. Check back shortly.'}
+              </p>
+            </div>
+          )}
 
           {items.map((item) => (
             <Link
