@@ -13,6 +13,7 @@ import type { SpaceSort } from '@/lib/api'
 import type { SpaceCategory } from '@/types/db'
 import { cn } from '@/lib/cn'
 import { useTitle } from '@/hooks/useTitle'
+import { AdBanner } from '@/components/ads/AdBanner'
 
 const sorts: { value: SpaceSort; label: string }[] = [
   { value: 'trending', label: 'Trending' },
@@ -109,6 +110,15 @@ export default function Discover() {
         </div>
       </div>
 
+      {/* The one slot that says what it is when it is empty, so there is
+          somewhere on the site that invites an advertiser in. */}
+      <AdBanner className="mb-6" />
+
+      {/* Everything there is to look at sits beside a tall one, where the
+          screen is wide enough to hold both. */}
+      <div className="grid gap-8 xl:grid-cols-[minmax(0,1fr)_160px] xl:items-start">
+        <div className="min-w-0 space-y-6">
+
       {browsing && (
         <>
           <SpaceRail title="Being visited right now" spaces={trending.data} loading={trending.loading} />
@@ -153,6 +163,10 @@ export default function Discover() {
           {data.map((space) => <SpaceCard key={space.id} space={space} />)}
         </div>
       )}
+        </div>
+
+        <AdBanner size="tall" quiet className="hidden xl:block xl:sticky xl:top-20" />
+      </div>
     </Page>
   )
 }

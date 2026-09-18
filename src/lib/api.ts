@@ -1354,10 +1354,13 @@ export const adDays = (kubes: number) =>
  * An ad to put in a slot of this size. Asking is what counts a view, so this
  * is called once per slot when a page is drawn and never in a loop.
  */
-export async function pickAd(size: AdSize, spaceId?: string | null): Promise<ShownAd | null> {
+export async function pickAd(
+  size: AdSize, spaceId?: string | null, avoid: string[] = [],
+): Promise<ShownAd | null> {
   const rows = unwrap(await supabase.rpc('pick_ad', {
     slot: size,
     space: spaceId ?? null,
+    avoid,
   })) as ShownAd[]
   return rows?.[0] ?? null
 }

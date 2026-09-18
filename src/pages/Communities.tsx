@@ -16,6 +16,7 @@ import { communityLink } from '@/lib/links'
 import type { Community } from '@/types/db'
 import { useTitle } from '@/hooks/useTitle'
 import { useNewCommunity } from '@/components/community/NewCommunityDialog'
+import { AdBanner } from '@/components/ads/AdBanner'
 
 export default function Communities() {
   useTitle('Communities')
@@ -161,6 +162,8 @@ export default function Communities() {
                 ))}
               </div>
             </section>
+
+            <AdBanner className="mt-8" quiet />
 
             <section className="mt-8">
               <h2 className="mb-3 flex items-center gap-2 font-display text-xl font-extrabold">

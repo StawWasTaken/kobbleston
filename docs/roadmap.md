@@ -66,10 +66,13 @@ stopped. A finished campaign can be put back up rather than built again. An
 ad names the thing it advertises, and can only be bought by somebody allowed
 to advertise that thing; Kobbleston's own account is the only one that may
 point one off the site. Ads are shown in the blocks Spaces choose to keep and
-in Kobbleston's own: one tall ad in a rail down the right of the site on a
-wide screen, and one banner at the top of Discover. Nobody takes a share of
-those, because nobody owns the page. The square was dropped: nowhere on the
-site had a good place for it. The Space showing it keeps 15%, counted in hundredths and paid in
+in Kobbleston's own slots, which are in the pages rather than beside them:
+Home, Discover, Communities, People, a Space page, a community page and a
+profile each carry one or two, and Library, Friends, Settings and Create
+carry none. Banners and tall ones are sold in roughly equal number; the
+square was dropped, because nowhere on the site had a good place for it. Two
+slots on one page never show the same ad while there is another to show.
+Nobody takes a share of those views, because nobody owns the page. The Space showing it keeps 15%, counted in hundredths and paid in
 whole Kubes. A donate block gives Kubes straight to whoever made the Space,
 confirmed outside the page so the amount cannot be misrepresented.
 

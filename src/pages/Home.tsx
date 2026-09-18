@@ -12,6 +12,7 @@ import { Link } from 'react-router-dom'
 import { formatCount } from '@/lib/format'
 import { communityLink } from '@/lib/links'
 import { useTitle } from '@/hooks/useTitle'
+import { AdBanner } from '@/components/ads/AdBanner'
 
 export default function Home() {
   useTitle('Home')
@@ -37,6 +38,8 @@ export default function Home() {
 
       {profile && <FriendsRail />}
 
+      <AdBanner className="mb-8" quiet />
+
       <SpaceRail
         title="Your Spaces"
         spaces={mine.data}
@@ -53,6 +56,10 @@ export default function Home() {
         }
       />
 
+      {/* The lower half sits beside a tall one where there is room for it,
+          inside the page rather than pinned to the window. */}
+      <div className="grid gap-8 xl:grid-cols-[minmax(0,1fr)_160px] xl:items-start">
+        <div className="min-w-0">
       <SpaceRail
         title="Being visited right now"
         spaces={trending.data}
@@ -70,6 +77,10 @@ export default function Home() {
 
       <SpaceRail title="Just published" spaces={fresh.data} loading={fresh.loading} />
       <SpaceRail title="Most liked" spaces={liked.data} loading={liked.loading} />
+        </div>
+
+        <AdBanner size="tall" quiet className="hidden xl:block xl:sticky xl:top-20" />
+      </div>
 
       {!!communities.data?.length && (
         <section className="mb-8">

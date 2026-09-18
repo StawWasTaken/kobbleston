@@ -23,6 +23,7 @@ import { profileLink } from '@/lib/links'
 import { formatCount } from '@/lib/format'
 import { cn } from '@/lib/cn'
 import type { Profile } from '@/types/db'
+import { AdBanner } from '@/components/ads/AdBanner'
 
 const sorts: { value: PeopleSort; label: string; icon: IconDefinition }[] = [
   { value: 'active', label: 'Around now', icon: faBolt },
@@ -240,8 +241,10 @@ export default function People() {
             {formatCount(found.length)} {found.length === 1 ? 'person' : 'people'}
             {debounced ? ` for "${debounced}"` : ''}
           </p>
+          {/* A long list gets one partway down, where somebody reading
+              their way through it actually is. */}
           <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
-            {found.map((person) => (
+            {found.slice(0, 9).map((person) => (
               <PersonCard
                 key={person.id}
                 person={person}
@@ -252,6 +255,25 @@ export default function People() {
               />
             ))}
           </div>
+
+          {found.length > 9 && (
+            <>
+              <AdBanner className="my-6" quiet />
+
+              <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+                {found.slice(9).map((person) => (
+                  <PersonCard
+                    key={person.id}
+                    person={person}
+                    isYou={person.id === profile?.id}
+                    sent={sent.includes(person.id)}
+                    onAdd={() => add(person)}
+                    onChat={() => chat(person.id)}
+                  />
+                ))}
+              </div>
+            </>
+          )}
         </section>
       )}
     </div>
