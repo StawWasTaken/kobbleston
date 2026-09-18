@@ -276,6 +276,7 @@ export type Standing = {
 /** One person in one of the lists on the friends page. */
 export type PersonRow = Profile & {
   since: string
+  /** Guests wear the guest face, so the lists carry that too. */
   link_id: string | null
   i_ignore: boolean
 }

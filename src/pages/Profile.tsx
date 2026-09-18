@@ -456,6 +456,10 @@ export default function Profile() {
                   >
                     Blocked
                   </Button>
+                ) : standing?.they_blocked ? (
+                  /* The other way round, said plainly but without pointing
+                     the finger: the buttons would only fail if they worked. */
+                  <Button variant="subtle" icon={faBan} disabled>Unavailable</Button>
                 ) : (
                   <>
                     {standing?.are_friends ? (
