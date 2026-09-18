@@ -82,7 +82,7 @@ export function useAd(size: AdSize, spaceId?: string | null) {
  * pretends to be part of what the page is for.
  */
 export function AdBanner({
-  size = 'banner', className, quiet, fill, spaceId, label = 'Advertisement',
+  size = 'banner', className, quiet, fill, spaceId,
 }: {
   size?: AdSize
   className?: string
@@ -92,7 +92,6 @@ export function AdBanner({
   fill?: boolean
   /** The Space this slot sits in, which is what earns a share of the view. */
   spaceId?: string | null
-  label?: string
 }) {
   const navigate = useNavigate()
   const { profile } = useAuth()
@@ -111,12 +110,8 @@ export function AdBanner({
       className={cn('mx-auto w-full', fill && 'h-full', className)}
       aria-label="Advertisement"
     >
-      <p className="mb-1.5 text-center text-[10px] font-extrabold uppercase tracking-[0.18em] text-white/25">
-        {label}
-      </p>
-
       <div
-        className={cn('relative mx-auto', fill && 'h-[calc(100%-1.25rem)]')}
+        className={cn('relative mx-auto', fill && 'h-full')}
         style={fill ? undefined : { maxWidth: shape.w }}
       >
         {ad && picture ? (
@@ -138,6 +133,12 @@ export function AdBanner({
                 alt={ad.name}
                 className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.02]"
               />
+
+              {/* The word sits on the ad rather than over the page, so it is
+                  plain what it belongs to. */}
+              <span className="absolute left-2 top-2 rounded-md bg-black/60 px-1.5 py-0.5 text-[9px] font-extrabold uppercase tracking-wide text-white/80 backdrop-blur">
+                Ad
+              </span>
             </button>
 
             {/* Anybody who is shown an ad can say something about it. */}
@@ -146,7 +147,7 @@ export function AdBanner({
                 onClick={() => setReporting(true)}
                 aria-label={`Report the ad ${ad.name}`}
                 title="Report this ad"
-                className="absolute right-1.5 top-1.5 grid h-6 w-6 place-items-center rounded-md bg-black/55 text-[10px] text-white/70 opacity-0 backdrop-blur transition-opacity hover:text-white focus-visible:opacity-100 group-hover:opacity-100 sm:opacity-60"
+                className="absolute right-2 top-2 grid h-6 w-6 place-items-center rounded-md bg-black/60 text-[10px] text-white/70 backdrop-blur transition-colors hover:text-white"
               >
                 <FontAwesomeIcon icon={faFlag} />
               </button>
