@@ -21,7 +21,9 @@ export function AppShell() {
   // anybody who looks later, and continuously into the channel, for anybody
   // looking now.
   usePresence(!!session)
-  usePresenceChannel(profile?.id, useMyActivity(), profile?.in_space_id)
+
+  const doing = useMyActivity()
+  usePresenceChannel(profile?.id, doing, profile?.in_space_id)
 
   useEffect(() => { setNavOpen(false) }, [location.pathname])
 

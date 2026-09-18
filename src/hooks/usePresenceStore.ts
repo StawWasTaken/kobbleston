@@ -1,4 +1,4 @@
-import { useEffect, useSyncExternalStore } from 'react'
+import { useEffect, useRef, useSyncExternalStore } from 'react'
 import { supabase } from '@/lib/supabase'
 import type { Presence } from '@/components/ui/StatusDot'
 import { presenceOf } from '@/components/ui/StatusDot'
@@ -74,13 +74,26 @@ export function usePresenceChannel(
   doing: 'around' | 'building',
   inSpace: string | null | undefined,
 ) {
+  /*
+   * The channel is held onto rather than looked up again later. Looking it up
+   * by its name is how the last version of this failed: saying what you are
+   * doing only worked if that search happened to find it, so walking into
+   * Create changed nothing and your dot stayed blue.
+   */
+  const channel = useRef<ReturnType<typeof supabase.channel> | null>(null)
+  const joined = useRef(false)
+
   useEffect(() => {
-    const channel = supabase.channel('kobbleston:here', {
-      config: { presence: { key: me ?? `guest-${Math.random().toString(36).slice(2)}` } },
+    if (!me) return
+
+    const mine = supabase.channel('kobbleston:here', {
+      config: { presence: { key: me } },
     })
+    channel.current = mine
+    joined.current = false
 
     const read = () => {
-      const state = channel.presenceState<Here>()
+      const state = mine.presenceState<Here>()
       here.clear()
       for (const list of Object.values(state)) {
         for (const one of list) {
@@ -90,28 +103,43 @@ export function usePresenceChannel(
       changed()
     }
 
-    channel
+    mine
       .on('presence', { event: 'sync' }, read)
       .on('presence', { event: 'join' }, read)
       .on('presence', { event: 'leave' }, read)
       .subscribe((status) => {
-        if (status !== 'SUBSCRIBED' || !me) return
-        void channel.track({ id: me, activity: doing, in_space_id: inSpace ?? null, at: Date.now() })
+        if (status !== 'SUBSCRIBED') return
+        joined.current = true
+        void mine.track({ id: me, activity: doing, in_space_id: inSpace ?? null, at: Date.now() })
       })
 
     return () => {
-      void supabase.removeChannel(channel)
+      joined.current = false
+      channel.current = null
+      void supabase.removeChannel(mine)
       here.clear()
       changed()
     }
+    // Only the account matters here: what you are doing is said again below
+    // rather than by joining all over again.
   }, [me])
 
-  // Saying it again when what you are doing changes, without rejoining.
   useEffect(() => {
     if (!me) return
-    const channel = supabase.getChannels().find((one) => one.topic === 'realtime:kobbleston:here')
-    if (!channel) return
-    void channel.track({ id: me, activity: doing, in_space_id: inSpace ?? null, at: Date.now() })
+
+    /*
+     * Your own dot moves the instant you do, without waiting for the channel
+     * to answer: you are the one source that cannot be out of date about
+     * yourself.
+     */
+    here.set(me, { id: me, activity: doing, in_space_id: inSpace ?? null, at: Date.now() })
+    changed()
+
+    if (joined.current && channel.current) {
+      void channel.current.track({
+        id: me, activity: doing, in_space_id: inSpace ?? null, at: Date.now(),
+      })
+    }
   }, [me, doing, inSpace])
 
   /*
