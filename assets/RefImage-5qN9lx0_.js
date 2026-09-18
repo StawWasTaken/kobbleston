@@ -1,0 +1,1 @@
+import{An as e,Mn as t}from"./free-solid-svg-icons-aglpSWAt.js";import{h as n}from"./app-CdglsigO.js";var r=t();function i({value:t,alt:i,className:a,fallback:o,style:s}){let c=n(t)??o??null;return c?(0,r.jsx)(`img`,{src:c,alt:i,loading:`lazy`,draggable:!1,onContextMenu:e=>e.preventDefault(),style:s,className:e(`select-none`,a)}):null}export{i as t};

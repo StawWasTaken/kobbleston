@@ -76,7 +76,13 @@ function Stage({ asset, previewUrl, fileUrl }: {
             className="h-full w-full select-none object-cover"
           />
         ) : (
-          <FontAwesomeIcon icon={kindIcons.audio} className="text-6xl text-white/25" />
+          // Sized against the square rather than against the text, so the
+          // mark keeps its proportions whatever the cover is worth.
+          <FontAwesomeIcon
+            icon={kindIcons.audio}
+            style={{ width: '38%', height: 'auto' }}
+            className="text-white/25"
+          />
         )}
       </div>
     )
@@ -105,7 +111,11 @@ function Stage({ asset, previewUrl, fileUrl }: {
           className="h-full w-full select-none object-contain"
         />
       ) : (
-        <FontAwesomeIcon icon={kindIcons[asset.kind]} className="text-5xl text-white/25" />
+        <FontAwesomeIcon
+          icon={kindIcons[asset.kind]}
+          style={{ width: '34%', height: 'auto' }}
+          className="text-white/25"
+        />
       )}
     </div>
   )
@@ -563,7 +573,10 @@ export default function AssetPage() {
         'grid gap-6 sm:items-start',
         asset.kind === 'video'
           ? 'lg:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)]'
-          : 'sm:grid-cols-[minmax(0,20rem)_minmax(0,1fr)] lg:grid-cols-[minmax(0,26rem)_minmax(0,1fr)]',
+          : asset.kind === 'audio'
+            // A cover is a cover: big enough to see, not a wall.
+            ? 'sm:grid-cols-[minmax(0,15rem)_minmax(0,1fr)] lg:grid-cols-[minmax(0,20rem)_minmax(0,1fr)]'
+            : 'sm:grid-cols-[minmax(0,20rem)_minmax(0,1fr)] lg:grid-cols-[minmax(0,26rem)_minmax(0,1fr)]',
       )}>
         <div className="space-y-3">
           <Stage key={asset.id} asset={asset} previewUrl={previewUrl} fileUrl={fileUrl} />
