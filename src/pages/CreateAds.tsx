@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import {
   faRectangleAd, faPlus, faStop, faEye, faHandPointer, faCircleCheck,
+  faCubes, faUsers, faCalendarDay, faShapes, faGlobe, faLock,
 } from '@fortawesome/free-solid-svg-icons'
 import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
@@ -15,14 +16,25 @@ import { useAuth } from '@/hooks/useAuth'
 import { useAsync } from '@/hooks/useAsync'
 import { useTitle } from '@/hooks/useTitle'
 import { useSignedUrl } from '@/hooks/useSignedUrl'
-import { buyAd, endAd, listMyAds, listOwnAssets } from '@/lib/api'
-import type { AdSize, MyAd } from '@/lib/api'
+import { buyAd, endAd, listAdvertisable, listMyAds, listOwnAssets } from '@/lib/api'
+import type { AdSize, AdTarget, Advertisable, MyAd } from '@/lib/api'
 import { AD_SIZES } from '@/lib/blocks'
 import { formatCount } from '@/lib/format'
 import { cn } from '@/lib/cn'
 import type { OwnAsset } from '@/types/db'
 
 const CREATE = 'Kobbleston Create'
+
+/** What an ad may be for, and what each of those looks like in a list. */
+const targetLook: Record<AdTarget, { icon: typeof faCubes; label: string }> = {
+  space: { icon: faCubes, label: 'Spaces' },
+  community: { icon: faUsers, label: 'Communities' },
+  event: { icon: faCalendarDay, label: 'Events' },
+  asset: { icon: faShapes, label: 'Marketplace' },
+  link: { icon: faGlobe, label: 'Somewhere else' },
+}
+
+const targetOrder: AdTarget[] = ['space', 'community', 'event', 'asset']
 
 /** A picture of somebody's own, small, for picking one. */
 function Thumb({ path, on }: { path: string; on: boolean }) {
@@ -56,7 +68,10 @@ function Campaign({ ad, onStop }: { ad: MyAd; onStop: () => void }) {
             {AD_SIZES[ad.size]?.label ?? ad.size}
           </span>
         </p>
-        <p className="mt-0.5 truncate text-xs text-muted">Sends people to {ad.target_path}</p>
+        <p className="mt-0.5 flex items-center gap-1.5 truncate text-xs text-muted">
+          <FontAwesomeIcon icon={targetLook[ad.target_kind]?.icon ?? faGlobe} />
+          Sends people to {ad.target_path}
+        </p>
 
         <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs font-bold">
           <span className="inline-flex items-center gap-1.5 text-muted">
@@ -99,6 +114,13 @@ export default function CreateAds() {
   const toast = useToast()
 
   const ads = useAsync(() => (profile ? listMyAds() : Promise.resolve([])), [profile?.id])
+  const targets = useAsync(
+    () => (profile ? listAdvertisable() : Promise.resolve([] as Advertisable[])),
+    [profile?.id],
+  )
+
+  // Only Kobbleston's own account may point an ad at another website.
+  const official = profile?.username?.toLowerCase() === 'kobbleston'
   const pictures = useAsync(
     async () => (profile
       ? (await listOwnAssets(profile.id)).filter((a) => a.kind === 'image' && a.status === 'approved')
@@ -111,23 +133,37 @@ export default function CreateAds() {
   const [name, setName] = useState('')
   const [size, setSize] = useState<AdSize>('banner')
   const [picked, setPicked] = useState<OwnAsset | null>(null)
-  const [target, setTarget] = useState('/discover')
+  const [forWhat, setForWhat] = useState<Advertisable | null>(null)
+  const [outward, setOutward] = useState('')
   const [budget, setBudget] = useState(50)
   const [pending, setPending] = useState(false)
 
   const buy = async () => {
     if (!picked) { toast('Pick a picture for the ad.', 'error'); return }
-    if (!/^\/[a-zA-Z0-9/_-]{0,120}$/.test(target)) {
-      toast('An address inside Kobbleston, like /c/1016/name.', 'error')
+
+    const away = official && outward.trim()
+    if (!forWhat && !away) {
+      toast('Say what the ad is for.', 'error')
       return
     }
+
     setPending(true)
     try {
-      await buyAd({ name: name.trim(), size, assetId: picked.id, target, kubes: budget })
+      await buyAd({
+        name: name.trim(),
+        size,
+        assetId: picked.id,
+        kind: away ? 'link' : (forWhat as Advertisable).kind,
+        targetId: away ? null : (forWhat as Advertisable).id,
+        outward: away ? outward.trim() : null,
+        kubes: budget,
+      })
       toast('Your ad is running.', 'success')
       setBuying(false)
       setName('')
       setPicked(null)
+      setForWhat(null)
+      setOutward('')
       ads.reload()
       refreshProfile()
     } catch (err) {
@@ -270,12 +306,79 @@ export default function CreateAds() {
             )}
           </div>
 
-          <Input
-            label="Where it sends people"
-            value={target}
-            onChange={(e) => setTarget(e.target.value)}
-            hint="An address inside Kobbleston, like /c/1016/kobbleston or /s/1042/my-space."
-          />
+          <div>
+            <p className="mb-1.5 text-[11px] font-extrabold uppercase tracking-wide text-muted">
+              What the ad is for
+            </p>
+            <p className="mb-2 text-xs text-muted">
+              An ad points at a Space, a community, an event or something in the Marketplace, and
+              only at one you made or have been given the run of.
+            </p>
+
+            {targets.loading && <Skeleton className="h-24 rounded-xl" />}
+
+            {!targets.loading && !targets.data?.length && (
+              <p className="rounded-xl border border-ink-line bg-ink-raised p-3 text-sm text-muted">
+                There is nothing here to advertise yet. Build a Space, run a community, or put
+                something in the Marketplace, and it turns up in this list.
+              </p>
+            )}
+
+            {!!targets.data?.length && (
+              <div className="max-h-56 space-y-3 overflow-y-auto pr-1 kob-scroll">
+                {targetOrder.map((kind) => {
+                  const rows = (targets.data ?? []).filter((one) => one.kind === kind)
+                  if (!rows.length) return null
+
+                  return (
+                    <div key={kind}>
+                      <p className="mb-1.5 flex items-center gap-1.5 text-[11px] font-extrabold uppercase tracking-wide text-muted">
+                        <FontAwesomeIcon icon={targetLook[kind].icon} />
+                        {targetLook[kind].label}
+                      </p>
+                      <div className="grid gap-1.5 sm:grid-cols-2">
+                        {rows.map((row) => (
+                          <button
+                            key={row.id}
+                            onClick={() => { setForWhat(row); setOutward('') }}
+                            className={cn(
+                              'rounded-xl border px-3 py-2 text-left transition-colors',
+                              forWhat?.id === row.id
+                                ? 'border-brand-bright bg-brand/15'
+                                : 'border-ink-line bg-ink-raised hover:bg-ink-hover',
+                            )}
+                          >
+                            <span className="block truncate text-xs font-bold">{row.label}</span>
+                            <span className="block truncate text-[11px] text-muted">
+                              {row.note} · {row.path}
+                            </span>
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+            )}
+
+            {official ? (
+              <div className="mt-3">
+                <Input
+                  label="Or somewhere else entirely"
+                  labelNote="Kobbleston only"
+                  value={outward}
+                  onChange={(e) => { setOutward(e.target.value); if (e.target.value) setForWhat(null) }}
+                  placeholder="https://"
+                  hint="This account may point an ad at another website. No other account can."
+                />
+              </div>
+            ) : (
+              <p className="mt-3 inline-flex items-center gap-1.5 text-[11px] text-muted">
+                <FontAwesomeIcon icon={faLock} />
+                Ads cannot be pointed off Kobbleston.
+              </p>
+            )}
+          </div>
 
           <div>
             <p className="mb-1.5 text-[11px] font-extrabold uppercase tracking-wide text-muted">

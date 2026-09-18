@@ -1,14 +1,12 @@
 import { useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { faPlus, faTrash } from '@fortawesome/free-solid-svg-icons'
-import { Page } from '@/components/layout/AppShell'
 import { Button } from '@/components/ui/Button'
 import { Card, SectionHeading } from '@/components/ui/Card'
 import { Input, Textarea } from '@/components/ui/Input'
 import { ErrorState, Skeleton } from '@/components/ui/States'
 import { useToast } from '@/components/ui/Toast'
 import { ImageDrop } from '@/components/community/ImageDrop'
-import { ChatSettings } from '@/components/spaces/ChatSettings'
 import { Collaborators } from '@/components/spaces/Collaborators'
 import { categoryLabels } from '@/components/spaces/SpaceCard'
 import { useAuth } from '@/hooks/useAuth'
@@ -94,20 +92,18 @@ export default function EditSpace() {
     }
   }
 
-  if (space.loading) return <Page><Skeleton className="h-64 w-full" /></Page>
-  if (space.error) return <Page><ErrorState message={space.error} onRetry={space.reload} /></Page>
+  if (space.loading) return <Skeleton className="h-64 w-full" />
+  if (space.error) return <ErrorState message={space.error} onRetry={space.reload} />
   if (!space.data || space.data.owner_id !== profile?.id) {
     return (
-      <Page>
-        <Card className="p-6">
-          <p className="text-sm text-muted">This is not your Space to configure.</p>
-        </Card>
-      </Page>
+      <Card className="p-6">
+        <p className="text-sm text-muted">This is not your Space to configure.</p>
+      </Card>
     )
   }
 
   return (
-    <Page className="max-w-3xl space-y-6">
+    <div className="max-w-3xl space-y-6">
       <BackLink to={spaceLink(space.data)}>Back to {space.data.name}</BackLink>
 
       <div>
@@ -232,16 +228,15 @@ export default function EditSpace() {
           </label>
         </Card>
 
+        <p className="text-xs text-muted">
+          Chat, and everything else about how the Space itself looks, is set up in the builder.
+        </p>
+
         <div className="flex justify-end gap-2">
           <Button type="button" variant="ghost" icon={faTrash} onClick={() => navigate(-1)}>Back</Button>
           <Button type="submit" size="lg" loading={pending}>Save changes</Button>
         </div>
       </form>
-
-      <section>
-        <SectionHeading title="Chat" />
-        <ChatSettings space={space.data} onSaved={space.reload} />
-      </section>
 
       <section className="mt-8">
         <SectionHeading title="Team" />
@@ -251,6 +246,6 @@ export default function EditSpace() {
           viewerId={profile?.id}
         />
       </section>
-    </Page>
+    </div>
   )
 }

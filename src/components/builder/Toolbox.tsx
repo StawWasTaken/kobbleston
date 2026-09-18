@@ -1,7 +1,8 @@
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import {
   faHeading, faAlignLeft, faImage, faImages, faLink, faMinus, faVideo, faMusic,
-  faRectangleAd, faHandHoldingHeart, faSquare, faLayerGroup, faEye, faEyeSlash,
+  faRectangleAd, faHandHoldingHeart, faSquare, faLayerGroup,
+  faQuoteLeft, faBullhorn, faListUl, faLock, faLockOpen,
 } from '@fortawesome/free-solid-svg-icons'
 import type { IconDefinition } from '@fortawesome/fontawesome-svg-core'
 import { BLOCK_DEFAULTS } from '@/lib/blocks'
@@ -20,11 +21,14 @@ const icons: Record<BlockKind, IconDefinition> = {
   ad: faRectangleAd,
   donate: faHandHoldingHeart,
   box: faSquare,
+  quote: faQuoteLeft,
+  marquee: faBullhorn,
+  links: faListUl,
 }
 
 const order: BlockKind[] = [
-  'heading', 'text', 'image', 'gallery', 'button', 'box', 'divider',
-  'video', 'audio', 'ad', 'donate',
+  'heading', 'text', 'quote', 'marquee', 'image', 'gallery',
+  'button', 'links', 'box', 'divider', 'video', 'audio', 'ad', 'donate',
 ]
 
 /**
@@ -32,12 +36,13 @@ const order: BlockKind[] = [
  * rail, the way a studio keeps its parts and its explorer together.
  */
 export function Toolbox({
-  blocks, selected, onInsert, onSelect,
+  blocks, selected, onInsert, onSelect, onLock,
 }: {
   blocks: Block[]
   selected: string | null
   onInsert: (kind: BlockKind) => void
   onSelect: (id: string) => void
+  onLock: (id: string, locked: boolean) => void
 }) {
   return (
     <div className="flex h-full flex-col">
@@ -69,11 +74,11 @@ export function Toolbox({
         )}
 
         {[...blocks].reverse().map((block) => (
-          <li key={block.id}>
+          <li key={block.id} className="group/row relative">
             <button
               onClick={() => onSelect(block.id)}
               className={cn(
-                'flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-left text-xs font-semibold transition-colors',
+                'flex w-full items-center gap-2.5 rounded-lg py-2 pl-3 pr-9 text-left text-xs font-semibold transition-colors',
                 selected === block.id
                   ? 'bg-brand text-onbrand'
                   : 'text-white/60 hover:bg-ink-hover hover:text-white',
@@ -86,10 +91,20 @@ export function Toolbox({
                   ? ` · ${String(block.props.text).slice(0, 18)}`
                   : ''}
               </span>
-              <FontAwesomeIcon
-                icon={selected === block.id ? faEye : faEyeSlash}
-                className="text-[10px] opacity-40"
-              />
+            </button>
+
+            <button
+              onClick={() => onLock(block.id, !block.locked)}
+              aria-label={block.locked ? 'Unlock this block' : 'Lock this block'}
+              aria-pressed={!!block.locked}
+              className={cn(
+                'absolute right-1.5 top-1/2 grid h-6 w-6 -translate-y-1/2 place-items-center rounded-md text-[10px] transition-opacity',
+                block.locked
+                  ? 'opacity-100'
+                  : 'opacity-0 focus-visible:opacity-100 group-hover/row:opacity-60',
+              )}
+            >
+              <FontAwesomeIcon icon={block.locked ? faLock : faLockOpen} />
             </button>
           </li>
         ))}

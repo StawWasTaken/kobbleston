@@ -21,9 +21,9 @@ they are referenced by the content ID they already have in Create, which is
 what those IDs are for.
 
 ```
-index.html          the page itself
-style.css
-script.js
+page.json           the blocks, which are the source
+index.html          written from them
+style.css           written from them
 ```
 
 ## How a Space is built
@@ -34,9 +34,19 @@ Out of blocks, and only out of blocks.
    button, an ad slot, a donate button. Each one is dragged, resized, layered
    and edited in a panel beside the canvas. This is how somebody with no idea
    what HTML is makes something on their first afternoon.
-2. **Style.** Colours, fonts, sizes and corners, per block and for the page,
-   in that same panel. A stylesheet is written from it; nobody edits the
-   stylesheet.
+2. **Style.** Colours, fonts, sizes, corners, shadows, how solid a thing is
+   and how far it is turned, per block and for the page, in that same panel.
+   A stylesheet is written from it; nobody edits the stylesheet.
+3. **Fonts.** The four the site comes with, and any font you own. A font is
+   content like anything else, so the list is your inventory and the way to
+   get another is the Marketplace. A page carries the ones it leans on as
+   `@font-face` rules pointing at the usual `kob://` reference.
+4. **Sound.** Either the player Create uses, in three shapes, or a sound that
+   simply runs and loops with one control to turn it off. Nothing plays
+   before somebody has touched the page.
+5. **Chat.** Set up in the builder, beside the page it belongs to. Everything
+   else about a Space, its name, its pictures, who may build it, is in Create
+   under Configure.
 
 Writing the files by hand was in the first version of this plan and has been
 taken back out. It made every Space a page that might contain anybody's
@@ -105,21 +115,24 @@ Space can be rolled back after a bad save.
 4. **The block editor (built).** A canvas with drag, resize, snapping and
    layers; a toolbox of blocks; an inspector for the selected one and for the
    page. Blocks are kept as `page.json` and compiled to the markup and styles.
-5. **The bridge (partly built).** A Space can say two things: somebody pressed
+5. **Ads (built).** A slot in a Space, and the campaigns that fill it. An ad
+   names the thing it advertises rather than an address: a Space, a
+   community, an event, or something in the Marketplace, and only one the
+   buyer made or has been given the run of. The address is worked out on the
+   database side from the thing itself. Kobbleston's own account is the only
+   one that may point an ad at another website.
+6. **The bridge (partly built).** A Space can say two things: somebody pressed
    a donate button, and somebody pressed an ad. Both are handled outside the
    frame, where the amount can be shown plainly and the account is reachable.
    Badges awarding themselves still needs doing.
 
 ## Still to build
 
-- **Blocks for the rest of it**: a guestbook, a wall of links, a music player
-  that is more than an audio element.
+- **A guestbook**, which needs a table behind it rather than only markup.
 - **Style, as its own way of working**, rather than the per block colours and
   sizes the inspector has now.
 - **Badges through the bridge**, which is what finally makes them award
   themselves.
-- **Blocks for the rest of it**: a guestbook, a wall of links, a music player
-  that is more than an audio element.
 - **A serving domain of its own.** The frame already has an origin of null,
   which is what isolation needs; a separate domain would let a Space be
   visited directly rather than only inside Kobbleston.

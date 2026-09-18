@@ -1290,10 +1290,22 @@ export type AdSize = 'banner' | 'box' | 'tall'
 
 export type ShownAd = { id: string; name: string; file_path: string; target_path: string }
 
+/** The kinds of thing an ad is allowed to point at. */
+export type AdTarget = 'space' | 'community' | 'event' | 'asset' | 'link'
+
+export type Advertisable = {
+  kind: AdTarget
+  id: string
+  label: string
+  note: string
+  path: string
+}
+
 export type MyAd = {
   id: string
   name: string
   size: AdSize
+  target_kind: AdTarget
   target_path: string
   budget: number
   spent: number
@@ -1317,19 +1329,33 @@ export async function recordAdClick(adId: string) {
   await supabase.rpc('record_ad_click', { target: adId })
 }
 
+/**
+ * Everything the person signed in may advertise. An ad names the thing it is
+ * for rather than an address, and the address is worked out from that thing,
+ * so it cannot be pointed at somebody else's work.
+ */
+export async function listAdvertisable(): Promise<Advertisable[]> {
+  return (unwrap(await supabase.rpc('advertisable')) as Advertisable[]) ?? []
+}
+
 export async function buyAd(details: {
   name: string
   size: AdSize
   assetId: string
-  target: string
+  kind: AdTarget
+  targetId?: string | null
+  /** Only Kobbleston's own account may point an ad off the site. */
+  outward?: string | null
   kubes: number
 }): Promise<string> {
   return unwrap(await supabase.rpc('buy_ad', {
     ad_name: details.name,
     ad_size: details.size,
     picture: details.assetId,
-    target: details.target,
     kubes: details.kubes,
+    kind: details.kind,
+    target: details.targetId ?? null,
+    outward: details.outward ?? null,
   })) as string
 }
 

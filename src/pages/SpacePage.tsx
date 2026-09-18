@@ -274,7 +274,7 @@ export default function SpacePage() {
                   <Button variant="subtle" block icon={faHammer} to={`/spaces/${space.id}/build`}>
                     Build this Space
                   </Button>
-                  <Button variant="ghost" block icon={faPenToSquare} to={`/spaces/${space.id}/edit`}>
+                  <Button variant="ghost" block icon={faPenToSquare} to={`/create/spaces/${space.id}/edit`}>
                     Configure
                   </Button>
                 </div>

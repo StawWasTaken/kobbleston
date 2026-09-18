@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState } from 'react'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faRectangleAd, faHandHoldingHeart } from '@fortawesome/free-solid-svg-icons'
-import { AD_SIZES, GRID, snap } from '@/lib/blocks'
+import { faRectangleAd, faMusic, faLock, faVolumeHigh } from '@fortawesome/free-solid-svg-icons'
+import { AD_SIZES, GRID, fontStack, snap } from '@/lib/blocks'
+import { Kube } from '@/components/brand/Kube'
 import type { Block, Page } from '@/lib/blocks'
 import { RefImage } from '@/components/create/RefImage'
 import { cn } from '@/lib/cn'
@@ -84,15 +85,63 @@ function Preview({ block }: { block: Block }) {
     case 'donate':
       return (
         <span
-          style={{ background: String(p.colour), color: String(p.text ?? '#fff'), borderRadius: Number(p.radius ?? 12) }}
-          className="grid h-full w-full place-items-center text-sm font-bold"
+          style={{
+            background: String(p.colour),
+            color: String(p.text ?? '#fff'),
+            borderRadius: Number(p.radius ?? 12),
+            fontSize: block.kind === 'button' ? Number(p.size) || 15 : undefined,
+          }}
+          className="grid h-full w-full place-items-center font-bold"
         >
           <span className="inline-flex items-center gap-2">
-            {block.kind === 'donate' && <FontAwesomeIcon icon={faHandHoldingHeart} />}
+            {block.kind === 'donate' && p.icon !== false && <Kube />}
             {String(p.label)}
           </span>
         </span>
       )
+
+    case 'quote':
+      return (
+        <blockquote
+          style={{ fontSize: Number(p.size), color: String(p.colour || 'inherit'), borderColor: String(p.accent) }}
+          className="m-0 h-full border-l-4 pl-4"
+        >
+          <p className="m-0 whitespace-pre-wrap leading-snug">{String(p.text)}</p>
+          {!!p.who && <cite className="mt-2 block text-[.6em] not-italic opacity-70">{String(p.who)}</cite>}
+        </blockquote>
+      )
+
+    case 'marquee':
+      return (
+        <span
+          style={{ fontSize: Number(p.size), color: String(p.colour || 'inherit') }}
+          className="flex h-full w-full items-center overflow-hidden whitespace-nowrap"
+        >
+          {String(p.text)}
+        </span>
+      )
+
+    case 'links': {
+      const items = (Array.isArray(p.items) ? p.items : []) as string[]
+      if (!items.length) return <Empty>Add some links</Empty>
+      return (
+        <span className="flex h-full w-full flex-col" style={{ gap: Number(p.gap) || 8 }}>
+          {items.map((line, i) => (
+            <span
+              key={`${line}-${i}`}
+              style={{
+                background: String(p.colour),
+                color: String(p.text),
+                borderRadius: Number(p.radius) || 10,
+              }}
+              className="flex flex-1 items-center truncate px-3.5 text-xs font-bold"
+            >
+              {(line.split('|')[0] || line).trim()}
+            </span>
+          ))}
+        </span>
+      )
+    }
 
     case 'divider':
       return (
@@ -105,8 +154,43 @@ function Preview({ block }: { block: Block }) {
     case 'video':
       return p.tag ? <Empty>{String(p.tag).toUpperCase()}</Empty> : <Empty>Pick a clip</Empty>
 
-    case 'audio':
-      return <Empty>{p.tag ? String(p.tag).toUpperCase() : 'Pick a sound'}</Empty>
+    case 'audio': {
+      if (!p.tag) return <Empty>Pick a sound</Empty>
+      if (p.mode === 'loop') {
+        return (
+          <span className="flex h-full w-full items-center gap-2 rounded-xl border border-white/20 bg-white/5 px-3 text-xs font-bold">
+            <FontAwesomeIcon icon={faVolumeHigh} />
+            {String(p.title || 'Sound')}
+          </span>
+        )
+      }
+      return (
+        <span className="flex h-full w-full items-center gap-3 rounded-xl border border-white/15 bg-white/5 px-3">
+          {p.skin === 'cover' && (
+            <span className="h-14 w-14 shrink-0 rounded-lg bg-white/10" />
+          )}
+          <span
+            style={{ background: String(p.colour) }}
+            className="grid h-9 w-9 shrink-0 place-items-center rounded-full text-[11px] text-white"
+          >
+            <FontAwesomeIcon icon={faMusic} />
+          </span>
+          <span className="min-w-0 flex-1">
+            {p.skin !== 'mini' && (
+              <span className="block truncate text-[11px] font-bold">
+                {String(p.title || String(p.tag).toUpperCase())}
+              </span>
+            )}
+            <span className="mt-1.5 block h-1.5 w-full rounded-full bg-white/15">
+              <span
+                style={{ background: String(p.colour) }}
+                className="block h-full w-1/3 rounded-full"
+              />
+            </span>
+          </span>
+        </span>
+      )
+    }
 
     case 'ad':
       return (
@@ -168,7 +252,7 @@ export function Canvas({
       const dy = (e.clientY - drag.startY) / zoom
 
       onChange(page.blocks.map((block) => {
-        if (block.id !== drag.id) return block
+        if (block.id !== drag.id || block.locked) return block
 
         if (drag.kind === 'move') {
           return {
@@ -216,7 +300,7 @@ export function Canvas({
       if (['INPUT', 'TEXTAREA', 'SELECT'].includes(target.tagName)) return
       e.preventDefault()
       const step = e.shiftKey ? GRID * 5 : GRID
-      onChange(page.blocks.map((block) => (block.id === selected
+      onChange(page.blocks.map((block) => (block.id === selected && !block.locked
         ? {
             ...block,
             x: Math.max(0, block.x + (e.key === 'ArrowRight' ? step : e.key === 'ArrowLeft' ? -step : 0)),
@@ -239,6 +323,7 @@ export function Canvas({
           height: tallest + 120,
           background: page.background,
           color: page.text,
+          fontFamily: fontStack(page.font) || undefined,
           transform: `scale(${zoom})`,
           transformOrigin: 'top center',
           backgroundImage:
@@ -253,6 +338,7 @@ export function Canvas({
             onPointerDown={(e) => {
               e.stopPropagation()
               onSelect(block.id)
+              if (block.locked) return
               setDrag({
                 kind: 'move',
                 id: block.id,
@@ -262,9 +348,27 @@ export function Canvas({
                 startY: e.clientY,
               })
             }}
-            style={{ left: block.x, top: block.y, width: block.w, height: block.h }}
+            style={{
+              left: block.x,
+              top: block.y,
+              width: block.w,
+              height: block.h,
+              background: String(block.props.bg ?? ''),
+              borderRadius: Number(block.props.radius) || undefined,
+              border: Number(block.props.borderWidth)
+                ? `${Number(block.props.borderWidth)}px solid ${String(block.props.border)}`
+                : undefined,
+              boxShadow: Number(block.props.shadow)
+                ? `0 ${Math.round(Number(block.props.shadow) / 2)}px ${Number(block.props.shadow)}px rgba(0,0,0,.45)`
+                : undefined,
+              opacity: (Number(block.props.opacity ?? 100)) / 100,
+              transform: Number(block.props.rotate) ? `rotate(${Number(block.props.rotate)}deg)` : undefined,
+              padding: Number(block.props.padding) || undefined,
+              fontFamily: fontStack(String(block.props.font ?? '')) || undefined,
+            }}
             className={cn(
-              'absolute cursor-move',
+              'absolute',
+              block.locked ? 'cursor-default' : 'cursor-move',
               selected === block.id
                 ? 'outline outline-2 outline-offset-2 outline-brand-bright'
                 : 'hover:outline hover:outline-1 hover:outline-offset-2 hover:outline-white/25',
@@ -272,7 +376,13 @@ export function Canvas({
           >
             <Preview block={block} />
 
-            {selected === block.id && HANDLES.map((handle) => (
+            {selected === block.id && block.locked && (
+              <span className="absolute -right-2 -top-2 grid h-5 w-5 place-items-center rounded-full bg-ink-card text-[9px] text-white/70 ring-1 ring-ink-line">
+                <FontAwesomeIcon icon={faLock} />
+              </span>
+            )}
+
+            {selected === block.id && !block.locked && HANDLES.map((handle) => (
               <span
                 key={handle.at}
                 onPointerDown={(e) => {

@@ -7,6 +7,7 @@ import { ToastProvider } from '@/components/ui/Toast'
 import { AuthProvider, useAuth } from '@/hooks/useAuth'
 import { ThemeProvider } from '@/hooks/useTheme'
 import { Logomark } from '@/components/brand/Wordmark'
+import { useParams } from 'react-router-dom'
 import Landing from '@/pages/Landing'
 import Auth from '@/pages/Auth'
 import Home from '@/pages/Home'
@@ -62,6 +63,12 @@ function RootRoute() {
   return session ? <Navigate to="/home" replace /> : <Landing />
 }
 
+/** Configuring a Space used to live on its own. It lives in Create now. */
+function LegacyEditRedirect() {
+  const { spaceId = '' } = useParams()
+  return <Navigate to={`/create/spaces/${spaceId}/edit`} replace />
+}
+
 export default function App() {
   return (
     <BrowserRouter basename={import.meta.env.BASE_URL}>
@@ -93,6 +100,9 @@ export default function App() {
                   <Route path="analytics" element={<CreateAnalytics />} />
                   <Route path="ads" element={<CreateAds />} />
                   <Route path="creator/:username" element={<CreatorPage />} />
+                  {/* Configuring a Space is Create's business; building one is
+                      its own screen, so it keeps its own address. */}
+                  <Route path="spaces/:spaceId/edit" element={<EditSpace />} />
                   <Route path=":tag" element={<AssetPage />} />
                 </Route>
                 <Route path="/people" element={<People />} />
@@ -117,7 +127,10 @@ export default function App() {
                 <Route element={<RequireAuth />}>
                   <Route path="/home" element={<Home />} />
                   <Route path="/spaces/new" element={<NewSpace />} />
-                  <Route path="/spaces/:spaceId/edit" element={<EditSpace />} />
+                  <Route
+                    path="/spaces/:spaceId/edit"
+                    element={<LegacyEditRedirect />}
+                  />
                   <Route path="/spaces/:spaceId/build" element={<BuildSpace />} />
                   <Route element={<CommunityShell />}>
                     <Route path="/c/:slug/configure" element={<ConfigureCommunity />} />

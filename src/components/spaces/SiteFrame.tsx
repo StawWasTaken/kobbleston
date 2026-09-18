@@ -47,19 +47,116 @@ const escapeForAttribute = (value: string) => value.replace(/"/g, '&quot;')
  * page decides what that means. Everything else it might post is ignored.
  */
 const BRIDGE = `
-document.addEventListener('click', function (event) {
-  var donate = event.target.closest('[data-kob-donate]')
-  if (donate) {
-    event.preventDefault()
-    parent.postMessage({ kob: 'donate', amount: Number(donate.getAttribute('data-kob-donate')) }, '*')
-    return
+(function () {
+  /* Donating and ad presses are Kobbleston's business, so they are only ever
+     reported outwards: this page cannot move anybody's Kubes by itself. */
+  document.addEventListener('click', function (event) {
+    var donate = event.target.closest('[data-kob-donate]')
+    if (donate) {
+      event.preventDefault()
+      parent.postMessage({ kob: 'donate', amount: Number(donate.getAttribute('data-kob-donate')) }, '*')
+      return
+    }
+    var ad = event.target.closest('[data-kob-ad-id]')
+    if (ad) {
+      event.preventDefault()
+      parent.postMessage({ kob: 'ad-click', id: ad.getAttribute('data-kob-ad-id') }, '*')
+    }
+  })
+
+  function clock(seconds) {
+    if (!isFinite(seconds)) return '0:00'
+    var whole = Math.floor(seconds)
+    var rest = whole % 60
+    return Math.floor(whole / 60) + ':' + (rest < 10 ? '0' : '') + rest
   }
-  var ad = event.target.closest('[data-kob-ad-id]')
-  if (ad) {
-    event.preventDefault()
-    parent.postMessage({ kob: 'ad-click', id: ad.getAttribute('data-kob-ad-id') }, '*')
+
+  /* The player, driven the same way Create drives its own: press to play,
+     drag or arrow along the bar, press to go quiet. */
+  function player(box) {
+    var media = box.querySelector('[data-kob-media]')
+    var bar = box.querySelector('[data-kob-seek]')
+    var fill = box.querySelector('[data-kob-fill]')
+    var knob = box.querySelector('[data-kob-knob]')
+    var at = box.querySelector('[data-kob-at]')
+    var length = box.querySelector('[data-kob-length]')
+    if (!media) return
+
+    function draw() {
+      var whole = media.duration || 0
+      var part = whole ? (media.currentTime / whole) * 100 : 0
+      if (fill) fill.style.width = part + '%'
+      if (knob) knob.style.left = part + '%'
+      if (at) at.textContent = clock(media.currentTime)
+      if (length) length.textContent = clock(whole)
+      if (bar) bar.setAttribute('aria-valuenow', String(Math.round(part)))
+    }
+
+    box.querySelector('[data-kob-play]').addEventListener('click', function () {
+      if (media.paused) media.play(); else media.pause()
+    })
+
+    var mute = box.querySelector('[data-kob-mute]')
+    if (mute) mute.addEventListener('click', function () {
+      media.muted = !media.muted
+      box.toggleAttribute('data-quiet', media.muted)
+    })
+
+    media.addEventListener('play', function () { box.setAttribute('data-playing', '') })
+    media.addEventListener('pause', function () { box.removeAttribute('data-playing') })
+    media.addEventListener('ended', function () { box.removeAttribute('data-playing') })
+    media.addEventListener('timeupdate', draw)
+    media.addEventListener('loadedmetadata', draw)
+    media.addEventListener('durationchange', draw)
+
+    if (bar) {
+      var holding = false
+      function seek(clientX) {
+        var box2 = bar.getBoundingClientRect()
+        if (!box2.width || !media.duration) return
+        var part = Math.min(Math.max((clientX - box2.left) / box2.width, 0), 1)
+        media.currentTime = part * media.duration
+        draw()
+      }
+      bar.addEventListener('pointerdown', function (e) { holding = true; seek(e.clientX) })
+      window.addEventListener('pointermove', function (e) { if (holding) seek(e.clientX) })
+      window.addEventListener('pointerup', function () { holding = false })
+      bar.addEventListener('keydown', function (e) {
+        if (e.key === 'ArrowRight') { media.currentTime = Math.min(media.currentTime + 5, media.duration || 0); draw() }
+        if (e.key === 'ArrowLeft') { media.currentTime = Math.max(media.currentTime - 5, 0); draw() }
+      })
+    }
+
+    draw()
   }
-})
+
+  /* A sound that simply runs. Nothing plays before somebody has touched the
+     page, because a browser will not allow it and because being shouted at by
+     a web page is rude. */
+  function ambient(box) {
+    var media = box.querySelector('[data-kob-media]')
+    var button = box.querySelector('[data-kob-play]')
+    if (!media || !button) return
+    var refused = false
+
+    button.addEventListener('click', function () {
+      if (media.paused) { refused = false; media.play() } else { refused = true; media.pause() }
+    })
+    media.addEventListener('play', function () { box.setAttribute('data-playing', '') })
+    media.addEventListener('pause', function () { box.removeAttribute('data-playing') })
+
+    var begin = function () {
+      if (!refused && media.paused) media.play().catch(function () {})
+      window.removeEventListener('pointerdown', begin)
+      window.removeEventListener('keydown', begin)
+    }
+    window.addEventListener('pointerdown', begin)
+    window.addEventListener('keydown', begin)
+  }
+
+  document.querySelectorAll('[data-kob-player]').forEach(player)
+  document.querySelectorAll('[data-kob-ambient]').forEach(ambient)
+})()
 `
 
 /** Every kob:// reference in the files, so each is only looked up once. */
@@ -77,9 +174,9 @@ function referencesIn(files: SpaceFile[]) {
 /**
  * Builds the one document a Space is shown as.
  *
- * The files are not served over HTTP, so a stylesheet or a script the page
- * asks for by name is put into the document itself: `style.css` next to
- * `index.html` behaves the way somebody writing it would expect.
+ * The files are not served over HTTP, so the stylesheet the page asks for by
+ * name is put into the document itself: `style.css` next to `index.html`
+ * behaves the way it would if it had been fetched.
  */
 function buildDocument(
   files: SpaceFile[],
@@ -98,14 +195,6 @@ function buildDocument(
       return css === undefined ? whole : `<style>\n${css}\n</style>`
     },
   )
-  html = html.replace(
-    /<script\b[^>]*src=["']\.?\/?([a-z0-9._/-]+\.js)["'][^>]*><\/script>/gi,
-    (whole, path: string) => {
-      const js = byPath.get(path.toLowerCase())
-      return js === undefined ? whole : `<script>\n${js}\n</script>`
-    },
-  )
-
   // Content is referenced by its number, never copied, so this is where a
   // number becomes something the browser can actually load.
   for (const [reference, url] of links) {

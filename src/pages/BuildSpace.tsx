@@ -2,7 +2,8 @@ import { useEffect, useMemo, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import {
-  faRotateLeft, faCloudArrowUp, faFloppyDisk, faCircleDot, faEye,
+  faRotateLeft, faCloudArrowUp, faFloppyDisk, faCircleDot, faEye, faComments,
+  faMagnifyingGlassMinus, faMagnifyingGlassPlus,
 } from '@fortawesome/free-solid-svg-icons'
 import { Button } from '@/components/ui/Button'
 import { Dialog } from '@/components/ui/Dialog'
@@ -10,6 +11,7 @@ import { ErrorState, Skeleton } from '@/components/ui/States'
 import { useToast } from '@/components/ui/Toast'
 import { BackLink } from '@/components/ui/BackLink'
 import { SiteFrame } from '@/components/spaces/SiteFrame'
+import { ChatSettings } from '@/components/spaces/ChatSettings'
 import { Canvas } from '@/components/builder/Canvas'
 import { Toolbox } from '@/components/builder/Toolbox'
 import { Inspector } from '@/components/builder/Inspector'
@@ -62,6 +64,7 @@ export default function BuildSpace() {
   const [saving, setSaving] = useState(false)
   const [publishing, setPublishing] = useState(false)
   const [looking, setLooking] = useState(false)
+  const [talking, setTalking] = useState(false)
 
   /*
    * What is on screen starts as what is stored. A Space nobody has touched
@@ -137,6 +140,11 @@ export default function BuildSpace() {
     }
     applyPage({ ...page, blocks: [...page.blocks, copy] })
     setSelected(copy.id)
+  }
+
+  const lock = (id: string, locked: boolean) => {
+    if (!page) return
+    applyPage({ ...page, blocks: page.blocks.map((one) => (one.id === id ? { ...one, locked } : one)) })
   }
 
   /** Later in the list is drawn on top, so layering is just reordering. */
@@ -222,21 +230,32 @@ export default function BuildSpace() {
         </span>
 
         <div className="ml-auto flex flex-wrap items-center gap-2">
-          <div className="hidden items-center gap-1 rounded-lg border border-ink-line px-1 lg:flex">
-            {[0.5, 0.75, 1].map((level) => (
-              <button
-                key={level}
-                onClick={() => setZoom(level)}
-                aria-pressed={zoom === level}
-                className={cn(
-                  'rounded-md px-2 py-1 text-[11px] font-bold tabular-nums transition-colors',
-                  zoom === level ? 'bg-brand text-onbrand' : 'text-white/50 hover:text-white',
-                )}
-              >
-                {level * 100}%
-              </button>
-            ))}
+          <div className="hidden items-center gap-0.5 rounded-lg border border-ink-line px-1 py-0.5 lg:flex">
+            <button
+              onClick={() => setZoom((level) => Math.max(0.25, Math.round((level - 0.25) * 100) / 100))}
+              aria-label="Smaller"
+              className="grid h-6 w-6 place-items-center rounded-md text-white/50 hover:text-white"
+            >
+              <FontAwesomeIcon icon={faMagnifyingGlassMinus} className="text-[11px]" />
+            </button>
+            <button
+              onClick={() => setZoom(1)}
+              className="w-12 rounded-md px-1 py-0.5 text-[11px] font-bold tabular-nums text-white/70 hover:text-white"
+            >
+              {Math.round(zoom * 100)}%
+            </button>
+            <button
+              onClick={() => setZoom((level) => Math.min(1.5, Math.round((level + 0.25) * 100) / 100))}
+              aria-label="Bigger"
+              className="grid h-6 w-6 place-items-center rounded-md text-white/50 hover:text-white"
+            >
+              <FontAwesomeIcon icon={faMagnifyingGlassPlus} className="text-[11px]" />
+            </button>
           </div>
+
+          <Button size="sm" variant="ghost" icon={faComments} onClick={() => setTalking(true)}>
+            Chat
+          </Button>
 
           <Button size="sm" variant="ghost" icon={faEye} onClick={() => setLooking(true)}>
             Preview
@@ -269,6 +288,7 @@ export default function BuildSpace() {
               selected={selected}
               onInsert={insert}
               onSelect={setSelected}
+              onLock={lock}
             />
           </aside>
 
@@ -295,6 +315,18 @@ export default function BuildSpace() {
           </aside>
         </div>
       )}
+
+      {/* Chat belongs to the Space, so it is set up where the Space is built
+          rather than somewhere else entirely. */}
+      <Dialog
+        open={talking}
+        onClose={() => setTalking(false)}
+        title="Chat in this Space"
+        description="Who can talk here, what they see when they walk in, and how fast."
+        size="md"
+      >
+        {space.data && <ChatSettings space={space.data} onSaved={space.reload} />}
+      </Dialog>
 
       {/* The page as a visitor gets it, rather than as a canvas. */}
       <Dialog
