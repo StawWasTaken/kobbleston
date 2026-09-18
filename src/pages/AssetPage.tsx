@@ -24,6 +24,7 @@ import { useAsync } from '@/hooks/useAsync'
 import {
   assetAnalytics, deleteAsset, getAsset, listAssetReviews, listSimilarAssets, rateAsset,
   recordAssetEvent, removeAssetReview, updateAsset, writeAssetReview, buyAsset, priceCeilings,
+  ensureAssetPreview,
   dropFromInventory, listForSale, unlistForSale, listingFee, PLATFORM_SHARE,
 } from '@/lib/api'
 import { useSignedUrl } from '@/hooks/useSignedUrl'
@@ -294,6 +295,20 @@ export default function AssetPage() {
     if (asset) void recordAssetEvent(asset.id, 'view')
   }, [asset?.id])
 
+  /*
+   * A card picture for work that has none: everything uploaded before
+   * previews existed, and anything put back into Create. Only you can draw
+   * one for your own content, because only you are given the file, so it
+   * happens the next time you open your own page.
+   */
+  useEffect(() => {
+    if (!asset || !mine || !profile || !asset.is_public) return
+    void ensureAssetPreview(
+      { id: asset.id, kind: asset.kind, file_path: asset.file_path },
+      profile.id,
+    ).catch(() => null)
+  }, [asset?.id, mine, asset?.is_public, profile?.id])
+
   useEffect(() => {
     setName(asset?.name ?? '')
     setDescription(asset?.description ?? '')
@@ -368,6 +383,12 @@ export default function AssetPage() {
   const setListed = async (listed: boolean) => {
     try {
       await updateAsset(asset.id, { is_public: listed })
+      if (listed && profile) {
+        await ensureAssetPreview(
+          { id: asset.id, kind: asset.kind, file_path: asset.file_path },
+          profile.id,
+        ).catch(() => null)
+      }
       toast(listed ? 'Back in Create.' : 'Taken out of Create.', 'success')
       item.reload()
     } catch (err) {

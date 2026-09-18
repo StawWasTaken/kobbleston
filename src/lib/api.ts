@@ -1,4 +1,5 @@
 import { supabase } from './supabase'
+import { canPreview, previewOf, previewOfUrl } from './preview'
 import type {
   ActivityEvent, AssetKind, Community, EarnedBadge, Friendship, MarketAsset,
   MemberCommunity, Message, Notification, OwnAsset, PixelTransaction, PlatformStats, Profile,
@@ -405,6 +406,72 @@ export async function submitReport(input: {
 
 export const assetBucket = 'uploads'
 
+/*
+ * The bucket the cards read from. It holds a small picture of a piece of
+ * content and nothing else: the work itself stays in the private bucket
+ * above. A preview exists only while the content is listed in Create, which
+ * is exactly while its page shows the same picture to anybody.
+ */
+export const previewBucket = 'previews'
+
+export function previewUrl(path?: string | null): string | null {
+  if (!path) return null
+  return supabase.storage.from(previewBucket).getPublicUrl(path).data.publicUrl
+}
+
+/**
+ * Draws a preview for a piece of content and hangs it on the row, so a link
+ * to it pasted anywhere shows the work rather than a Kobbleston banner.
+ *
+ * Nothing depends on this working: a browser that cannot decode the file, or
+ * a network that drops, leaves the content without a picture and everything
+ * else carries on.
+ */
+export async function makeAssetPreview(input: {
+  assetId: string
+  userId: string
+  kind: AssetKind
+  file?: File
+  url?: string | null
+}): Promise<string | null> {
+  if (!canPreview(input.kind)) return null
+
+  const drawn = input.file
+    ? await previewOf(input.file, input.kind)
+    : input.url
+      ? await previewOfUrl(input.url, input.kind)
+      : null
+  if (!drawn) return null
+
+  const path = `${input.userId}/${crypto.randomUUID()}.jpg`
+  const put = await supabase.storage
+    .from(previewBucket)
+    .upload(path, drawn, { contentType: 'image/jpeg', upsert: false })
+  if (put.error) return null
+
+  const saved = await supabase.from('assets')
+    .update({ preview_path: path }).eq('id', input.assetId).select('id').single()
+  if (saved.error) {
+    await supabase.storage.from(previewBucket).remove([path])
+    return null
+  }
+
+  return path
+}
+
+/** Takes a preview down, for content that has been unlisted or deleted. */
+export async function removeAssetPreview(path?: string | null) {
+  if (!path) return
+  await supabase.storage.from(previewBucket).remove([path])
+}
+
+/** What a piece of content is currently pointing at, if anything. */
+export async function assetPreviewPath(assetId: string): Promise<string | null> {
+  const { data } = await supabase.from('assets')
+    .select('preview_path').eq('id', assetId).maybeSingle()
+  return (data as { preview_path?: string | null } | null)?.preview_path ?? null
+}
+
 /**
  * Uploads live in a private bucket, so there is no lasting link to a file.
  * A preview asks for a short-lived signed URL instead, and only gets one for
@@ -626,7 +693,33 @@ export async function updateAsset(id: string, patch: {
   description?: string | null
   is_public?: boolean
 }) {
+  // Taking something out of Create takes its card picture down with it. The
+  // row forgets the picture by itself, so the path has to be read first.
+  const dropping = patch.is_public === false ? await assetPreviewPath(id) : null
+
   unwrap(await supabase.from('assets').update(patch).eq('id', id).select('id').single())
+
+  if (dropping) await removeAssetPreview(dropping)
+}
+
+/**
+ * Makes sure a piece of content has a card picture, drawing one from the file
+ * if it has none. Used for work uploaded before previews existed, and for
+ * anything put back into Create.
+ */
+export async function ensureAssetPreview(asset: {
+  id: string
+  kind: AssetKind
+  creator_id?: string | null
+  file_path: string
+}, me: string): Promise<string | null> {
+  if (!canPreview(asset.kind)) return null
+  if (await assetPreviewPath(asset.id)) return null
+
+  const url = await assetUrl(asset.file_path, 300)
+  if (!url) return null
+
+  return makeAssetPreview({ assetId: asset.id, userId: me, kind: asset.kind, url })
 }
 
 // ------------------------------------------------------- Space collaborators
@@ -673,7 +766,7 @@ export async function uploadAsset(input: {
   if (uploaded.error) throw new Error(uploaded.error.message)
 
   try {
-    return unwrap(await supabase.from('assets').insert({
+    const made = unwrap(await supabase.from('assets').insert({
       creator_id: input.userId,
       kind: input.kind,
       name: input.name.trim(),
@@ -683,6 +776,13 @@ export async function uploadAsset(input: {
       community_id: input.communityId ?? null,
     }).select('id, kind, name, description, file_path, status, review_note, byte_size, download_count, content_id, is_public, created_at')
       .single()) as unknown as OwnAsset
+
+    // The card picture, drawn from the file that is still in hand.
+    await makeAssetPreview({
+      assetId: made.id, userId: input.userId, kind: input.kind, file: input.file,
+    }).catch(() => null)
+
+    return made
   } catch (err) {
     // Never leave a file in storage with no row pointing at it.
     await supabase.storage.from(assetBucket).remove([path])
@@ -697,8 +797,10 @@ export async function uploadAsset(input: {
  * taken away afterwards.
  */
 export async function deleteAsset(id: string) {
+  const picture = await assetPreviewPath(id)
   const path = unwrap(await supabase.rpc('delete_asset', { target: id })) as string
   if (path) await supabase.storage.from(assetBucket).remove([path])
+  await removeAssetPreview(picture)
 }
 
 // --------------------------------------------------------- profile picture

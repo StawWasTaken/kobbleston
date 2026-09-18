@@ -46,6 +46,16 @@ const slug = (value) => encodeURIComponent(value)
 const picture = (value) => (value && /^https:\/\//.test(value) ? value : null)
 
 /*
+ * A preview lives in the one bucket that is public, so it has a plain address
+ * with no signature on it and nothing to expire. It is a small picture of the
+ * work, not the work: the file itself is in the private bucket and stays
+ * there.
+ */
+const preview = (path) => (
+  path ? picture(`${url}/storage/v1/object/public/previews/${path.split('/').map(encodeURIComponent).join('/')}`) : null
+)
+
+/*
  * Each kind is asked for on its own: one table refusing to answer should
  * cost that kind its cards, not every kind its cards.
  */
@@ -93,7 +103,7 @@ export async function writeItemPages(into = 'dist') {
     // Everything a stranger can open gets a card, which is anything the
     // review let through. Taking something out of Create hides it from the
     // lists, not from the people you sent the link to, so it keeps its card.
-    read('assets', 'select=content_id,kind,name,description,download_count,created_at,creator:profiles!assets_creator_id_fkey(username,display_name,avatar_url)&status=eq.approved&limit=5000'),
+    read('assets', 'select=content_id,kind,name,description,download_count,created_at,is_public,preview_path,creator:profiles!assets_creator_id_fkey(username,display_name,avatar_url)&status=eq.approved&limit=5000'),
   ])
 
   for (const space of spaces) {
@@ -189,6 +199,7 @@ export async function writeItemPages(into = 'dist') {
     // it and shows none of it.
     const by = asset.creator?.username ? `@${asset.creator.username}` : 'somebody'
 
+    const shot = asset.is_public ? preview(asset.preview_path) : null
     const made = asset.created_at
       ? new Date(asset.created_at).toLocaleDateString('en-GB', { month: 'long', year: 'numeric' })
       : null
@@ -201,14 +212,17 @@ export async function writeItemPages(into = 'dist') {
         asset.download_count ? `${count(asset.download_count, 'use')}.` : null,
         shorten(asset.description, 160),
       ),
-      // The file itself is not something a browser can link to, by design, so
-      // the card carries the person who made it rather than their work. It is
-      // square, so it sits beside the words instead of being cut into a strip.
-      image: picture(asset.creator?.avatar_url),
-      square: !!picture(asset.creator?.avatar_url),
-      imageAlt: asset.creator?.display_name
-        ? `${asset.creator.display_name} on Kobbleston`
-        : asset.name,
+      // The work itself where there is a picture of it: a decal shrunk down,
+      // a frame out of a video, drawn by the browser that uploaded it and
+      // kept only while the content is listed. The file behind it stays
+      // private, and a sound or a font falls back to whoever made it.
+      image: shot ?? picture(asset.creator?.avatar_url),
+      square: !shot && !!picture(asset.creator?.avatar_url),
+      imageAlt: shot
+        ? asset.name
+        : asset.creator?.display_name
+          ? `${asset.creator.display_name} on Kobbleston`
+          : asset.name,
     })
   }
 
