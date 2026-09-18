@@ -321,7 +321,8 @@ export function CreateSpaces() {
           {space.is_published === false ? ' · draft' : ''}
         </span>
       </span>
-      <Button size="sm" variant="subtle" to={`/spaces/${space.id}/edit`}>{action}</Button>
+      <Button size="sm" variant="ghost" to={`/spaces/${space.id}/edit`}>{action}</Button>
+      <Button size="sm" variant="subtle" to={`/spaces/${space.id}/build`}>Build</Button>
     </li>
   )
 

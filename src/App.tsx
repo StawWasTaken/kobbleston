@@ -30,6 +30,7 @@ const Communities = lazy(() => import('@/pages/Communities'))
 const CommunityPage = lazy(() => import('@/pages/CommunityPage'))
 const NewSpace = lazy(() => import('@/pages/NewSpace'))
 const EditSpace = lazy(() => import('@/pages/EditSpace'))
+const BuildSpace = lazy(() => import('@/pages/BuildSpace'))
 const ConfigureCommunity = lazy(() => import('@/pages/ConfigureCommunity'))
 const Terms = lazy(() => import('@/pages/Policies').then((m) => ({ default: m.Terms })))
 const Guidelines = lazy(() => import('@/pages/Policies').then((m) => ({ default: m.Guidelines })))
@@ -115,6 +116,7 @@ export default function App() {
                   <Route path="/home" element={<Home />} />
                   <Route path="/spaces/new" element={<NewSpace />} />
                   <Route path="/spaces/:spaceId/edit" element={<EditSpace />} />
+                  <Route path="/spaces/:spaceId/build" element={<BuildSpace />} />
                   <Route element={<CommunityShell />}>
                     <Route path="/c/:slug/configure" element={<ConfigureCommunity />} />
                   </Route>

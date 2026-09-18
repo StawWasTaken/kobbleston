@@ -6,12 +6,26 @@ roughly what I would do next, not a promise about dates.
 ## Big pieces
 
 ### The Spaces creator
-The editor itself. `docs/editor.md` holds the plan: three ways to build
-(Blocks, Style, Files), content used by id (`kob://IMG-1042`) rather than
-copied, and every Space served from a separate origin in a sandboxed iframe
-with a strict content policy, so nothing a person writes can reach the rest
-of Kobbleston. This is the biggest thing left and everything else in "Spaces
-stuff" depends on it.
+`docs/editor.md` holds the plan. The first two steps of it are built: Spaces
+have files, and there is an editor for them.
+
+- **Files, and serving them (built).** `space_files` holds a draft and a live
+  copy per Space. Publishing moves one to the other and keeps what was live,
+  so a bad publish can be undone. A page is drawn in a sandboxed frame with
+  no same origin and a strict content policy, so a Space cannot reach the
+  page holding it, its storage, or the network. Content is referenced by its
+  number and turned into a short lived link at the last moment.
+- **The file editor (built).** Files down one side, what you are writing in
+  the middle, the page itself on the right, with Save, Publish and Undo
+  publish.
+- **The asset picker** that drops a `kob://IMG-1042` reference from Create
+  without typing it. Not built.
+- **Blocks and Style**, the two ways to build that are not writing files.
+  Not built.
+- **The bridge**, so a Space can award its own badges and know who is
+  visiting, through a narrow set of checked messages. Not built.
+- **Sanitising markup on save**, so what is stored is already clean rather
+  than relying on the frame alone. Not built.
 
 ### Spaces, the rest of it
 Badges worth earning, visiting people inside a Space, what a Space can do
@@ -25,12 +39,12 @@ marketplace and the Communities worth joining, and walks somebody through
 getting started. Everything on it is read from the database or it is not
 shown at all.
 
-### Login and signup
-The whole flow needs another pass: username login goes through an edge
-function, guests are throwaway accounts, account switching keeps stored
-sessions. It works, but it is not solid enough, and the edges (a wrong
-password, a taken name, a guest who wants to keep their Space) are not
-handled the way they deserve.
+### Login and signup **(done)**
+Username and password everywhere, through the login function where it is
+deployed and through `login_email_for` in the database where it is not.
+Switching accounts keeps the sessions it already has, so it never asks twice.
+A guest who decides to stay keeps the account they have been using. A failure
+says what actually went wrong rather than blaming the password for it.
 
 ## Making the whole thing feel finished
 

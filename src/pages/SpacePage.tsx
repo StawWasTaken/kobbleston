@@ -1,7 +1,9 @@
 import { useEffect, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faPlay, faBell, faStar, faFlag, faPenToSquare } from '@fortawesome/free-solid-svg-icons'
+import {
+  faPlay, faBell, faStar, faFlag, faPenToSquare, faHammer,
+} from '@fortawesome/free-solid-svg-icons'
 import { Page } from '@/components/layout/AppShell'
 import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
@@ -262,9 +264,14 @@ export default function SpacePage() {
               </div>
 
               {isOwner && (
-                <Button variant="subtle" block className="mt-4" icon={faPenToSquare} to={`/spaces/${space.id}/edit`}>
-                  Configure this Space
-                </Button>
+                <div className="mt-4 grid gap-2">
+                  <Button variant="subtle" block icon={faHammer} to={`/spaces/${space.id}/build`}>
+                    Build this Space
+                  </Button>
+                  <Button variant="ghost" block icon={faPenToSquare} to={`/spaces/${space.id}/edit`}>
+                    Configure
+                  </Button>
+                </div>
               )}
             </div>
           </div>

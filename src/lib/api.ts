@@ -1284,6 +1284,37 @@ export async function getSpaceById(id: string): Promise<Space | null> {
   return (data as Space | null) ?? null
 }
 
+// ------------------------------------------------------------ space files
+
+export type SpaceFile = { path: string; content: string; updated_at: string }
+
+/**
+ * The files a Space is made of. The draft is what the editor works on and
+ * only its builders can read it; the live copy is what visitors get.
+ */
+export async function listSpaceFiles(
+  spaceId: string, channel: 'draft' | 'live' = 'draft',
+): Promise<SpaceFile[]> {
+  return (unwrap(await supabase.rpc('space_files_of', { space: spaceId, want: channel })) as SpaceFile[]) ?? []
+}
+
+export async function saveSpaceFile(spaceId: string, path: string, content: string) {
+  unwrap(await supabase.rpc('save_space_file', { space: spaceId, file_path: path, body: content }))
+}
+
+export async function deleteSpaceFile(spaceId: string, path: string) {
+  unwrap(await supabase.rpc('delete_space_file', { space: spaceId, file_path: path }))
+}
+
+/** Puts the draft live, keeping what was live in case it was a mistake. */
+export async function publishSpaceFiles(spaceId: string): Promise<number> {
+  return unwrap(await supabase.rpc('publish_space_files', { space: spaceId })) as number
+}
+
+export async function revertSpaceFiles(spaceId: string): Promise<number> {
+  return unwrap(await supabase.rpc('revert_space_files', { space: spaceId })) as number
+}
+
 // ------------------------------------------------------------- affiliates
 
 export async function listRelations(
