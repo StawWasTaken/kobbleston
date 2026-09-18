@@ -89,3 +89,31 @@ being up to an hour out of date is a problem.
   come back with that Community's name and emblem in the meta tags.
 - Discord caches a preview hard. Add `?x=1` to the address to make it fetch
   again while testing.
+
+
+## What a card says
+
+A card is one sentence about the thing, then whatever its owner wrote. The
+name is the title on its own: the site name is already shown above it by
+everything that renders these, so "Kobbleston - Kobbleston" was saying it
+twice.
+
+| Address | Title | First line |
+| --- | --- | --- |
+| `/c/1016/name` | the community's name | "X is a community on Kobbleston, run by @owner, with N members." |
+| `/s/1042/name` | the Space's name | "A Space on Kobbleston by @owner. N visits, N% liked." |
+| `/u/1042/name` | "Name (@handle)" | "Name is on Kobbleston, here since Month Year. N Spaces." |
+| `/e/1016` | the event's title | "An event in X on Kobbleston, Saturday 19th September. N people going." |
+| `/create/IMG-1042` | the upload's name | "A decal by @creator on the Kobbleston Marketplace, IMG-1042. N uses." |
+
+The picture is the widest one there is: a Space's cover, a community's banner,
+an event's cover. Those make the big card. Where there is only a square one,
+an emblem or somebody's face, the card is the small kind instead, because a
+square stretched into a wide card is cut into a stripe. A Marketplace upload
+shows no picture at all: the file is protected, and a preview is not a way
+around that.
+
+Both paths say the same thing: `link_preview` in the database, for anything
+serving these live, and `scripts/write-item-pages.mjs`, which writes a real
+file for every address so GitHub Pages can answer a robot that does not run
+routers.

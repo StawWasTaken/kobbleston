@@ -81,6 +81,10 @@ export function describe(html, page) {
   const description = escape(page.description)
 
   return html
+    .replace(
+      /<meta property="og:type" content="[^"]*" \/>/,
+      `<meta property="og:type" content="${escape(page.type ?? 'website')}" />`,
+    )
     .replace(/<title>[^<]*<\/title>/, `<title>${title}</title>`)
     .replace(
       /<meta name="description" content="[^"]*" \/>/,
@@ -109,5 +113,9 @@ export function describe(html, page) {
     .replace(
       /<meta name="twitter:description" content="[^"]*" \/>/,
       `<meta name="twitter:description" content="${description}" />`,
+    )
+    .replace(
+      /<meta property="og:image:alt" content="[^"]*" \/>/,
+      `<meta property="og:image:alt" content="${escape(page.imageAlt ?? page.title)}" />`,
     )
 }
