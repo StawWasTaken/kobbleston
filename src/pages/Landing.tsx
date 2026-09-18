@@ -102,7 +102,7 @@ export default function Landing() {
   }
 
   const stats = useAsync(getPlatformStats, [])
-  const spaces = useAsync(() => listSpaces({ sort: 'trending', limit: 3 }), [])
+  const spaces = useAsync(() => listSpaces({ sort: 'trending', limit: 5 }), [])
   const assets = useAsync(() => listAssets({ limit: 12 }), [])
   const communities = useAsync(() => listCommunities(''), [])
 
@@ -201,7 +201,10 @@ export default function Landing() {
               </p>
             </div>
           ) : (
-            <SpaceStage spaces={spaces.data ?? []} loading={spaces.loading || !spaces.data?.length} />
+            <SpaceStage
+              spaces={(spaces.data ?? []).slice(0, 3)}
+              loading={spaces.loading || !spaces.data?.length}
+            />
           )}
         </div>
       </section>

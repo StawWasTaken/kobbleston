@@ -26,7 +26,7 @@ function Poster({ space, tall }: { space: Space; tall?: boolean }) {
       className={cn(
         'group relative block overflow-hidden rounded-[1.75rem] border border-white/10 bg-media',
         'transition-transform duration-300 hover:-translate-y-1.5',
-        tall ? 'aspect-[4/5] sm:aspect-[5/6]' : 'aspect-[16/10]',
+        tall ? 'aspect-[4/3] sm:aspect-[4/5]' : 'aspect-[16/10]',
       )}
     >
       <img
@@ -83,13 +83,35 @@ export function SpaceStage({ spaces, loading }: { spaces: Space[]; loading: bool
     )
   }
 
+  /*
+   * How it is laid out depends on how much there is. One Space on its own
+   * gets a wide frame rather than a tower; two sit side by side; three or
+   * more get the stage, with the first given the room and the rest stepped
+   * down beside it.
+   */
+  if (spaces.length === 1) {
+    return (
+      <div className="mx-auto max-w-3xl">
+        <Poster space={spaces[0]} />
+      </div>
+    )
+  }
+
+  if (spaces.length === 2) {
+    return (
+      <div className="grid gap-6 sm:grid-cols-2 lg:gap-8">
+        {spaces.map((space) => <Poster key={space.id} space={space} />)}
+      </div>
+    )
+  }
+
   const [lead, ...rest] = spaces
 
   return (
-    <div className="grid gap-6 lg:grid-cols-[1.15fr_1fr] lg:gap-8">
+    <div className="grid gap-6 lg:grid-cols-[1.1fr_1fr] lg:gap-8">
       <Poster space={lead} tall />
 
-      <div className="grid content-center gap-6 lg:gap-8 lg:pt-14">
+      <div className="grid content-center gap-6 lg:gap-8 lg:pt-10">
         {rest.slice(0, 2).map((space) => <Poster key={space.id} space={space} />)}
       </div>
     </div>

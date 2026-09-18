@@ -46,15 +46,10 @@ Deno.serve(async (request) => {
   let email = username.includes('@') ? username : ''
 
   if (!email) {
-    // A name is matched whole and without case. The wildcards ilike treats as
-    // special are escaped, so typing % cannot stand for "any account".
-    const exact = username.replace(/([%_\\])/g, '\\$1')
-
-    const { data: profile } = await admin
-      .from('profiles')
-      .select('id, is_guest')
-      .ilike('username', exact)
-      .maybeSingle()
+    // A name is matched whole and without case, in the database. It is not a
+    // pattern: an underscore in somebody's name is an underscore.
+    const { data: rows } = await admin.rpc('account_by_username', { name: username })
+    const profile = Array.isArray(rows) ? rows[0] : rows
 
     // The same answer whether the name exists or the password is wrong, so
     // this cannot be used to find out which usernames are real.

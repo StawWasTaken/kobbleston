@@ -39,6 +39,8 @@ const picture = (value) => (value && /^https:\/\//.test(value) ? value : null)
  * Each kind is asked for on its own: one table refusing to answer should
  * cost that kind its cards, not every kind its cards.
  */
+let refused = 0
+
 async function read(table, query) {
   try {
     const response = await fetch(`${url}/rest/v1/${table}?${query}`, {
@@ -47,6 +49,7 @@ async function read(table, query) {
     if (!response.ok) throw new Error(`${response.status} ${(await response.text()).slice(0, 200)}`)
     return await response.json()
   } catch (error) {
+    refused += 1
     console.warn(`No cards for ${table}: ${error.message}`)
     return []
   }
@@ -165,11 +168,15 @@ export async function writeItemPages(into = 'dist') {
 
   /*
    * A mark for the publish step: with it, this build knows every card there
-   * should be and may clear the old ones out. Without it, the publish leaves
-   * whatever is already published alone rather than deleting cards it simply
-   * could not read.
+   * should be and may clear the old ones out. It is only left when every
+   * table answered, because a run that could not read one of them does not
+   * know what is missing, and must not delete what it cannot see.
    */
-  writeFileSync(`${into}/.item-pages`, `${pages.length}\n`)
+  if (refused === 0) {
+    writeFileSync(`${into}/.item-pages`, `${pages.length}\n`)
+  } else {
+    console.warn(`${refused} of the tables did not answer, so published cards are left alone.`)
+  }
 
   console.log(`Wrote ${pages.length} item pages under ${SITE}.`)
   return pages

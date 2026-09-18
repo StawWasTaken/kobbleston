@@ -958,9 +958,33 @@ export async function signInWithUsername(username: string, password: string) {
   })
 
   if (error) {
-    // The function returns its own message in the body on a refusal.
-    const detail = await (error as { context?: Response }).context?.json?.().catch(() => null)
-    throw new Error(detail?.error ?? 'Wrong username or password.')
+    /*
+     * A refusal and a breakage are not the same thing, and telling somebody
+     * their password is wrong when the login function is not answering is
+     * the worst kind of wrong message. Only the function's own 400 means
+     * the details were wrong; anything else says what actually happened.
+     */
+    const response = (error as { context?: Response }).context
+    const detail = await response?.json?.().catch(() => null)
+
+    if (response && response.status !== 400) {
+      throw new Error(
+        response.status === 404
+          ? 'Logging in is not switched on for this site yet. The login function has not been deployed.'
+          : `Logging in is not answering right now (${response.status}). Try again in a moment.`,
+      )
+    }
+
+    // An email still works even with the function down, since that needs no
+    // lookup at all.
+    if (!response && username.includes('@')) {
+      const direct = await supabase.auth.signInWithPassword({ email: username, password })
+      if (!direct.error) return direct.data.session
+    }
+
+    throw new Error(
+      detail?.error ?? (response ? 'Wrong username or password.' : 'Could not reach Kobbleston. Check your connection.'),
+    )
   }
 
   const { access_token, refresh_token } = data as { access_token: string; refresh_token: string }
