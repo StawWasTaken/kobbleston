@@ -10,7 +10,7 @@ import { useWorkingAs, WorkingAsNote } from '@/components/create/WorkingAs'
 import { uploadAsset } from '@/lib/api'
 import { kindLabels, kindIcons } from './AssetTile'
 import { cn } from '@/lib/cn'
-import type { AssetKind } from '@/types/db'
+import type { AssetKind, OwnAsset } from '@/types/db'
 
 const MAX_BYTES = 25 * 1024 * 1024
 
@@ -28,17 +28,21 @@ export function UploadDialog({
   open,
   onClose,
   onUploaded,
+  only,
 }: {
   open: boolean
   onClose: () => void
-  onUploaded: () => void
+  /** What was made, so a caller can use it straight away. */
+  onUploaded: (created?: OwnAsset) => void
+  /** Limits the upload to one kind, for pickers that only take one. */
+  only?: AssetKind
 }) {
   const { profile } = useAuth()
   const { target } = useWorkingAs()
   const toast = useToast()
   const fileInput = useRef<HTMLInputElement>(null)
 
-  const [kind, setKind] = useState<AssetKind>('image')
+  const [kind, setKind] = useState<AssetKind>(only ?? 'image')
   const [file, setFile] = useState<File | null>(null)
   const [name, setName] = useState('')
   const [description, setDescription] = useState('')
@@ -83,7 +87,7 @@ export function UploadDialog({
         created.status === 'rejected' ? 'error' : 'success',
       )
       reset()
-      onUploaded()
+      onUploaded(created)
       onClose()
     } catch (err) {
       setError(err instanceof Error ? err.message : 'That upload did not go through.')
@@ -112,7 +116,7 @@ export function UploadDialog({
       <fieldset className="mb-4">
         <legend className="mb-2 text-xs font-bold uppercase tracking-wide text-muted">Type</legend>
         <div className="flex flex-wrap gap-2">
-          {kinds.map((k) => (
+          {(only ? [only] : kinds).map((k) => (
             <button
               key={k}
               type="button"

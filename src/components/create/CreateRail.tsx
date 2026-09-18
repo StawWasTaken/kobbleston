@@ -1,7 +1,7 @@
 import { NavLink } from 'react-router-dom'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import {
-  faChartSimple, faCubes, faGaugeHigh, faBoxOpen, faShapes, faUpload,
+  faChartSimple, faCubes, faGaugeHigh, faBoxOpen, faShapes, faUpload, faRectangleAd,
 } from '@fortawesome/free-solid-svg-icons'
 import type { IconDefinition } from '@fortawesome/fontawesome-svg-core'
 import { WorkingAsMenu } from '@/components/create/WorkingAs'
@@ -20,6 +20,7 @@ export const createSections: {
   { to: '/create/uploads', label: 'My Uploads', icon: faUpload, note: 'What you have put into Create' },
   { to: '/create/marketplace', label: 'Marketplace', icon: faShapes, note: 'Everything anybody can build with' },
   { to: '/create/inventory', label: 'Inventory', icon: faBoxOpen, note: 'Everything you can build with' },
+  { to: '/create/ads', label: 'Ads', icon: faRectangleAd, note: 'Put your work in front of people' },
   { to: '/create/analytics', label: 'Analytics', icon: faChartSimple, note: 'Views and uses, counted' },
 ]
 

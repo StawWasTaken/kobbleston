@@ -23,8 +23,13 @@ export const categoryLabels: Record<SpaceCategory, string> = {
 /** Covers are optional; the brand art stands in so a row never has holes. */
 const fallbackCovers = [asset('/brand/banner.png'), asset('/brand/banner2.png'), asset('/brand/banner3.png')]
 
+/*
+ * What a Space looks like in a row. The cover is the picture of it, and the
+ * first thumbnail stands in when there is no cover. An emblem is the Space's
+ * badge, not a picture of it, so it is never used here.
+ */
 export function coverFor(space: Space) {
-  return space.emblem_url ?? space.cover_url ?? null
+  return space.cover_url ?? space.thumbnail_urls?.[0] ?? null
 }
 
 /** Something to show while nothing else is there, so a row has no holes. */

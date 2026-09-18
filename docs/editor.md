@@ -86,11 +86,37 @@ and stamps an update, which is what the existing update feed and the notify
 button already listen for. Every publish keeps the previous version, so a
 Space can be rolled back after a bad save.
 
-## What to build first
+## What is built
 
-1. `space_files`, the sandboxed serving domain and the CSP. Nothing else can
-   be safely tried before this exists.
-2. The file editor, because it is the smallest thing that makes a Space real.
-3. The asset picker and `kob://` rewriting.
-4. The block editor on top, once files and serving are known to work.
-5. The bridge, and badges awarding themselves through it.
+1. **`space_files`, the sandbox and the policy (built).** A draft and a live
+   copy per Space, publishing between them, and the page drawn in a frame
+   with scripts only, no same origin, and a policy that refuses everything
+   but pictures, sound and fonts.
+2. **The file editor (built).** Files down one side, the text in the middle,
+   the page on the right.
+3. **The asset picker and `kob://` rewriting (built).** A number typed in, or
+   an upload that goes to Create and fills its own number in. References
+   become short lived links only at the moment of drawing.
+4. **The block editor (built).** A canvas with drag, resize, snapping and
+   layers; a toolbox of blocks; an inspector for the selected one and for the
+   page. Blocks are kept as `page.json` and compiled to the markup and styles,
+   and taking the files over by hand is the one way door it was always meant
+   to be.
+5. **The bridge (partly built).** A Space can say two things: somebody pressed
+   a donate button, and somebody pressed an ad. Both are handled outside the
+   frame, where the amount can be shown plainly and the account is reachable.
+   Badges awarding themselves still needs doing.
+
+## Still to build
+
+- **Blocks for the rest of it**: a guestbook, a wall of links, a music player
+  that is more than an audio element.
+- **Style, as its own way of working**, rather than the per block colours and
+  sizes the inspector has now.
+- **Badges through the bridge**, which is what finally makes them award
+  themselves.
+- **Sanitising markup on save**, so what is stored is already clean rather
+  than relying on the frame alone.
+- **A serving domain of its own.** The frame already has an origin of null,
+  which is what isolation needs; a separate domain would let a Space be
+  visited directly rather than only inside Kobbleston.

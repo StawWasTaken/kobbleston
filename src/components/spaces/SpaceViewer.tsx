@@ -89,7 +89,7 @@ export function SpaceViewer({ space, onLeave }: { space: Space; onLeave: () => v
 
         {!!site.data?.length && (
           <div className="min-h-0 flex-1">
-            <SiteFrame files={site.data} title={space.name} />
+            <SiteFrame files={site.data} title={space.name} spaceId={space.id} />
           </div>
         )}
 

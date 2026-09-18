@@ -1284,6 +1284,69 @@ export async function getSpaceById(id: string): Promise<Space | null> {
   return (data as Space | null) ?? null
 }
 
+// -------------------------------------------------------- ads and gifts
+
+export type AdSize = 'banner' | 'box' | 'tall'
+
+export type ShownAd = { id: string; name: string; file_path: string; target_path: string }
+
+export type MyAd = {
+  id: string
+  name: string
+  size: AdSize
+  target_path: string
+  budget: number
+  spent: number
+  views: number
+  clicks: number
+  is_running: boolean
+  created_at: string
+  file_path: string
+}
+
+/**
+ * An ad to put in a slot of this size. Asking is what counts a view, so this
+ * is called once per slot when a Space is drawn and never in a loop.
+ */
+export async function pickAd(size: AdSize, spaceId: string): Promise<ShownAd | null> {
+  const rows = unwrap(await supabase.rpc('pick_ad', { slot: size, space: spaceId })) as ShownAd[]
+  return rows?.[0] ?? null
+}
+
+export async function recordAdClick(adId: string) {
+  await supabase.rpc('record_ad_click', { target: adId })
+}
+
+export async function buyAd(details: {
+  name: string
+  size: AdSize
+  assetId: string
+  target: string
+  kubes: number
+}): Promise<string> {
+  return unwrap(await supabase.rpc('buy_ad', {
+    ad_name: details.name,
+    ad_size: details.size,
+    picture: details.assetId,
+    target: details.target,
+    kubes: details.kubes,
+  })) as string
+}
+
+/** Stopping a campaign hands back whatever it did not spend. */
+export async function endAd(adId: string): Promise<number> {
+  return unwrap(await supabase.rpc('end_ad', { target: adId })) as number
+}
+
+export async function listMyAds(): Promise<MyAd[]> {
+  return (unwrap(await supabase.rpc('my_ads')) as MyAd[]) ?? []
+}
+
+/** Giving Kubes to whoever made a Space. Returns what is left. */
+export async function donateToSpace(spaceId: string, amount: number): Promise<number> {
+  return unwrap(await supabase.rpc('donate_to_space', { space: spaceId, amount })) as number
+}
+
 // ------------------------------------------------------------ space files
 
 export type SpaceFile = { path: string; content: string; updated_at: string }

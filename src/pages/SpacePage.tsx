@@ -19,7 +19,7 @@ import { BadgeManager } from '@/components/spaces/BadgeManager'
 import { RatingBar } from '@/components/spaces/RatingBar'
 import { Carousel } from '@/components/spaces/Carousel'
 import { SpaceViewer } from '@/components/spaces/SpaceViewer'
-import { categoryLabels, coverFor } from '@/components/spaces/SpaceCard'
+import { categoryLabels } from '@/components/spaces/SpaceCard'
 import { RefImage } from '@/components/create/RefImage'
 import { profileLink, spaceLink } from '@/lib/links'
 import { useAuth } from '@/hooks/useAuth'
@@ -159,7 +159,10 @@ export default function SpacePage() {
   const owner = space.owner
   const isOwner = profile?.id === space.owner_id
   // The cover leads, then whatever thumbnails have been added.
-  const shots = [coverFor(space), ...(space.thumbnail_urls ?? [])].filter(Boolean) as string[]
+  // The cover is the first picture of a Space, then whatever else was added.
+  const shots = [...new Set(
+    [space.cover_url, ...(space.thumbnail_urls ?? [])].filter(Boolean) as string[],
+  )]
   const numbers = stats.data
 
   return (

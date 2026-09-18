@@ -18,14 +18,22 @@ have files, and there is an editor for them.
 - **The file editor (built).** Files down one side, what you are writing in
   the middle, the page itself on the right, with Save, Publish and Undo
   publish.
-- **The asset picker** that drops a `kob://IMG-1042` reference from Create
-  without typing it. Not built.
-- **Blocks and Style**, the two ways to build that are not writing files.
-  Not built.
-- **The bridge**, so a Space can award its own badges and know who is
-  visiting, through a narrow set of checked messages. Not built.
+- **The asset picker (built).** A number typed in, or an upload that goes to
+  Create and fills its own number in.
+- **Blocks (built).** A canvas with drag, resize, snapping, layers and an
+  inspector, kept as `page.json` and compiled into the files. Style as a way
+  of working in its own right is not built.
+- **The bridge (partly built).** Donate buttons and ad presses cross it, both
+  handled outside the frame. Badges awarding themselves is not built.
 - **Sanitising markup on save**, so what is stored is already clean rather
   than relying on the frame alone. Not built.
+
+### Ads and gifts
+Built. An ad is bought up front, costs a Kube a view, is shown in the ad
+blocks Spaces choose to keep, and hands back what it did not spend when it is
+stopped. The Space showing it keeps 15%, counted in hundredths and paid in
+whole Kubes. A donate block gives Kubes straight to whoever made the Space,
+confirmed outside the page so the amount cannot be misrepresented.
 
 ### Spaces, the rest of it
 Badges worth earning, visiting people inside a Space, what a Space can do

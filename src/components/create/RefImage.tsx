@@ -7,12 +7,13 @@ import { cn } from '@/lib/cn'
  * taken.
  */
 export function RefImage({
-  value, alt, className, fallback,
+  value, alt, className, fallback, style,
 }: {
   value?: string | null
   alt: string
   className?: string
   fallback?: string
+  style?: React.CSSProperties
 }) {
   const url = useAssetRef(value) ?? fallback ?? null
   if (!url) return null
@@ -23,6 +24,7 @@ export function RefImage({
       loading="lazy"
       draggable={false}
       onContextMenu={(e) => e.preventDefault()}
+      style={style}
       className={cn('select-none', className)}
     />
   )

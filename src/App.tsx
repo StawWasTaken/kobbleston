@@ -31,6 +31,7 @@ const CommunityPage = lazy(() => import('@/pages/CommunityPage'))
 const NewSpace = lazy(() => import('@/pages/NewSpace'))
 const EditSpace = lazy(() => import('@/pages/EditSpace'))
 const BuildSpace = lazy(() => import('@/pages/BuildSpace'))
+const CreateAds = lazy(() => import('@/pages/CreateAds'))
 const ConfigureCommunity = lazy(() => import('@/pages/ConfigureCommunity'))
 const Terms = lazy(() => import('@/pages/Policies').then((m) => ({ default: m.Terms })))
 const Guidelines = lazy(() => import('@/pages/Policies').then((m) => ({ default: m.Guidelines })))
@@ -90,6 +91,7 @@ export default function App() {
                   <Route path="marketplace" element={<CreateMarketplace />} />
                   <Route path="inventory" element={<CreateInventory />} />
                   <Route path="analytics" element={<CreateAnalytics />} />
+                  <Route path="ads" element={<CreateAds />} />
                   <Route path="creator/:username" element={<CreatorPage />} />
                   <Route path=":tag" element={<AssetPage />} />
                 </Route>
