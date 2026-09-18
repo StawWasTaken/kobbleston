@@ -5,12 +5,12 @@ import { Page } from '@/components/layout/AppShell'
 import { Card } from '@/components/ui/Card'
 import { Input } from '@/components/ui/Input'
 import { EmptyState, ErrorState, SpaceCardSkeleton } from '@/components/ui/States'
-import { SpaceCard, categoryLabels } from '@/components/spaces/SpaceCard'
-import { SpaceRail } from '@/components/spaces/SpaceRail'
+import { categoryLabels } from '@/components/spaces/SpaceCard'
+import { SiteCard } from '@/components/spaces/SiteCard'
 import { useAsync } from '@/hooks/useAsync'
 import { listSpaces } from '@/lib/api'
 import type { SpaceSort } from '@/lib/api'
-import type { SpaceCategory } from '@/types/db'
+import type { Space, SpaceCategory } from '@/types/db'
 import { cn } from '@/lib/cn'
 import { useTitle } from '@/hooks/useTitle'
 import { AdBanner } from '@/components/ads/AdBanner'
@@ -44,6 +44,30 @@ function Chip({
     >
       {children}
     </button>
+  )
+}
+
+/**
+ * A section of the directory: a heading and a grid under it, rather than a
+ * rail you push sideways. Looking through what people have made should feel
+ * like looking through a shelf, not operating a carousel.
+ */
+function Shelf({ title, spaces, loading }: {
+  title: string
+  spaces: Space[] | null
+  loading: boolean
+}) {
+  if (!loading && !spaces?.length) return null
+
+  return (
+    <section className="mb-9">
+      <h2 className="mb-3 font-display text-xl font-extrabold sm:text-2xl">{title}</h2>
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4">
+        {loading
+          ? [0, 1, 2, 3].map((i) => <SpaceCardSkeleton key={i} />)
+          : (spaces ?? []).slice(0, 8).map((space) => <SiteCard key={space.id} space={space} />)}
+      </div>
+    </section>
   )
 }
 
@@ -121,9 +145,9 @@ export default function Discover() {
 
       {browsing && (
         <>
-          <SpaceRail title="Being visited right now" spaces={trending.data} loading={trending.loading} />
-          <SpaceRail title="Just published" spaces={fresh.data} loading={fresh.loading} />
-          <SpaceRail title="Most liked" spaces={liked.data} loading={liked.loading} />
+          <Shelf title="Being visited right now" spaces={trending.data} loading={trending.loading} />
+          <Shelf title="Just published" spaces={fresh.data} loading={fresh.loading} />
+          <Shelf title="Most liked" spaces={liked.data} loading={liked.loading} />
           {!trending.loading && !trending.data?.length && (
             <Card>
               <EmptyState
@@ -137,7 +161,7 @@ export default function Discover() {
       )}
 
       {!browsing && loading && (
-        <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4">
           {[0, 1, 2, 3, 4, 5].map((i) => <SpaceCardSkeleton key={i} />)}
         </div>
       )}
@@ -159,8 +183,8 @@ export default function Discover() {
       )}
 
       {!browsing && !!data?.length && (
-        <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
-          {data.map((space) => <SpaceCard key={space.id} space={space} />)}
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4">
+          {data.map((space) => <SiteCard key={space.id} space={space} />)}
         </div>
       )}
         </div>

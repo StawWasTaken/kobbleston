@@ -7,10 +7,17 @@ import { ChatDock } from '@/components/chat/ChatDock'
 import { mobileNav } from './nav'
 import { cn } from '@/lib/cn'
 import { AdsProvider } from '@/components/ads/AdBanner'
+import { usePresence } from '@/hooks/usePresence'
+import { useAuth } from '@/hooks/useAuth'
 
 export function AppShell() {
   const [navOpen, setNavOpen] = useState(false)
   const location = useLocation()
+  const { session } = useAuth()
+
+  // The dots on everybody's picture are only worth anything if the page
+  // keeps saying that its person is here.
+  usePresence(!!session)
 
   useEffect(() => { setNavOpen(false) }, [location.pathname])
 

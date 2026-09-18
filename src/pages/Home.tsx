@@ -10,6 +10,7 @@ import { useAsync } from '@/hooks/useAsync'
 import { listMemberCommunities, listSpaces, listSpacesByOwner } from '@/lib/api'
 import { Link } from 'react-router-dom'
 import { formatCount } from '@/lib/format'
+import { Kube } from '@/components/brand/Kube'
 import { communityLink } from '@/lib/links'
 import { useTitle } from '@/hooks/useTitle'
 import { AdBanner } from '@/components/ads/AdBanner'
@@ -32,9 +33,27 @@ export default function Home() {
 
   return (
     <Page>
-      <h1 className="mb-5 font-display text-2xl font-extrabold sm:text-3xl">
-        {profile ? `Welcome back, ${profile.display_name}` : 'Home'}
-      </h1>
+      {/* One strip: who you are, what you have, and the three things you
+          are most likely to want next. */}
+      <div className="mb-7 flex flex-wrap items-center gap-4 rounded-2xl border border-ink-line bg-ink-card p-4">
+        <div className="min-w-0 flex-1">
+          <h1 className="truncate font-display text-2xl font-extrabold sm:text-3xl">
+            {profile ? `Welcome back, ${profile.display_name}` : 'Home'}
+          </h1>
+          {!!profile && (
+            <p className="mt-1 inline-flex items-center gap-1.5 text-sm text-muted">
+              <Kube />
+              {formatCount(profile.pixels)} Kubes
+            </p>
+          )}
+        </div>
+
+        <div className="flex flex-wrap gap-2">
+          <Button size="sm" icon={faPlus} to="/spaces/new">New Space</Button>
+          <Button size="sm" variant="subtle" to="/create">Create</Button>
+          <Button size="sm" variant="subtle" to="/discover">Discover</Button>
+        </div>
+      </div>
 
       {profile && <FriendsRail />}
 

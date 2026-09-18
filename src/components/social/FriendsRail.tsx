@@ -25,9 +25,16 @@ export function FriendsRail() {
 
   return (
     <section className="mb-8">
-      <h2 className="mb-3 font-display text-xl font-extrabold sm:text-2xl">
-        Friends {!loading && <span className="text-white/40">({friends.length})</span>}
-      </h2>
+      <div className="mb-3 flex items-center gap-3">
+        <h2 className="font-display text-xl font-extrabold sm:text-2xl">
+          Friends {!loading && <span className="text-white/40">({friends.length})</span>}
+        </h2>
+        {!!friends.length && (
+          <Link to="/friends" className="ml-auto text-xs font-bold text-link hover:underline">
+            See all
+          </Link>
+        )}
+      </div>
 
       <div className="-mx-4 flex gap-4 overflow-x-auto px-4 pb-2 sm:mx-0 sm:px-0 kob-scroll">
         <Link
@@ -56,9 +63,12 @@ export function FriendsRail() {
           >
             <span className="relative">
               <Avatar src={avatarOf(friend)} name={friend.display_name} size="lg" className="h-16 w-16" />
-              <span className="absolute bottom-0.5 right-0.5">
-                <StatusDot presence={presenceOf(friend)} size="lg" ring />
-              </span>
+              <StatusDot
+                presence={presenceOf(friend)}
+                size="lg"
+                ring
+                className="absolute -bottom-0.5 -right-0.5"
+              />
             </span>
             <span className="w-full truncate text-xs font-semibold text-white/80">
               {friend.display_name}

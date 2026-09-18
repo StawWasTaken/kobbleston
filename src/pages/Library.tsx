@@ -1,14 +1,17 @@
 import { useState } from 'react'
-import { faStar, faPenToSquare, faPlus } from '@fortawesome/free-solid-svg-icons'
+import { Link } from 'react-router-dom'
+import { faStar, faPenToSquare, faPlus, faHammer } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { Page } from '@/components/layout/AppShell'
 import { Button } from '@/components/ui/Button'
-import { Card, SectionHeading } from '@/components/ui/Card'
+import { Card } from '@/components/ui/Card'
 import { Dialog } from '@/components/ui/Dialog'
 import { Input } from '@/components/ui/Input'
 import { EmptyState, ErrorState, SpaceCardSkeleton } from '@/components/ui/States'
 import { useToast } from '@/components/ui/Toast'
-import { SpaceCard } from '@/components/spaces/SpaceCard'
+import { SiteCard } from '@/components/spaces/SiteCard'
+import { formatCount } from '@/lib/format'
+import { cn } from '@/lib/cn'
 import { useAuth } from '@/hooks/useAuth'
 import { useAsync } from '@/hooks/useAsync'
 import { listFavoriteSpaces, listSpacesByOwner, logSpaceUpdate } from '@/lib/api'
@@ -70,6 +73,7 @@ export default function Library() {
   useTitle('Library')
   const { profile } = useAuth()
   const [updating, setUpdating] = useState<Space | null>(null)
+  const [shelf, setShelf] = useState<'Published' | 'Drafts' | 'Saved'>('Published')
 
   const mine = useAsync(
     async () => (profile ? listSpacesByOwner(profile.id, true) : []),
@@ -82,87 +86,125 @@ export default function Library() {
 
   const drafts = (mine.data ?? []).filter((s) => !s.is_published)
   const published = (mine.data ?? []).filter((s) => s.is_published)
+  const visits = published.reduce((sum, space) => sum + (space.visit_count ?? 0), 0)
+
+  const shelves = {
+    Published: published,
+    Drafts: drafts,
+    Saved: saved.data ?? [],
+  } as const
+  const shown = shelves[shelf]
+  const loading = shelf === 'Saved' ? saved.loading : mine.loading
 
   return (
-    <Page className="space-y-10">
-      <header>
-        <h1 className="font-display text-3xl font-extrabold sm:text-4xl">Library</h1>
-        <p className="mt-1.5 text-muted">Everything you made and everything you saved.</p>
+    <Page className="space-y-6">
+      <header className="flex flex-wrap items-end justify-between gap-4">
+        <div>
+          <h1 className="font-display text-3xl font-extrabold sm:text-4xl">Library</h1>
+          <p className="mt-1.5 text-muted">
+            Everything you made and everything you saved.
+            {visits > 0 && ` ${formatCount(visits)} visits to your Spaces so far.`}
+          </p>
+        </div>
+        <Button to="/spaces/new" icon={faPlus}>New Space</Button>
       </header>
 
-      <section>
-        <SectionHeading
-          title="Published"
-          subtitle="Live on Kobbleston."
-          action={<Button size="sm" variant="subtle" to="/spaces/new" icon={faPlus}>New Space</Button>}
-        />
-        {mine.loading && (
-          <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
-            {[0, 1, 2].map((i) => <SpaceCardSkeleton key={i} />)}
-          </div>
-        )}
-        {mine.error && <ErrorState message={mine.error} onRetry={mine.reload} />}
-        {!mine.loading && !published.length && (
-          <Card>
-            <EmptyState
-              mood="emptyBox"
-              title="Nothing published"
-              body="Make a Space and publish it so people can come and visit."
-              action={<Button to="/spaces/new" icon={faPlus}>Make a Space</Button>}
-            />
-          </Card>
-        )}
-        {!!published.length && (
-          <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
-            {published.map((space) => (
-              <div key={space.id} className="group/tile relative">
-                <SpaceCard space={space} />
-                <button
-                  onClick={() => setUpdating(space)}
-                  aria-label={`Post an update about ${space.name}`}
-                  className="absolute right-2 top-2 grid h-8 w-8 place-items-center rounded-lg bg-ink/80 text-white/80 opacity-0 backdrop-blur transition-opacity hover:text-white group-hover/tile:opacity-100 focus-visible:opacity-100"
-                >
-                  <FontAwesomeIcon icon={faPenToSquare} />
-                </button>
-              </div>
-            ))}
-          </div>
-        )}
-      </section>
+      {/* Three shelves, one at a time, rather than three stacked sections you
+          scroll past to reach the one you wanted. */}
+      <div className="grid grid-cols-3 gap-2.5">
+        {(['Published', 'Drafts', 'Saved'] as const).map((name) => {
+          const count = shelves[name].length
+          const note = name === 'Published'
+            ? 'Live on Kobbleston'
+            : name === 'Drafts' ? 'Only you can see these' : 'Spaces you starred'
 
-      {!!drafts.length && (
-        <section>
-          <SectionHeading title="Drafts" subtitle="Only you can see these." />
-          <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
-            {drafts.map((space) => <SpaceCard key={space.id} space={space} />)}
-          </div>
-        </section>
+          return (
+            <button
+              key={name}
+              onClick={() => setShelf(name)}
+              aria-pressed={shelf === name}
+              className={cn(
+                'rounded-2xl border px-4 py-3 text-left transition-colors',
+                shelf === name
+                  ? 'border-brand-bright bg-brand/15'
+                  : 'border-ink-line bg-ink-card hover:bg-ink-hover',
+              )}
+            >
+              <span className="block font-display text-xl font-extrabold tabular-nums leading-none">
+                {formatCount(count)}
+              </span>
+              <span className="mt-1 block text-sm font-bold">{name}</span>
+              <span className="mt-0.5 hidden text-xs text-muted sm:block">{note}</span>
+            </button>
+          )
+        })}
+      </div>
+
+      {mine.error && <ErrorState message={mine.error} onRetry={mine.reload} />}
+      {saved.error && shelf === 'Saved' && <ErrorState message={saved.error} onRetry={saved.reload} />}
+
+      {loading && (
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4">
+          {[0, 1, 2].map((i) => <SpaceCardSkeleton key={i} />)}
+        </div>
       )}
 
-      <section>
-        <SectionHeading title="Saved" subtitle="Spaces you starred." />
-        {saved.loading && (
-          <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
-            {[0, 1].map((i) => <SpaceCardSkeleton key={i} />)}
-          </div>
-        )}
-        {saved.error && <ErrorState message={saved.error} onRetry={saved.reload} />}
-        {!saved.loading && !saved.data?.length && (
-          <Card>
-            <EmptyState
-              mood="emptyBox"
-              title="Nothing saved yet"
-              body="Star a Space and it lands here so you can find it again."
-              action={<Button variant="subtle" to="/discover" icon={faStar}>Go find some</Button>}
-            />
-          </Card>
-        )}
-        {!!saved.data?.length && (
-          <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
-            {saved.data.map((space) => <SpaceCard key={space.id} space={space} />)}
-          </div>
-        )}
-      </section>
+      {!loading && !shown.length && (
+        <Card>
+          <EmptyState
+            mood="emptyBox"
+            title={
+              shelf === 'Published' ? 'Nothing published'
+                : shelf === 'Drafts' ? 'No drafts' : 'Nothing saved yet'
+            }
+            body={
+              shelf === 'Published'
+                ? 'Make a Space and publish it so people can come and visit.'
+                : shelf === 'Drafts'
+                  ? 'A Space you have not published yet waits here.'
+                  : 'Star a Space and it lands here so you can find it again.'
+            }
+            action={
+              shelf === 'Saved'
+                ? <Button variant="subtle" to="/discover" icon={faStar}>Go find some</Button>
+                : <Button to="/spaces/new" icon={faPlus}>Make a Space</Button>
+            }
+          />
+        </Card>
+      )}
+
+      {!!shown.length && (
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4">
+          {shown.map((space) => (
+            <div key={space.id} className="group/tile relative">
+              <SiteCard space={space} />
+
+              {shelf !== 'Saved' && (
+                <div className="absolute right-2 top-2 flex gap-1.5 opacity-0 transition-opacity focus-within:opacity-100 group-hover/tile:opacity-100">
+                  <Link
+                    to={`/spaces/${space.id}/build`}
+                    aria-label={`Build ${space.name}`}
+                    title="Build"
+                    className="grid h-8 w-8 place-items-center rounded-lg bg-ink/85 text-white/80 backdrop-blur transition-colors hover:text-white"
+                  >
+                    <FontAwesomeIcon icon={faHammer} />
+                  </Link>
+                  {space.is_published && (
+                    <button
+                      onClick={() => setUpdating(space)}
+                      aria-label={`Post an update about ${space.name}`}
+                      title="Post an update"
+                      className="grid h-8 w-8 place-items-center rounded-lg bg-ink/85 text-white/80 backdrop-blur transition-colors hover:text-white"
+                    >
+                      <FontAwesomeIcon icon={faPenToSquare} />
+                    </button>
+                  )}
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
 
       <UpdateDialog space={updating} onClose={() => setUpdating(null)} onLogged={mine.reload} />
     </Page>

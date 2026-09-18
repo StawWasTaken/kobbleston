@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useParams, useSearchParams } from 'react-router-dom'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import {
   faCheck, faComment, faEllipsis, faFilter, faInbox, faUserGroup, faUserMinus, faUserPlus,
@@ -20,7 +20,8 @@ import { useAuth } from '@/hooks/useAuth'
 import { useAsync } from '@/hooks/useAsync'
 import { useTitle } from '@/hooks/useTitle'
 import {
-  listFollows, listFriendships, removeFriendship, respondToFriendRequest, startConversation,
+  getProfileByUsername, listFollows, listFriendships, removeFriendship, respondToFriendRequest,
+  startConversation, usernameById,
 } from '@/lib/api'
 import { avatarOf } from '@/lib/avatars'
 import { profileLink } from '@/lib/links'
@@ -31,14 +32,15 @@ import { Verified, isVerified } from '@/components/brand/Verified'
 
 const tabs = [
   { name: 'Friends', icon: faUserGroup },
-  { name: 'Requests', icon: faInbox },
-  { name: 'Following', icon: faHeart },
   { name: 'Followers', icon: faStar },
+  { name: 'Following', icon: faHeart },
+  { name: 'Requests', icon: faInbox },
 ] as const
 type Tab = (typeof tabs)[number]['name']
 
 const presenceWord: Record<ReturnType<typeof presenceOf>, string> = {
   'in-space': 'In a Space',
+  building: 'Building something',
   online: 'Online',
   offline: 'Offline',
 }
@@ -124,12 +126,43 @@ function Count({ icon, value, label, active, onClick }: {
 }
 
 export default function Friends() {
-  useTitle('Friends')
   const { profile } = useAuth()
   const { openConversation } = useChatDock()
   const toast = useToast()
 
-  const [tab, setTab] = useState<Tab>('Friends')
+  /*
+   * The same page, for anybody.
+   *
+   * Reached at /friends it is yours; reached from a profile it is theirs,
+   * which is why the counts on a profile are links rather than lists opened
+   * in place. Nobody else's requests are anybody's business, so that list is
+   * only there when the page is your own.
+   */
+  const { id } = useParams()
+  const [search] = useSearchParams()
+
+  const viewed = useAsync(
+    async () => {
+      if (!id) return null
+      const name = await usernameById(Number(id))
+      return name ? getProfileByUsername(name) : null
+    },
+    [id],
+  )
+
+  const who = id ? viewed.data : profile
+  const isMe = !id || who?.id === profile?.id
+
+  const wanted = (search.get('list') ?? '').toLowerCase()
+  const [tab, setTab] = useState<Tab>(
+    wanted === 'followers' ? 'Followers' : wanted === 'following' ? 'Following' : 'Friends',
+  )
+
+  useTitle(
+    !who ? 'Friends'
+      : isMe ? 'My friends'
+        : `${who.display_name}'s friends`,
+  )
   const [term, setTerm] = useState('')
   const [filter, setFilter] = useState('')
 
@@ -139,18 +172,18 @@ export default function Friends() {
   }, [term])
 
   const { data, error, loading, reload } = useAsync(
-    async () => (profile ? listFriendships(profile.id) : []),
-    [profile?.id],
+    async () => (who ? listFriendships(who.id) : []),
+    [who?.id],
   )
   // Both sides of following are asked for at once, so the counts on the page
   // are the lists themselves rather than a separate number to go stale.
   const following = useAsync(
-    async () => (profile ? listFollows(profile.id, 'following') : []),
-    [profile?.id],
+    async () => (who ? listFollows(who.id, 'following') : []),
+    [who?.id],
   )
   const followers = useAsync(
-    async () => (profile ? listFollows(profile.id, 'followers') : []),
-    [profile?.id],
+    async () => (who ? listFollows(who.id, 'followers') : []),
+    [who?.id],
   )
 
   const edges = data ?? []
@@ -158,10 +191,10 @@ export default function Friends() {
     .filter((e) => e.friendship.status === 'accepted')
     .sort((a, b) => Number(b.profile.is_online) - Number(a.profile.is_online))
   const incoming = edges.filter(
-    (e) => e.friendship.status === 'pending' && e.friendship.addressee_id === profile?.id,
+    (e) => e.friendship.status === 'pending' && e.friendship.addressee_id === who?.id,
   )
   const outgoing = edges.filter(
-    (e) => e.friendship.status === 'pending' && e.friendship.requester_id === profile?.id,
+    (e) => e.friendship.status === 'pending' && e.friendship.requester_id === who?.id,
   )
   const online = friends.filter((f) => f.profile.is_online).length
 
@@ -207,20 +240,39 @@ export default function Friends() {
   return (
     <Page className="space-y-5">
       <header className="flex flex-wrap items-end justify-between gap-4">
-        <div>
-          <h1 className="font-display text-3xl font-extrabold sm:text-4xl">Friends</h1>
-          <p className="mt-1.5 text-sm text-muted">
-            {friends.length
-              ? `${friends.length} ${friends.length === 1 ? 'friend' : 'friends'}, ${online} online.`
-              : 'Nobody yet. People is where you find somebody.'}
-          </p>
+        <div className="flex items-center gap-3">
+          {!isMe && who && (
+            <Link to={profileLink(who)} className="shrink-0">
+              <Avatar
+                src={avatarOf(who)}
+                name={who.display_name}
+                size="lg"
+                className="rounded-2xl"
+              />
+            </Link>
+          )}
+          <div>
+            <h1 className="font-display text-3xl font-extrabold sm:text-4xl">
+              {isMe ? 'My friends' : who ? `${who.display_name}'s friends` : 'Friends'}
+            </h1>
+            <p className="mt-1.5 text-sm text-muted">
+              {friends.length
+                ? `${friends.length} ${friends.length === 1 ? 'friend' : 'friends'}${isMe ? `, ${online} online` : ''}.`
+                : isMe
+                  ? 'Nobody yet. People is where you find somebody.'
+                  : 'No friends yet.'}
+            </p>
+          </div>
         </div>
 
-        <Button variant="subtle" icon={faUsers} to="/people">Find people</Button>
+        {isMe
+          ? <Button variant="subtle" icon={faUsers} to="/people">Find people</Button>
+          : who && <Button variant="subtle" to={profileLink(who)}>Back to their profile</Button>}
       </header>
 
-      {/* The four numbers are the four lists, and each one is the way in. */}
-      <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-4">
+      {/* The numbers are the lists, and each one is the way in. Friends,
+          then followers, then following, and requests only on your own. */}
+      <div className={cn('grid gap-2.5 grid-cols-2', isMe ? 'sm:grid-cols-4' : 'sm:grid-cols-3')}>
         <Count
           icon={faUserGroup}
           value={loading ? null : friends.length}
@@ -229,11 +281,11 @@ export default function Friends() {
           onClick={() => setTab('Friends')}
         />
         <Count
-          icon={faInbox}
-          value={loading ? null : waiting}
-          label={waiting === 1 ? 'Request' : 'Requests'}
-          active={tab === 'Requests'}
-          onClick={() => setTab('Requests')}
+          icon={faStar}
+          value={followers.loading ? null : followers.data?.length ?? 0}
+          label="Followers"
+          active={tab === 'Followers'}
+          onClick={() => setTab('Followers')}
         />
         <Count
           icon={faHeart}
@@ -242,13 +294,15 @@ export default function Friends() {
           active={tab === 'Following'}
           onClick={() => setTab('Following')}
         />
-        <Count
-          icon={faStar}
-          value={followers.loading ? null : followers.data?.length ?? 0}
-          label="Followers"
-          active={tab === 'Followers'}
-          onClick={() => setTab('Followers')}
-        />
+        {isMe && (
+          <Count
+            icon={faInbox}
+            value={loading ? null : waiting}
+            label={waiting === 1 ? 'Request' : 'Requests'}
+            active={tab === 'Requests'}
+            onClick={() => setTab('Requests')}
+          />
+        )}
       </div>
 
       {tab !== 'Requests' && (
@@ -292,10 +346,10 @@ export default function Friends() {
                 <PersonRow
                   key={friendship.id}
                   person={person}
-                  actions={
-                    <Button size="sm" icon={faComment} onClick={() => chat(person.id)}>Chat</Button>
-                  }
-                  menu={
+                  actions={isMe
+                    ? <Button size="sm" icon={faComment} onClick={() => chat(person.id)}>Chat</Button>
+                    : <Button size="sm" variant="subtle" to={profileLink(person)}>Profile</Button>}
+                  menu={isMe ? (
                     <Menu
                       label={`Options for ${person.display_name}`}
                       trigger={
@@ -313,7 +367,7 @@ export default function Friends() {
                         },
                       ]}
                     />
-                  }
+                  ) : undefined}
                 />
               ))}
             </List>
@@ -321,7 +375,7 @@ export default function Friends() {
         </>
       )}
 
-      {tab === 'Requests' && (
+      {tab === 'Requests' && isMe && (
         <div className="space-y-6">
           <section>
             <h2 className="mb-3 flex items-center gap-2 text-sm font-extrabold uppercase tracking-wide text-muted">
@@ -432,11 +486,13 @@ export default function Friends() {
                   <PersonRow
                     key={person.id}
                     person={person}
-                    actions={
-                      <Button size="sm" variant="ghost" icon={faComment} onClick={() => chat(person.id)}>
-                        Chat
-                      </Button>
-                    }
+                    actions={isMe
+                      ? (
+                        <Button size="sm" variant="ghost" icon={faComment} onClick={() => chat(person.id)}>
+                          Chat
+                        </Button>
+                      )
+                      : <Button size="sm" variant="subtle" to={profileLink(person)}>Profile</Button>}
                   />
                 ))}
               </List>

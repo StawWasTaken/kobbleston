@@ -20,6 +20,8 @@ export type Profile = {
   content_id: number | null
   /** The colour somebody chose for their own page. */
   accent_color: string | null
+  /** What they are doing, while they are here: around, or building. */
+  activity: 'around' | 'building' | null
   created_at: string
 }
 

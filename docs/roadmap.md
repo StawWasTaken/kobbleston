@@ -135,9 +135,36 @@ What it is now:
   four figures stacked over everything else.
 - **One page, sections down it**, rather than four filing cabinets.
 
+Since then, a second pass: the counts are links to that person's own friends
+page rather than lists unfolded in place, the bio is written from the profile
+itself through an About card that also carries previous names and the
+numbers, the page is About and Creations rather than one long scroll, and the
+colour is picked on the page it colours instead of in Settings.
+
 Still to come, when there is somewhere to keep it: more of a Space's own
 arrangement on a profile, so the page is laid out by its owner rather than
 only coloured by them.
+
+### Presence **(done)**
+There was a `touch_presence` function from the beginning that nothing ever
+called, so "online" meant whatever the last sign in happened to set and stayed
+that way. The page says so every minute now, while the tab is being looked at,
+and says goodbye on the way out. Four states, each its own colour: in a Space
+is green, building something is orange, around is blue, gone is grey. Anybody
+quiet for three minutes counts as gone whatever their flag says.
+
+### The pages people actually live on **(done)**
+- **Home**: one strip at the top with who you are, what you have and the three
+  things you are most likely to want, then friends, then the shelves.
+- **Discover**: a directory rather than a carousel. Wide cards showing the
+  page itself, the name, who made it, how many have been and what it is.
+- **Library**: three shelves, one at a time, with the counts as the way in,
+  and building or posting an update straight from a card.
+- **Friends**: the same page for anybody, so a profile can link to it, in the
+  order friends, followers, following. It is called "My friends" on your own
+  and "somebody's friends" on theirs, and requests are only on your own.
+- **Settings**: your face, your name and your Kubes at the top, and the
+  section list kept in view while you scroll.
 
 ### Profile and avatar customisation
 Not built. A marketplace for what people wear and how their profile looks,

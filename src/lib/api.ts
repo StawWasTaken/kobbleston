@@ -242,6 +242,20 @@ export async function updateProfile(id: string, patch: Partial<Pick<Profile,
   unwrap(await supabase.from('profiles').update(patch).eq('id', id).select('id').single())
 }
 
+/**
+ * Saying that somebody is here, and what they are doing. Called on a minute
+ * by the page frame rather than once at sign in, which is what makes the
+ * little dots mean anything.
+ */
+export async function touchPresence(online: boolean, doing?: 'around' | 'building') {
+  await supabase.rpc('touch_presence', { online, doing: doing ?? null })
+}
+
+/** Anybody who stopped saying anything is no longer online. */
+export async function sweepPresence() {
+  await supabase.rpc('sweep_presence')
+}
+
 // ----------------------------------------------------------------- friends
 
 export type FriendEdge = { friendship: Friendship; profile: Profile }

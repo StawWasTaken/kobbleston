@@ -1,0 +1,1 @@
+var e=e=>encodeURIComponent(e);function t(t){return t.content_id?`/u/${t.content_id}/${e(t.username)}`:`/u/${e(t.username)}`}function n(t){return t.content_id?`/s/${t.content_id}/${e(t.slug)}`:t.owner?`/u/${e(t.owner.username)}/${e(t.slug)}`:`/discover`}function r(t){return t.content_id?`/c/${t.content_id}/${e(t.slug)}`:`/c/${e(t.slug)}`}export{t as n,n as r,r as t};

@@ -118,6 +118,8 @@ export default function App() {
                 {/* The numbered addresses are the real ones; the older
                     name-only forms still answer and redirect. */}
                 <Route path="/u/:id/:name" element={<Profile />} />
+                {/* Somebody's people, on the same page yours is on. */}
+                <Route path="/u/:id/:name/friends" element={<Friends />} />
                 <Route path="/u/:username" element={<Profile />} />
                 <Route path="/s/:id/:name" element={<SpacePage />} />
                 <Route path="/e/:id/:name" element={<EventPage />} />

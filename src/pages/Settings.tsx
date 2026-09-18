@@ -25,7 +25,9 @@ import { formatCount, timeAgo } from '@/lib/format'
 import { cn } from '@/lib/cn'
 import { useTitle } from '@/hooks/useTitle'
 import { Kube } from '@/components/brand/Kube'
-import { ColourPicker } from '@/components/ui/ColourPicker'
+import { Avatar } from '@/components/ui/Avatar'
+import { avatarOf } from '@/lib/avatars'
+import { profileLink } from '@/lib/links'
 
 type Section = 'Account info' | 'Security' | 'Appearance' | 'Kubes' | 'Safety'
 
@@ -62,7 +64,6 @@ function AccountInfo() {
 
   const [displayName, setDisplayName] = useState('')
   const [bio, setBio] = useState('')
-  const [accent, setAccent] = useState('#1B34E8')
   const [avatarFile, setAvatarFile] = useState<File | null>(null)
   const [pending, setPending] = useState(false)
   const [renaming, setRenaming] = useState(false)
@@ -78,7 +79,6 @@ function AccountInfo() {
     if (!profile) return
     setDisplayName(profile.display_name)
     setBio(profile.bio ?? '')
-    setAccent(profile.accent_color ?? '#1B34E8')
   }, [profile])
 
   if (!profile) return <Skeleton className="h-64" />
@@ -93,7 +93,6 @@ function AccountInfo() {
       await updateProfile(profile.id, {
         display_name: displayName.trim(),
         bio: bio.trim() || null,
-        accent_color: /^#[0-9a-f]{6}$/i.test(accent) ? accent : null,
         avatar_url,
       })
       setAvatarFile(null)
@@ -159,17 +158,6 @@ function AccountInfo() {
             hint={`${bio.length}/300`}
           />
 
-          {/* One colour, and it runs through your whole page: the ring round
-              your face, the rules under your headings, the rest of it. */}
-          <div>
-            <p className="mb-1.5 text-xs font-bold uppercase tracking-wide text-muted">
-              Your colour
-            </p>
-            <ColourPicker value={accent} onChange={setAccent} className="max-w-xs" />
-            <p className="mt-1.5 text-xs text-muted">
-              Used across your profile. Leave it as it is and you get Kobbleston blue.
-            </p>
-          </div>
 
           <div className="flex justify-end">
             <Button type="submit" loading={pending}>Save changes</Button>
@@ -442,21 +430,49 @@ function Safety() {
 
 export default function Settings() {
   useTitle('Settings')
+  const { profile } = useAuth()
   const [section, setSection] = useState<Section>('Account info')
 
   return (
-    <Page width="narrow">
-      <h1 className="mb-6 font-display text-3xl font-extrabold sm:text-4xl">Settings</h1>
+    <Page width="narrow" className="space-y-6">
+      {/* Whose settings these are, and the two things people come here to
+          check, before any of the panels. */}
+      <header className="flex flex-wrap items-center gap-4 rounded-2xl border border-ink-line bg-ink-card p-4">
+        <Avatar
+          src={avatarOf(profile)}
+          name={profile?.display_name ?? 'You'}
+          size="lg"
+          className="rounded-2xl"
+        />
+        <div className="min-w-0 flex-1">
+          <h1 className="truncate font-display text-2xl font-extrabold sm:text-3xl">Settings</h1>
+          <p className="truncate text-sm text-muted">
+            {profile ? `${profile.display_name} · @${profile.username}` : 'Your account'}
+          </p>
+        </div>
+        {!!profile && (
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="inline-flex items-center gap-1.5 rounded-xl border border-ink-line bg-ink-raised px-3 py-2 text-sm font-bold">
+              <Kube />
+              {formatCount(profile.pixels)}
+            </span>
+            <Button size="sm" variant="subtle" to={profileLink(profile)}>Your profile</Button>
+          </div>
+        )}
+      </header>
 
       <div className="grid gap-6 md:grid-cols-[13rem_1fr] md:items-start">
-        <nav aria-label="Settings sections" className="rounded-xl border border-ink-line bg-ink-card p-1.5">
+        <nav
+          aria-label="Settings sections"
+          className="flex gap-1.5 overflow-x-auto rounded-xl border border-ink-line bg-ink-card p-1.5 md:sticky md:top-20 md:block md:overflow-visible kob-scroll"
+        >
           {sections.map((item) => (
             <button
               key={item.name}
               onClick={() => setSection(item.name)}
               aria-current={section === item.name ? 'page' : undefined}
               className={cn(
-                'flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left text-sm font-semibold transition-colors',
+                'flex shrink-0 items-center gap-3 rounded-lg px-3 py-2.5 text-left text-sm font-semibold transition-colors md:w-full',
                 section === item.name
                   ? 'bg-brand text-white'
                   : 'text-white/65 hover:bg-ink-hover hover:text-white',
