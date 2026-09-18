@@ -952,39 +952,52 @@ export async function checkUsername(candidate: string): Promise<{ ok: boolean; r
  * `login` edge function behind the service role key, so nothing here can be
  * used to harvest addresses.
  */
+/**
+ * The way in without the edge function: the database checks the password and
+ * hands back the address only when it is right, so this cannot be used to
+ * find out which names exist or to collect addresses. Guessing is bounded by
+ * a counter per name, since this has no rate limit of its own.
+ */
+async function signInThroughTheDatabase(username: string, password: string) {
+  const email = unwrap(await supabase.rpc('login_email_for', {
+    account_name: username,
+    secret: password,
+  })) as string | null
+
+  if (!email) throw new Error('Wrong username or password.')
+
+  const { data, error } = await supabase.auth.signInWithPassword({ email, password })
+  if (error) throw new Error('Wrong username or password.')
+  return data.session
+}
+
+/**
+ * Signs in with a username. Supabase signs people in with an email, so the
+ * name has to be turned into one first, and that lookup must not be something
+ * a browser can do freely or it becomes a way to harvest addresses.
+ *
+ * The `login` edge function does it behind the service role key. Where that
+ * function is not deployed, the same job is done by login_email_for in the
+ * database, which only answers a correct password.
+ */
 export async function signInWithUsername(username: string, password: string) {
   const { data, error } = await supabase.functions.invoke('login', {
     body: { username, password },
   })
 
   if (error) {
-    /*
-     * A refusal and a breakage are not the same thing, and telling somebody
-     * their password is wrong when the login function is not answering is
-     * the worst kind of wrong message. Only the function's own 400 means
-     * the details were wrong; anything else says what actually happened.
-     */
     const response = (error as { context?: Response }).context
-    const detail = await response?.json?.().catch(() => null)
+    const status = typeof response?.status === 'number' ? response.status : null
 
-    if (response && response.status !== 400) {
-      throw new Error(
-        response.status === 404
-          ? 'Logging in is not switched on for this site yet. The login function has not been deployed.'
-          : `Logging in is not answering right now (${response.status}). Try again in a moment.`,
-      )
+    // Only the function's own refusal means the details were wrong.
+    if (status === 400) {
+      const detail = await response?.json?.().catch(() => null)
+      throw new Error(detail?.error ?? 'Wrong username or password.')
     }
 
-    // An email still works even with the function down, since that needs no
-    // lookup at all.
-    if (!response && username.includes('@')) {
-      const direct = await supabase.auth.signInWithPassword({ email: username, password })
-      if (!direct.error) return direct.data.session
-    }
-
-    throw new Error(
-      detail?.error ?? (response ? 'Wrong username or password.' : 'Could not reach Kobbleston. Check your connection.'),
-    )
+    // Anything else means the function did not answer, so the database does
+    // the job instead rather than blaming somebody's password for it.
+    return await signInThroughTheDatabase(username, password)
   }
 
   const { access_token, refresh_token } = data as { access_token: string; refresh_token: string }
