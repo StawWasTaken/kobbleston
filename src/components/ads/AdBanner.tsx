@@ -111,7 +111,7 @@ export function AdBanner({
     : {
         maxWidth: shape.w,
         aspectRatio: `${shape.w} / ${shape.h}`,
-        ...(shape.h > 300 ? { maxHeight: 'calc(100dvh - 7rem)' } : {}),
+        ...(shape.h > 300 ? { maxHeight: 'calc(100dvh - 6rem)' } : {}),
       }
 
   if (!asked || (!ad && quiet)) return null

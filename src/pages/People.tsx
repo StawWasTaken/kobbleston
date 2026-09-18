@@ -274,7 +274,7 @@ export default function People() {
       )}
         </div>
 
-        <AdBanner size="tall" quiet className="hidden xl:block" />
+        <AdBanner size="tall" quiet className="hidden xl:sticky xl:top-[4.5rem] xl:block" />
       </div>
     </div>
   )

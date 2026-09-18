@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import {
   faBullhorn, faPen, faTrash, faEllipsis, faPlus, faImage, faVideo, faXmark,
+  faThumbsUp, faThumbsDown,
 } from '@fortawesome/free-solid-svg-icons'
 import { Button } from '@/components/ui/Button'
 import { Dialog } from '@/components/ui/Dialog'
@@ -15,10 +16,10 @@ import { MediaPlayer } from '@/components/create/MediaPlayer'
 import { useAuth } from '@/hooks/useAuth'
 import { useAsync } from '@/hooks/useAsync'
 import {
-  listCommunityPosts, removeCommunityPost, saveAnnouncement, uploadCommunityImage,
+  listCommunityPosts, removeCommunityPost, saveAnnouncement, uploadCommunityImage, votePost,
 } from '@/lib/api'
 import { avatarOf } from '@/lib/avatars'
-import { timeAgo } from '@/lib/format'
+import { formatCount, timeAgo } from '@/lib/format'
 import { profileLink } from '@/lib/links'
 import type { CommunityOverview, CommunityPost } from '@/types/db'
 import { Verified } from '@/components/brand/Verified'
@@ -43,6 +44,17 @@ export function Announcements({
   const { profile } = useAuth()
   const toast = useToast()
   const posts = useAsync(() => listCommunityPosts(communityId, true), [communityId])
+
+  /** Yes, no, or taking it back by pressing the one you already pressed. */
+  const vote = async (post: CommunityPost, up: boolean) => {
+    const already = up ? post.i_like : post.i_dislike
+    try {
+      await votePost(post.id, already ? null : up)
+      posts.reload()
+    } catch (err) {
+      toast(err instanceof Error ? err.message : 'That did not go through.', 'error')
+    }
+  }
 
   const [open, setOpen] = useState(false)
   const [editing, setEditing] = useState<CommunityPost | null>(null)
@@ -217,6 +229,31 @@ export function Announcements({
               {post.media_url && post.media_kind === 'video' && (
                 <MediaPlayer src={post.media_url} kind="video" className="mt-3" />
               )}
+
+              {/* An announcement is a Community talking to its members, and
+                  they should be able to answer with more than silence. */}
+              <div className="mt-4 flex items-center gap-2">
+                {([
+                  { up: true, icon: faThumbsUp, count: post.like_count, mine: post.i_like },
+                  { up: false, icon: faThumbsDown, count: post.dislike_count, mine: post.i_dislike },
+                ] as const).map((side) => (
+                  <button
+                    key={String(side.up)}
+                    onClick={() => vote(post, side.up)}
+                    aria-pressed={side.mine}
+                    aria-label={side.up ? 'Yes' : 'No'}
+                    className={cn(
+                      'inline-flex items-center gap-2 rounded-full border px-3.5 py-1.5 text-xs font-bold transition-colors',
+                      side.mine
+                        ? 'border-brand-bright bg-brand/20 text-white'
+                        : 'border-ink-line bg-ink-raised text-white/60 hover:bg-ink-hover hover:text-white',
+                    )}
+                  >
+                    <FontAwesomeIcon icon={side.icon} />
+                    {formatCount(side.count ?? 0)}
+                  </button>
+                ))}
+              </div>
             </div>
           </article>
         ))}

@@ -1199,6 +1199,15 @@ export async function setPostPinned(id: number, pinned: boolean) {
   unwrap(await supabase.rpc('set_post_pinned', { target: id, pinned }))
 }
 
+/**
+ * What somebody thinks of a post: yes, no, or nothing. One opinion each, so
+ * saying the opposite of what you said before swaps it rather than counting
+ * twice.
+ */
+export async function votePost(id: number, up: boolean | null) {
+  unwrap(await supabase.rpc('vote_post', { post: id, up }))
+}
+
 export async function likePost(id: number, liked: boolean) {
   const { data: session } = await supabase.auth.getUser()
   const me = session.user?.id
@@ -1514,6 +1523,39 @@ export const listingFee = (price: number) =>
 
 /** The share of a sale Kobbleston keeps; the rest reaches the creator. */
 export const PLATFORM_SHARE = 35
+
+/** The event happening in a community right now, if there is one. */
+export type LiveEvent = {
+  id: string
+  content_id: number | null
+  title: string
+  subtitle: string | null
+  starts_at: string
+  ends_at: string | null
+  attending_count: number
+}
+
+export async function currentEvent(communityId: string): Promise<LiveEvent | null> {
+  const rows = unwrap(await supabase.rpc('current_event', { community: communityId })) as LiveEvent[]
+  return rows?.[0] ?? null
+}
+
+/**
+ * Telling the people who said they were going that an event has begun.
+ * Nothing here runs on a timer, so the first person through the door does the
+ * telling, and it only ever happens once per event.
+ */
+export async function announceStartedEvents(communityId?: string) {
+  await supabase.rpc('announce_started_events', { community: communityId ?? null })
+}
+
+/** More like the thing you are looking at, and more from whoever made it. */
+export async function listSimilarAssets(assetId: string, limit = 12): Promise<MarketAsset[]> {
+  return (unwrap(await supabase.rpc('similar_assets', {
+    target: assetId,
+    limit_count: limit,
+  })) as MarketAsset[]) ?? []
+}
 
 /** Putting something up for sale. Returns the fee that was paid. */
 export async function listForSale(assetId: string, price: number): Promise<number> {

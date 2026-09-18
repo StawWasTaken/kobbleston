@@ -22,7 +22,7 @@ import { Menu } from '@/components/ui/Menu'
 import { useAuth } from '@/hooks/useAuth'
 import { useAsync } from '@/hooks/useAsync'
 import {
-  assetAnalytics, deleteAsset, getAsset, listAssetReviews, listAssetsByCreator, rateAsset,
+  assetAnalytics, deleteAsset, getAsset, listAssetReviews, listSimilarAssets, rateAsset,
   recordAssetEvent, removeAssetReview, updateAsset, writeAssetReview, buyAsset, priceCeilings,
   dropFromInventory, listForSale, unlistForSale, listingFee, PLATFORM_SHARE,
 } from '@/lib/api'
@@ -272,7 +272,7 @@ export default function AssetPage() {
     [asset?.id],
   )
   const more = useAsync(
-    async () => (asset ? listAssetsByCreator(asset.creator_id, asset.id) : []),
+    async () => (asset ? listSimilarAssets(asset.id, 12) : []),
     [asset?.creator_id, asset?.id],
   )
 
@@ -776,8 +776,10 @@ export default function AssetPage() {
 
       {!!more.data?.length && (
         <section>
+          {/* Their work first, then things like this one: the same kind,
+              called something similar, put up around the same time. */}
           <h2 className="mb-3 flex items-center gap-2 font-display text-xl font-extrabold">
-            More from {asset.creator_display_name}
+            More from {asset.creator_display_name}, and more like this
             <Link
               to={`/create/creator/${asset.creator_username}`}
               aria-label={`Everything by ${asset.creator_display_name}`}

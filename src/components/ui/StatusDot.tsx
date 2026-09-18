@@ -1,13 +1,13 @@
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faDoorOpen, faHammer, faMinus } from '@fortawesome/free-solid-svg-icons'
-import { Kube } from '@/components/brand/Kube'
+import { faHouse, faHammer, faMinus } from '@fortawesome/free-solid-svg-icons'
+import { asset } from '@/lib/asset'
 import { cn } from '@/lib/cn'
 
 /**
  * Presence, in four states that never share a colour or a mark.
  *
- * Blue and a Kube: on Kobbleston. Green and a door: inside a Space, which is
- * the colour and the word Spaces always get. Orange and a hammer: building
+ * Blue and the Kobbleston mark: on Kobbleston. Green and a house: inside a
+ * Space, which is the colour Spaces always get. Orange and a hammer: building
  * something. Grey and a dash: not here.
  *
  * Anybody who has not said anything for a few minutes is treated as gone,
@@ -61,8 +61,19 @@ export function presenceOf(p?: {
 }
 
 function Mark({ presence }: { presence: Presence }) {
-  if (presence === 'online') return <Kube />
-  if (presence === 'in-space') return <FontAwesomeIcon icon={faDoorOpen} />
+  // The house mark is ours, so it is the logo rather than a shape that looks
+  // like it. It is flattened to white because a dot is one colour and a mark
+  // on it is the other.
+  if (presence === 'online') {
+    return (
+      <img
+        src={asset('/brand/logomark.png')}
+        alt=""
+        className="h-[1.15em] w-[1.15em] brightness-0 invert"
+      />
+    )
+  }
+  if (presence === 'in-space') return <FontAwesomeIcon icon={faHouse} />
   if (presence === 'building') return <FontAwesomeIcon icon={faHammer} />
   return <FontAwesomeIcon icon={faMinus} />
 }

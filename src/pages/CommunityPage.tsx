@@ -28,6 +28,7 @@ import { supabase } from '@/lib/supabase'
 import { cn } from '@/lib/cn'
 import { communityLink } from '@/lib/links'
 import { AdBanner } from '@/components/ads/AdBanner'
+import { LiveEventBar } from '@/components/community/LiveEventBar'
 
 const tabs = ['About', 'Events', 'Members', 'Affiliates'] as const
 type Tab = (typeof tabs)[number]
@@ -137,6 +138,9 @@ export default function CommunityPage() {
 
   return (
     <>
+      {/* Under the bar, on this page only, while something is on. */}
+      <LiveEventBar communityId={group.id} />
+
       <CommunityHeader
         group={group}
         rights={rights.data}
@@ -236,7 +240,7 @@ export default function CommunityPage() {
             <CommunityWall communityId={group.id} rights={rights.data} />
             </div>
 
-            <AdBanner size="tall" quiet className="hidden xl:block" />
+            <AdBanner size="tall" quiet className="hidden xl:sticky xl:top-[4.5rem] xl:block" />
           </div>
         )}
 

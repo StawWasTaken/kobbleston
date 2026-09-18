@@ -350,6 +350,8 @@ export type CommunityPost = {
   is_pinned: boolean
   like_count: number
   i_like: boolean
+  dislike_count: number
+  i_dislike: boolean
   created_at: string
   edited_at: string | null
   author_username: string
