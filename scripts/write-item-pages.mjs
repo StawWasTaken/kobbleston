@@ -15,7 +15,7 @@
  * With no network, or with the key missing, it writes nothing and says so:
  * a preview is never worth failing a build over.
  */
-import { mkdirSync, readFileSync, writeFileSync } from 'node:fs'
+import { mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { dirname } from 'node:path'
 import { describe, SITE } from './site-pages.mjs'
 
@@ -62,9 +62,13 @@ const shorten = (text, limit = 200) => {
 
 export async function writeItemPages(into = 'dist') {
   if (!url || !key) {
+    rmSync(`${into}/.item-pages`, { force: true })
     console.log('No Supabase details, so no item pages were written.')
     return []
   }
+
+  // A mark left by an earlier run says nothing about this one.
+  rmSync(`${into}/.item-pages`, { force: true })
 
   const document = readFileSync(`${into}/index.html`, 'utf8')
   const pages = []
