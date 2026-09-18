@@ -13,10 +13,11 @@ import { JoinPanel } from '@/components/landing/JoinPanel'
 import { SpaceStage } from '@/components/landing/SpaceStage'
 import { CreatorShelf } from '@/components/landing/CreatorShelf'
 import { CommunityRow } from '@/components/landing/CommunityRow'
+import { StyleShelf } from '@/components/landing/StyleShelf'
 import { useAuth } from '@/hooks/useAuth'
 import { useAsync } from '@/hooks/useAsync'
 import { useForceDark } from '@/hooks/useTheme'
-import { getPlatformStats, listAssets, listCommunities, listSpaces } from '@/lib/api'
+import { getPlatformStats, listAssets, listCommunities, listSpaces, styleShop } from '@/lib/api'
 import { asset } from '@/lib/asset'
 import { formatCount } from '@/lib/format'
 import type { MarketAsset } from '@/types/db'
@@ -122,6 +123,8 @@ export default function Landing() {
     return mixed.slice(0, 18)
   }, [])
   const communities = useAsync(() => listCommunities(''), [])
+  // Things to wear. The shop is open to anybody, logged in or not.
+  const style = useAsync(() => styleShop({ limit: 14 }).catch(() => []), [])
 
   const biggest = [...(communities.data ?? [])]
     .sort((a, b) => b.member_count - a.member_count)
@@ -277,6 +280,34 @@ export default function Landing() {
             </div>
           ) : (
             <CommunityRow communities={biggest} loading={communities.loading} />
+          )}
+        </div>
+      </section>
+
+      {/* ------------------------------------------------------------ Style */}
+      <section className="border-y border-white/5 bg-white/[0.02] py-24 sm:py-32">
+        <div className="mx-auto max-w-6xl px-4 sm:px-8">
+          <Opening
+            number="04"
+            kicker="Style"
+            title="Express Your"
+            accent="Own Style"
+            body="Hats, hair and whatever else people make, worn on your own picture. Put one on and you wear it everywhere you turn up on Kobbleston."
+            to="/style"
+            action="Open the shop"
+          />
+        </div>
+
+        <div className="mt-14">
+          {!style.loading && !style.data?.length ? (
+            <div className="mx-auto flex max-w-6xl items-center gap-5 rounded-[1.75rem] border border-white/10 bg-ink-card p-6">
+              <Kobby mood="style" size="sm" bob={false} />
+              <p className="text-sm text-white/55">
+                The shop is filling up. Verified accounts are making the first things for it.
+              </p>
+            </div>
+          ) : (
+            <StyleShelf items={style.data ?? []} loading={style.loading} />
           )}
         </div>
       </section>
