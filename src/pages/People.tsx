@@ -7,8 +7,6 @@ import {
 import type { IconDefinition } from '@fortawesome/fontawesome-svg-core'
 import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
-import { Avatar } from '@/components/ui/Avatar'
-import { StatusDot, presenceOf } from '@/components/ui/StatusDot'
 import { EmptyState, ErrorState, Skeleton } from '@/components/ui/States'
 import { Verified, isVerified } from '@/components/brand/Verified'
 import { useToast } from '@/components/ui/Toast'
@@ -18,12 +16,12 @@ import { useAsync } from '@/hooks/useAsync'
 import { useTitle } from '@/hooks/useTitle'
 import { listPeople, sendFriendRequest, startConversation } from '@/lib/api'
 import type { PeopleSort } from '@/lib/api'
-import { avatarOf } from '@/lib/avatars'
 import { profileLink } from '@/lib/links'
 import { formatCount } from '@/lib/format'
 import { cn } from '@/lib/cn'
 import type { Profile } from '@/types/db'
 import { AdBanner } from '@/components/ads/AdBanner'
+import { PersonAvatar } from '@/components/ui/PersonAvatar'
 
 const sorts: { value: PeopleSort; label: string; icon: IconDefinition }[] = [
   { value: 'active', label: 'Around now', icon: faBolt },
@@ -44,15 +42,11 @@ function PersonCard({
   onAdd: () => void
   onChat: () => void
 }) {
-  const presence = presenceOf(person)
 
   return (
     <article className="flex gap-3.5 rounded-2xl border border-ink-line bg-ink-card p-3.5 transition-colors hover:border-brand/60">
-      <Link to={profileLink(person)} className="relative shrink-0">
-        <Avatar src={avatarOf(person)} name={person.display_name} size="lg" className="rounded-xl" />
-        <span className="absolute -bottom-0.5 -right-0.5">
-          <StatusDot presence={presence} ring />
-        </span>
+      <Link to={profileLink(person)} className="shrink-0">
+        <PersonAvatar person={person} size="lg" square ring="ring-ink-card" />
       </Link>
 
       <div className="min-w-0 flex-1">

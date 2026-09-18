@@ -12,7 +12,7 @@ import { Card } from '@/components/ui/Card'
 import { Input } from '@/components/ui/Input'
 import { Menu } from '@/components/ui/Menu'
 import { Avatar } from '@/components/ui/Avatar'
-import { StatusDot, presenceOf } from '@/components/ui/StatusDot'
+import { presenceOf } from '@/components/ui/StatusDot'
 import { EmptyState, ErrorState, Skeleton } from '@/components/ui/States'
 import { useToast } from '@/components/ui/Toast'
 import { useChatDock } from '@/components/chat/ChatDock'
@@ -29,6 +29,7 @@ import { timeAgo } from '@/lib/format'
 import { cn } from '@/lib/cn'
 import type { Profile } from '@/types/db'
 import { Verified, isVerified } from '@/components/brand/Verified'
+import { PersonAvatar } from '@/components/ui/PersonAvatar'
 
 const tabs = [
   { name: 'Friends', icon: faUserGroup },
@@ -61,11 +62,8 @@ function PersonRow({
 
   return (
     <li className="flex items-center gap-3 rounded-2xl border border-ink-line bg-ink-card p-3 transition-colors hover:border-brand/60">
-      <Link to={profileLink(person)} className="relative shrink-0">
-        <Avatar src={avatarOf(person)} name={person.display_name} size="md" className="rounded-xl" />
-        <span className="absolute -bottom-0.5 -right-0.5">
-          <StatusDot presence={presence} ring />
-        </span>
+      <Link to={profileLink(person)} className="shrink-0">
+        <PersonAvatar person={person} size="md" square ring="ring-ink-card" />
       </Link>
 
       <div className="min-w-0 flex-1">

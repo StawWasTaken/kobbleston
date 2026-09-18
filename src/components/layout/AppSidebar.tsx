@@ -1,14 +1,12 @@
 import { useEffect, useState } from 'react'
 import { NavLink } from 'react-router-dom'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { Avatar } from '@/components/ui/Avatar'
-import { StatusDot, presenceOf } from '@/components/ui/StatusDot'
 import { useAuth } from '@/hooks/useAuth'
 import { supabase } from '@/lib/supabase'
 import { cn } from '@/lib/cn'
 import { sideNav } from './nav'
-import { avatarOf } from '@/lib/avatars'
 import { profileLink } from '@/lib/links'
+import { PersonAvatar } from '@/components/ui/PersonAvatar'
 
 /** Pending friend requests waiting on an answer from this person. */
 function useFriendRequestCount() {
@@ -93,10 +91,7 @@ export function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
           className="flex items-center gap-3 border-t border-onbrand/10 p-3 transition-colors hover:bg-onbrand/10"
         >
           <span className="relative">
-            <Avatar src={avatarOf(profile)} name={profile.display_name} size="sm" />
-            <span className="absolute -bottom-0.5 -right-0.5">
-              <StatusDot presence={presenceOf(profile)} size="sm" ring />
-            </span>
+            <PersonAvatar person={profile} size="sm" />
           </span>
           <span className="min-w-0 flex-1">
             <span className="block truncate text-sm font-bold text-onbrand">{profile.display_name}</span>

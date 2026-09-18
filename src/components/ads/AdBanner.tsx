@@ -111,7 +111,7 @@ export function AdBanner({
       aria-label="Advertisement"
     >
       <div
-        className={cn('relative mx-auto', fill && 'h-full')}
+        className={cn('group relative mx-auto', fill && 'h-full')}
         style={fill ? undefined : { maxWidth: shape.w }}
       >
         {ad && picture ? (
@@ -126,7 +126,7 @@ export function AdBanner({
                 }
               }}
               style={frame}
-              className="group relative block w-full overflow-hidden rounded-xl border border-ink-line bg-ink-card shadow-[inset_0_0_0_1px_rgba(255,255,255,.03)] transition-colors hover:border-brand/60"
+              className="relative block w-full overflow-hidden rounded-xl border border-ink-line bg-ink-card transition-colors hover:border-brand/60"
             >
               <img
                 src={picture}
@@ -136,7 +136,11 @@ export function AdBanner({
 
               {/* The word sits on the ad rather than over the page, so it is
                   plain what it belongs to. */}
-              <span className="absolute left-2 top-2 rounded-md bg-black/60 px-1.5 py-0.5 text-[9px] font-extrabold uppercase tracking-wide text-white/80 backdrop-blur">
+              {/* A picture can be any colour and so can the page, so the
+                  mark is a soft dark pill with a light edge: it reads on
+                  anything rather than becoming a black square on a light
+                  page. */}
+              <span className="absolute left-1.5 top-1.5 rounded-md bg-black/35 px-1.5 py-0.5 text-[9px] font-extrabold uppercase tracking-wide text-white ring-1 ring-white/25 backdrop-blur-[2px]">
                 Ad
               </span>
             </button>
@@ -147,7 +151,7 @@ export function AdBanner({
                 onClick={() => setReporting(true)}
                 aria-label={`Report the ad ${ad.name}`}
                 title="Report this ad"
-                className="absolute right-2 top-2 grid h-6 w-6 place-items-center rounded-md bg-black/60 text-[10px] text-white/70 backdrop-blur transition-colors hover:text-white"
+                className="absolute right-1.5 top-1.5 grid h-6 w-6 place-items-center rounded-md bg-black/35 text-[10px] text-white/80 opacity-0 ring-1 ring-white/25 backdrop-blur-[2px] transition-opacity hover:text-white focus-visible:opacity-100 group-hover:opacity-100 sm:opacity-70"
               >
                 <FontAwesomeIcon icon={faFlag} />
               </button>

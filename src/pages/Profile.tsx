@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import {
@@ -12,7 +12,7 @@ import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
 import { Avatar } from '@/components/ui/Avatar'
 import { Badge } from '@/components/ui/Badge'
-import { PresenceLabel, StatusDot, presenceOf } from '@/components/ui/StatusDot'
+import { StatusDot, presenceOf } from '@/components/ui/StatusDot'
 import { EmptyState, ErrorState, SpaceCardSkeleton, Skeleton } from '@/components/ui/States'
 import { useToast } from '@/components/ui/Toast'
 import { ReportDialog } from '@/components/social/ReportDialog'
@@ -31,13 +31,14 @@ import { useTitle, useSocialCard } from '@/hooks/useTitle'
 import {
   getProfileByUsername, getProfileOverview, isFollowing, listEarnedBadges, listFriendships,
   listMemberCommunities, listSpacesByOwner, sendFriendRequest, setFollowing, startConversation,
-  usernameHistory, usernameById, listAssetsByCreator, updateProfile,
+  usernameHistory, usernameById, listAssetsByCreator, updateProfile, uploadAvatar,
 } from '@/lib/api'
 import { formatCount } from '@/lib/format'
 import { cn } from '@/lib/cn'
 import { communityLink, profileLink } from '@/lib/links'
 import { avatarOf } from '@/lib/avatars'
 import { Verified } from '@/components/brand/Verified'
+import { PenIcon } from '@/components/brand/PenIcon'
 
 /** The colour somebody chose for their page, or the house one. */
 const BRAND = '#1B34E8'
@@ -140,6 +141,8 @@ export default function Profile() {
   const [writingBio, setWritingBio] = useState(false)
   const [savingBio, setSavingBio] = useState(false)
   const [picking, setPicking] = useState(false)
+  const [uploading, setUploading] = useState(false)
+  const picker = useRef<HTMLInputElement>(null)
 
   const person = useAsync(
     async () => {
@@ -211,6 +214,23 @@ export default function Profile() {
       toast(err instanceof Error ? err.message : 'That did not save.', 'error')
     } finally {
       setSavingBio(false)
+    }
+  }
+
+  /** A new picture, chosen and kept from the page it belongs to. */
+  const changeAvatar = async (file: File) => {
+    if (!user) return
+    setUploading(true)
+    try {
+      const url = await uploadAvatar(user.id, file)
+      await updateProfile(user.id, { avatar_url: url })
+      toast('That is you now.', 'success')
+      person.reload()
+      refreshProfile()
+    } catch (err) {
+      toast(err instanceof Error ? err.message : 'That picture did not go up.', 'error')
+    } finally {
+      setUploading(false)
     }
   }
 
@@ -329,22 +349,48 @@ export default function Profile() {
         </div>
 
         <div className="relative z-10 flex flex-col gap-5 p-5 sm:flex-row sm:p-7">
+          {/* The picture, with the dot on its edge, and a way to change it
+              when it is yours: your profile is where you edit your profile. */}
           <div className="relative shrink-0">
-            <Avatar
-              src={avatarOf(user)}
-              name={user.display_name}
-              size="xl"
-              className="h-28 w-28 rounded-2xl sm:h-32 sm:w-32"
-              style={{ boxShadow: `0 0 0 3px ${accent}` } as React.CSSProperties}
-            />
-            {/* The dot sits on the corner, half on the picture and half off
-                it, so it reads at any size. */}
-            <StatusDot
-              presence={presenceOf(user)}
-              size="lg"
-              ring
-              className="absolute -bottom-1 -right-1"
-            />
+            <span
+              className="relative block h-28 w-28 rounded-full sm:h-32 sm:w-32"
+              style={{ boxShadow: `0 0 0 3px ${accent}` }}
+            >
+              <Avatar
+                src={avatarOf(user)}
+                name={user.display_name}
+                size="xl"
+                className="h-full w-full rounded-full"
+              />
+              <StatusDot
+                presence={presenceOf(user)}
+                size="xl"
+                className="absolute bottom-[6%] right-[6%] translate-x-[35%] translate-y-[35%] ring-[4px] ring-ink"
+              />
+
+              {isMe && (
+                <>
+                  <button
+                    onClick={() => picker.current?.click()}
+                    aria-label="Change your picture"
+                    className="absolute inset-0 grid place-items-center rounded-full bg-black/55 text-sm font-bold text-white opacity-0 transition-opacity hover:opacity-100 focus-visible:opacity-100"
+                  >
+                    {uploading ? 'Uploading…' : 'Change'}
+                  </button>
+                  <input
+                    ref={picker}
+                    type="file"
+                    accept="image/png,image/jpeg,image/gif,image/webp"
+                    className="sr-only"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0]
+                      e.target.value = ''
+                      if (file) void changeAvatar(file)
+                    }}
+                  />
+                </>
+              )}
+            </span>
           </div>
 
           <div className="min-w-0 flex-1">
@@ -354,10 +400,7 @@ export default function Profile() {
               {user.is_guest && <Badge tone="neutral">Guest</Badge>}
             </h1>
 
-            <div className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-muted">
-              <span>@{user.username}</span>
-              <PresenceLabel presence={presenceOf(user)} />
-            </div>
+            <p className="mt-1.5 text-sm text-muted">@{user.username}</p>
 
             {/* The three lists are links, because they are a page of their
                 own rather than something to unfold here. */}
@@ -391,11 +434,12 @@ export default function Profile() {
                 </p>
               )}
               <button
-                onClick={() => setAbout(true)}
+                onClick={() => { setAbout(true); if (isMe && !user.bio) setWritingBio(true) }}
                 className="mt-1 inline-flex items-center gap-1.5 text-sm font-bold text-link hover:underline"
               >
-                <FontAwesomeIcon icon={faCircleInfo} className="text-xs" />
-                {isMe && !user.bio ? 'Write your bio' : 'More'}
+                {isMe && !user.bio
+                  ? <><PenIcon className="text-xs" />Write your bio</>
+                  : <><FontAwesomeIcon icon={faCircleInfo} className="text-xs" />More</>}
               </button>
             </div>
           </div>

@@ -8,17 +8,16 @@ import type { IconDefinition } from '@fortawesome/fontawesome-svg-core'
 import { Page } from '@/components/layout/AppShell'
 import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
-import { Input, Textarea } from '@/components/ui/Input'
+import { Input } from '@/components/ui/Input'
 import { Dialog } from '@/components/ui/Dialog'
 import { Skeleton } from '@/components/ui/States'
-import { AvatarUpload } from '@/components/auth/AvatarUpload'
 import { useToast } from '@/components/ui/Toast'
 import { useAuth } from '@/hooks/useAuth'
 import { useTheme } from '@/hooks/useTheme'
 import { useAsync } from '@/hooks/useAsync'
 import {
   USERNAME_CHANGE_COST, changeUsername, listPixelTransactions, updateProfile,
-  uploadAvatar, usernameHistory,
+   usernameHistory,
 } from '@/lib/api'
 import { supabase } from '@/lib/supabase'
 import { formatCount, timeAgo } from '@/lib/format'
@@ -63,8 +62,6 @@ function AccountInfo() {
   const toast = useToast()
 
   const [displayName, setDisplayName] = useState('')
-  const [bio, setBio] = useState('')
-  const [avatarFile, setAvatarFile] = useState<File | null>(null)
   const [pending, setPending] = useState(false)
   const [renaming, setRenaming] = useState(false)
   const [newName, setNewName] = useState('')
@@ -78,7 +75,6 @@ function AccountInfo() {
   useEffect(() => {
     if (!profile) return
     setDisplayName(profile.display_name)
-    setBio(profile.bio ?? '')
   }, [profile])
 
   if (!profile) return <Skeleton className="h-64" />
@@ -89,13 +85,7 @@ function AccountInfo() {
     e.preventDefault()
     setPending(true)
     try {
-      const avatar_url = avatarFile ? await uploadAvatar(profile.id, avatarFile) : profile.avatar_url
-      await updateProfile(profile.id, {
-        display_name: displayName.trim(),
-        bio: bio.trim() || null,
-        avatar_url,
-      })
-      setAvatarFile(null)
+      await updateProfile(profile.id, { display_name: displayName.trim() })
       await refreshProfile()
       toast('Saved.', 'success')
     } catch (err) {
@@ -125,22 +115,6 @@ function AccountInfo() {
     <div className="space-y-5">
       <form onSubmit={save} className="space-y-4">
         <Card className="space-y-5 p-5 sm:p-6">
-          <div className="flex items-start gap-4">
-            {!avatarFile && profile.avatar_url && (
-              <img
-                src={profile.avatar_url}
-                alt=""
-                className="h-16 w-16 shrink-0 rounded-xl border border-ink-line object-cover"
-              />
-            )}
-            <AvatarUpload
-              file={avatarFile}
-              onChange={setAvatarFile}
-              note="Upload a new one to replace what you have."
-              className="flex-1"
-            />
-          </div>
-
           <Input
             label="Display name"
             value={displayName}
@@ -149,15 +123,10 @@ function AccountInfo() {
             required
           />
 
-          <Textarea
-            label="Bio"
-            value={bio}
-            onChange={(e) => setBio(e.target.value)}
-            maxLength={300}
-            placeholder="Say something about yourself."
-            hint={`${bio.length}/300`}
-          />
-
+          <p className="rounded-xl border border-ink-line bg-ink-raised p-3 text-xs leading-relaxed text-muted">
+            Your picture, your bio and your colour are on your profile, where you can see what
+            they look like while you change them.
+          </p>
 
           <div className="flex justify-end">
             <Button type="submit" loading={pending}>Save changes</Button>

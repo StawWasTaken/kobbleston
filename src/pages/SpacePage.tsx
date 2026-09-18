@@ -8,8 +8,6 @@ import { Page } from '@/components/layout/AppShell'
 import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
 import { Badge } from '@/components/ui/Badge'
-import { Avatar } from '@/components/ui/Avatar'
-import { StatusDot, presenceOf } from '@/components/ui/StatusDot'
 import { EmptyState, ErrorState, Skeleton } from '@/components/ui/States'
 import { Tooltip } from '@/components/ui/Tooltip'
 import { useToast } from '@/components/ui/Toast'
@@ -30,9 +28,9 @@ import {
 } from '@/lib/api'
 import { formatCount, timeAgo } from '@/lib/format'
 import { cn } from '@/lib/cn'
-import { avatarOf } from '@/lib/avatars'
 import { Verified } from '@/components/brand/Verified'
 import { AdBanner } from '@/components/ads/AdBanner'
+import { PersonAvatar } from '@/components/ui/PersonAvatar'
 
 const tabs = ['About', 'Badges'] as const
 type Tab = (typeof tabs)[number]
@@ -194,10 +192,7 @@ export default function SpacePage() {
                     className="mt-1 inline-flex items-center gap-2 text-sm text-white/70 transition-colors hover:text-white"
                   >
                     <span className="relative">
-                      <Avatar src={avatarOf(owner)} name={owner.display_name} size="xs" />
-                      <span className="absolute -bottom-0.5 -right-0.5">
-                        <StatusDot presence={presenceOf(owner)} size="sm" ring />
-                      </span>
+                      <PersonAvatar person={owner} size="xs" />
                     </span>
                     By <span className="font-bold text-white">{owner.display_name}</span>
                     {owner.is_admin && (

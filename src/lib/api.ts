@@ -731,6 +731,21 @@ export async function setFavorite(spaceId: string, userId: string, on: boolean) 
   if (result.error) throw new Error(result.error.message)
 }
 
+/** Spaces somebody might like, minus their own and minus their refusals. */
+export async function listRecommended(limit = 12): Promise<Space[]> {
+  return (unwrap(await supabase.rpc('recommended_spaces', { limit_count: limit })) as Space[]) ?? []
+}
+
+/** Where they have been, most recent first, one line per Space. */
+export async function listRecentlyVisited(limit = 12): Promise<Space[]> {
+  return (unwrap(await supabase.rpc('recently_visited', { limit_count: limit })) as Space[]) ?? []
+}
+
+/** Saying no to a recommendation, which is a promise that it stays gone. */
+export async function hideSpace(spaceId: string) {
+  unwrap(await supabase.rpc('hide_space', { target: spaceId }))
+}
+
 export async function listFavoriteSpaces(userId: string): Promise<Space[]> {
   const { data: rows } = await supabase
     .from('space_favorites').select('space_id').eq('user_id', userId)

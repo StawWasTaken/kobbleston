@@ -7,7 +7,7 @@ import {
   faGear, faArrowLeft, faUserGroup,
 } from '@fortawesome/free-solid-svg-icons'
 import { Avatar } from '@/components/ui/Avatar'
-import { StatusDot, PresenceLabel, presenceOf } from '@/components/ui/StatusDot'
+import { PresenceLabel, presenceOf } from '@/components/ui/StatusDot'
 import { Skeleton } from '@/components/ui/States'
 import { Tooltip } from '@/components/ui/Tooltip'
 import { NewGroupDialog } from './NewGroupDialog'
@@ -27,6 +27,7 @@ import { cn } from '@/lib/cn'
 import type { Conversation, Message } from '@/types/db'
 import { avatarOf } from '@/lib/avatars'
 import { profileLink } from '@/lib/links'
+import { PersonAvatar } from '@/components/ui/PersonAvatar'
 
 type ChatValue = { openConversation: (id: string) => void }
 const ChatContext = createContext<ChatValue>({ openConversation: () => {} })
@@ -170,13 +171,10 @@ function Window({
             className="flex min-w-0 flex-1 items-center gap-2 rounded-lg px-1 py-1 text-left transition-colors hover:bg-ink-hover"
             aria-expanded={!collapsed}
           >
-            <span className="relative shrink-0">
+            <span className="shrink-0">
               {solo ? (
                 <>
-                  <Avatar src={avatarOf(solo)} name={solo.display_name} size="xs" />
-                  <span className="absolute -bottom-0.5 -right-0.5">
-                    <StatusDot presence={presenceOf(solo)} size="sm" ring />
-                  </span>
+                  <PersonAvatar person={solo} size="xs" />
                 </>
               ) : (
                 <span className="grid h-6 w-6 place-items-center rounded-full bg-brand-deep text-[10px] text-white">
@@ -430,13 +428,10 @@ function List({
                   onClick={() => onOpen(c.id)}
                   className="flex w-full items-center gap-2.5 px-3 py-2.5 text-left transition-colors hover:bg-ink-hover"
                 >
-                  <span className="relative shrink-0">
+                  <span className="shrink-0">
                     {solo ? (
                       <>
-                        <Avatar src={avatarOf(solo)} name={solo.display_name} size="sm" />
-                        <span className="absolute -bottom-0.5 -right-0.5">
-                          <StatusDot presence={presenceOf(solo)} size="sm" ring />
-                        </span>
+                        <PersonAvatar person={solo} size="sm" />
                       </>
                     ) : (
                       <span className="grid h-8 w-8 place-items-center rounded-full bg-brand-deep text-xs text-white">

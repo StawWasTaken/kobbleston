@@ -1,14 +1,12 @@
 import { Link } from 'react-router-dom'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faPlus } from '@fortawesome/free-solid-svg-icons'
-import { Avatar } from '@/components/ui/Avatar'
-import { StatusDot, presenceOf } from '@/components/ui/StatusDot'
 import { Skeleton } from '@/components/ui/States'
 import { useAuth } from '@/hooks/useAuth'
 import { useAsync } from '@/hooks/useAsync'
 import { listFriendships } from '@/lib/api'
-import { avatarOf } from '@/lib/avatars'
 import { profileLink } from '@/lib/links'
+import { PersonAvatar } from '@/components/ui/PersonAvatar'
 
 /** Friends across the top of the home page, online ones first. */
 export function FriendsRail() {
@@ -39,9 +37,9 @@ export function FriendsRail() {
       <div className="-mx-4 flex gap-4 overflow-x-auto px-4 pb-2 sm:mx-0 sm:px-0 kob-scroll">
         <Link
           to="/friends"
-          className="group flex w-20 shrink-0 flex-col items-center gap-2 text-center"
+          className="group flex w-24 shrink-0 flex-col items-center gap-2 text-center"
         >
-          <span className="grid h-16 w-16 place-items-center rounded-full border border-ink-line bg-ink-card text-xl text-white/50 transition-colors group-hover:bg-ink-hover group-hover:text-white">
+          <span className="grid h-20 w-20 place-items-center rounded-full border border-ink-line bg-ink-card text-2xl text-white/50 transition-colors group-hover:bg-ink-hover group-hover:text-white">
             <FontAwesomeIcon icon={faPlus} />
           </span>
           <span className="truncate text-xs font-semibold text-white/70">Add Friends</span>
@@ -49,8 +47,8 @@ export function FriendsRail() {
 
         {loading &&
           [0, 1, 2, 3].map((i) => (
-            <div key={i} className="flex w-20 shrink-0 flex-col items-center gap-2">
-              <Skeleton className="h-16 w-16 rounded-full" />
+            <div key={i} className="flex w-24 shrink-0 flex-col items-center gap-2">
+              <Skeleton className="h-20 w-20 rounded-full" />
               <Skeleton className="h-3 w-14" />
             </div>
           ))}
@@ -59,18 +57,10 @@ export function FriendsRail() {
           <Link
             key={friend.id}
             to={profileLink(friend)}
-            className="flex w-20 shrink-0 flex-col items-center gap-2 text-center"
+            className="flex w-24 shrink-0 flex-col items-center gap-2 text-center"
           >
-            <span className="relative">
-              <Avatar src={avatarOf(friend)} name={friend.display_name} size="lg" className="h-16 w-16" />
-              <StatusDot
-                presence={presenceOf(friend)}
-                size="lg"
-                ring
-                className="absolute -bottom-0.5 -right-0.5"
-              />
-            </span>
-            <span className="w-full truncate text-xs font-semibold text-white/80">
+            <PersonAvatar person={friend} size="2xl" className="h-20 w-20" />
+            <span className="w-full truncate text-sm font-semibold text-white/80">
               {friend.display_name}
             </span>
           </Link>
