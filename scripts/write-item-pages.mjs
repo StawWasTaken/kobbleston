@@ -61,7 +61,20 @@ const preview = (path) => (
  */
 let refused = 0
 
-async function read(table, query) {
+/*
+ * Asking for a column the database has not got yet fails the whole request,
+ * which would leave every card for that kind untouched until a migration
+ * lands. So a query that mentions something new is asked twice: once as
+ * written, and once without it.
+ */
+async function readOr(table, query, fallback) {
+  const rows = await read(table, query, true)
+  if (rows) return rows
+  console.warn(`Asking ${table} the newer way did not work, so the older one was used.`)
+  return read(table, fallback)
+}
+
+async function read(table, query, quiet = false) {
   try {
     const response = await fetch(`${url}/rest/v1/${table}?${query}`, {
       headers: { apikey: key, Authorization: `Bearer ${key}` },
@@ -69,6 +82,7 @@ async function read(table, query) {
     if (!response.ok) throw new Error(`${response.status} ${(await response.text()).slice(0, 200)}`)
     return await response.json()
   } catch (error) {
+    if (quiet) return null
     refused += 1
     console.warn(`No cards for ${table}: ${error.message}`)
     return []
@@ -103,7 +117,11 @@ export async function writeItemPages(into = 'dist') {
     // Everything a stranger can open gets a card, which is anything the
     // review let through. Taking something out of Create hides it from the
     // lists, not from the people you sent the link to, so it keeps its card.
-    read('assets', 'select=content_id,kind,name,description,download_count,created_at,is_public,preview_path,creator:profiles!assets_creator_id_fkey(username,display_name,avatar_url)&status=eq.approved&limit=5000'),
+    readOr(
+      'assets',
+      'select=content_id,kind,name,description,download_count,created_at,is_public,preview_path,creator:profiles!assets_creator_id_fkey(username,display_name,avatar_url)&status=eq.approved&limit=5000',
+      'select=content_id,kind,name,description,download_count,created_at,is_public,creator:profiles!assets_creator_id_fkey(username,display_name,avatar_url)&status=eq.approved&limit=5000',
+    ),
   ])
 
   for (const space of spaces) {

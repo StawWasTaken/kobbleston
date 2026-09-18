@@ -1,6 +1,7 @@
 import { Component } from 'react'
 import type { ErrorInfo, ReactNode } from 'react'
 import { Kobby } from '@/components/brand/Kobby'
+import { PixelField } from '@/components/brand/PixelField'
 
 /**
  * Something for a broken page to be, other than nothing.
@@ -26,35 +27,49 @@ export class Boundary extends Component<{ children: ReactNode }, { broke: Error 
   render() {
     if (!this.state.broke) return this.props.children
 
+    /*
+     * The same page the site shows when an address leads nowhere, because
+     * this is the same kind of moment: something is not there and you need a
+     * way onwards. Plain links rather than the Button component, since
+     * whatever broke may well have been the router.
+     */
     return (
-      <div className="grid min-h-dvh place-items-center bg-ink p-6 text-white">
-        <div className="max-w-md text-center">
-          <Kobby mood="construction" size="md" />
+      <div className="relative grid min-h-dvh place-items-center overflow-hidden bg-ink px-4 py-16 text-white">
+        <PixelField className="opacity-30" />
+        <div className="absolute inset-0 bg-gradient-to-b from-ink/50 to-ink" />
 
-          <h1 className="mt-4 font-display text-2xl font-extrabold">This page would not draw</h1>
-
-          <p className="mt-2 text-sm leading-relaxed text-white/60">
-            Usually that means Kobbleston was updated while your tab was open, and the piece it
+        <div className="relative flex flex-col items-center text-center">
+          <Kobby mood="construction" size="lg" />
+          <p className="mt-6 font-display text-6xl font-extrabold text-[#7f92ff]">Oops</p>
+          <h1 className="mt-2 font-display text-3xl font-extrabold">This page would not draw</h1>
+          <p className="mt-2 max-w-sm text-white/65">
+            Usually Kobbleston was updated while your tab was open, and the piece this page
             asked for had already been replaced. Loading it again fetches the new one.
           </p>
 
-          <div className="mt-6 flex flex-wrap justify-center gap-2">
+          <div className="mt-7 flex flex-wrap justify-center gap-3">
             <button
               onClick={() => window.location.reload()}
-              className="rounded-xl bg-brand px-4 py-2.5 text-sm font-bold text-onbrand transition-colors hover:bg-brand-bright"
+              className="inline-flex h-10 items-center rounded-xl bg-brand px-4 text-sm font-bold text-onbrand transition-colors hover:bg-brand-bright"
             >
               Load it again
             </button>
             <a
-              href="/"
-              className="rounded-xl border border-ink-line bg-ink-card px-4 py-2.5 text-sm font-bold transition-colors hover:bg-ink-hover"
+              href="/home"
+              className="inline-flex h-10 items-center rounded-xl border border-ink-line bg-ink-card px-4 text-sm font-bold transition-colors hover:bg-ink-hover"
             >
               Go home
+            </a>
+            <a
+              href="/discover"
+              className="inline-flex h-10 items-center rounded-xl border border-ink-line bg-ink-card px-4 text-sm font-bold transition-colors hover:bg-ink-hover"
+            >
+              Discover Spaces
             </a>
           </div>
 
           {import.meta.env.DEV && (
-            <pre className="mt-6 overflow-auto rounded-xl border border-ink-line bg-ink-card p-3 text-left text-[11px] text-white/50">
+            <pre className="mt-6 max-w-md overflow-auto rounded-xl border border-ink-line bg-ink-card p-3 text-left text-[11px] text-white/50">
               {this.state.broke.message}
             </pre>
           )}

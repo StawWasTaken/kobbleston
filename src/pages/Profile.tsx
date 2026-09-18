@@ -169,6 +169,17 @@ export default function Profile() {
     [me?.id, user?.id, isMe],
   )
 
+  /*
+   * Blocking and ignoring, with the same warnings they carry everywhere
+   * else. It sits up here with the rest of the hooks: below the early
+   * returns it would only run on some renders, which is not something React
+   * allows and which took the whole page down with it.
+   */
+  const people = usePersonActions(() => {
+    relationship.reload()
+    friends.reload()
+  })
+
   useTitle(user ? `${user.display_name} (@${user.username})` : 'Profile')
   useSocialCard({
     title: user ? `${user.display_name} (@${user.username}) - Kobbleston` : null,
@@ -305,12 +316,6 @@ export default function Profile() {
   }
 
   const standing = relationship.data
-
-  // Blocking and ignoring, with the same warnings they carry everywhere else.
-  const people = usePersonActions(() => {
-    relationship.reload()
-    friends.reload()
-  })
   const stats = overview.data
   const visits = (spaces.data ?? []).reduce((sum, space) => sum + (space.visit_count ?? 0), 0)
 
