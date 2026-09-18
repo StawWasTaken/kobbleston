@@ -90,7 +90,10 @@ export async function writeItemPages(into = 'dist') {
     read('communities', 'select=content_id,slug,name,description,icon_url,banner_url,member_count,owner:profiles!communities_owner_id_fkey(username,display_name)&is_public=eq.true&is_removed=eq.false&limit=5000'),
     read('profiles', 'select=content_id,username,display_name,bio,avatar_url,created_at&is_suspended=eq.false&limit=5000'),
     read('community_events', 'select=content_id,title,subtitle,description,cover_url,starts_at,attending_count,community:communities(name,icon_url,banner_url)&is_cancelled=eq.false&limit=5000'),
-    read('assets', 'select=content_id,kind,name,description,download_count,creator:profiles!assets_creator_id_fkey(username,display_name)&status=eq.approved&is_public=eq.true&limit=5000'),
+    // Everything a stranger can open gets a card, which is anything the
+    // review let through. Taking something out of Create hides it from the
+    // lists, not from the people you sent the link to, so it keeps its card.
+    read('assets', 'select=content_id,kind,name,description,download_count,created_at,creator:profiles!assets_creator_id_fkey(username,display_name,avatar_url)&status=eq.approved&limit=5000'),
   ])
 
   for (const space of spaces) {
@@ -186,15 +189,26 @@ export async function writeItemPages(into = 'dist') {
     // it and shows none of it.
     const by = asset.creator?.username ? `@${asset.creator.username}` : 'somebody'
 
+    const made = asset.created_at
+      ? new Date(asset.created_at).toLocaleDateString('en-GB', { month: 'long', year: 'numeric' })
+      : null
+
     add(`create/${tag}-${asset.content_id}`, {
       type: 'website',
       title: asset.name,
       description: lines(
-        `${kindWords[asset.kind] ?? 'Something'} by ${by} on the Kobbleston Marketplace, ${tag}-${asset.content_id}.`,
+        `${kindWords[asset.kind] ?? 'Something'} by ${by} on the Kobbleston Marketplace, ${tag}-${asset.content_id}${made ? `, up since ${made}` : ''}.`,
         asset.download_count ? `${count(asset.download_count, 'use')}.` : null,
         shorten(asset.description, 160),
       ),
-      imageAlt: asset.name,
+      // The file itself is not something a browser can link to, by design, so
+      // the card carries the person who made it rather than their work. It is
+      // square, so it sits beside the words instead of being cut into a strip.
+      image: picture(asset.creator?.avatar_url),
+      square: !!picture(asset.creator?.avatar_url),
+      imageAlt: asset.creator?.display_name
+        ? `${asset.creator.display_name} on Kobbleston`
+        : asset.name,
     })
   }
 

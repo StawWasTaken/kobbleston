@@ -3,14 +3,15 @@ name: Build site
 # GitHub Pages publishes this repository's root from main, so the built site
 # is committed there. This keeps that copy in step with src/ on every push.
 #
-# It also runs on the hour, because a link preview for a Space, a Community, a
-# person or an upload is a real file written from what is in the database.
-# Something made after the last run has no card until the next one.
+# It also runs every ten minutes, because a link preview for a Space, a
+# Community, a person or an upload is a real file written from what is in the
+# database, and something made after the last run has no card until the next
+# one. An hour of that is an hour of bare links.
 on:
   push:
     branches: [main]
   schedule:
-    - cron: '17 * * * *'
+    - cron: '*/10 * * * *'
   workflow_dispatch:
 
 permissions:
