@@ -16,23 +16,35 @@ each one with its own title, description and picture: `/discover/index.html`,
 takes. `404.html` carries the site's own card, so anything not on the list
 still previews as Kobbleston rather than as nothing.
 
-**Addresses that depend on what they point at** cannot be known at build
-time: a Space, a Community, a person, an event, an upload. For those there is
-`link_preview(path)` in the database, which turns an address into the few
-facts a card needs, and the `og` edge function, which renders those facts as
-a small HTML document and sends a person straight on to the real address.
+**Addresses that point at something** are written the same way, from the
+database. `scripts/write-item-pages.mjs` asks for everything that is already
+public and writes a file for each one: `/s/1042/the-attic/`, `/c/1016/attic-
+club/`, `/c/attic-club/`, `/u/1001/previewer/`, `/u/previewer/`,
+`/u/previewer/the-attic/`, `/e/1020/`, `/create/SND-1033/`. Both forms of
+every address, because both are links people actually have.
+
+It reads with the same publishable key the browser carries, so it sees
+exactly what a stranger sees. The deploy runs it on every push and again on
+the hour, which is how something made since the last run gets its card. A run
+that cannot reach the database writes nothing and leaves the published cards
+alone rather than wiping them.
+
+There is also `link_preview(path)` in the database and the `og` edge
+function, which answer the same question live. They are what to reach for if
+the hourly gap ever matters, or if the site moves somewhere that can run code
+per request.
 
 `link_preview` only returns things that are already public: a published
 Space, a listed Community, a profile that is not suspended. Marketplace files
 stay protected, so an upload previews with its name and its creator and none
 of its content.
 
-## The piece that has to be in front
+## Doing it live instead
 
-GitHub Pages serves files and nothing else: it cannot look at who is asking
-and answer robots differently. So the last step is a proxy in front of
-kobbleston.com that sends preview robots to the `og` function and everybody
-else to the site as usual.
+The files above go stale for at most an hour. If that is too long, a proxy in
+front of kobbleston.com can send preview robots to the `og` function, which
+answers from the database there and then. GitHub Pages cannot do this itself:
+it serves files and cannot tell a robot from a person.
 
 With the domain on Cloudflare, this worker does it:
 
@@ -63,14 +75,15 @@ export default {
 not a secret. Nothing here needs the service role key, and it must never be
 put in a worker.
 
-Until that proxy exists, every address still previews with the Kobbleston
-card and a sensible description, and the pages in `site-pages.mjs` preview
-with their own.
+None of this is needed for previews to work. It is only worth doing if a card
+being up to an hour out of date is a problem.
 
 ## Checking it
 
 - `https://kobbleston.com/discover` should preview as Discover with the site
   picture, straight from the built file.
+- `npm run pages:items` writes the item cards into `dist/`. Check one with
+  `grep og: dist/c/*/*/index.html`.
 - `supabase functions serve og` then
   `curl 'http://localhost:54321/functions/v1/og?path=/c/1016/name'` should
   come back with that Community's name and emblem in the meta tags.

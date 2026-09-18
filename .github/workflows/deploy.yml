@@ -2,9 +2,15 @@ name: Build site
 
 # GitHub Pages publishes this repository's root from main, so the built site
 # is committed there. This keeps that copy in step with src/ on every push.
+#
+# It also runs on the hour, because a link preview for a Space, a Community, a
+# person or an upload is a real file written from what is in the database.
+# Something made after the last run has no card until the next one.
 on:
   push:
     branches: [main]
+  schedule:
+    - cron: '17 * * * *'
   workflow_dispatch:
 
 permissions:
@@ -26,6 +32,11 @@ jobs:
 
       - run: npm ci
       - run: npm run build
+
+      # A card for everything that is already public. Reads with the same
+      # publishable key the browser carries, so it sees what a stranger sees.
+      - run: npm run pages:items
+
       - run: node scripts/publish-to-root.mjs
 
       # Pushing with GITHUB_TOKEN does not start another workflow run, so
@@ -34,8 +45,8 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add index.html 404.html assets brand CNAME \
-            discover create communities people login signup terms guidelines
+          # -A so a Space that went away takes its card with it.
+          git add -A
           if git diff --staged --quiet; then
             echo "Build output is already up to date."
             exit 0
