@@ -1373,7 +1373,7 @@ export type CampaignAd = {
 
 /** The most Kubes a campaign can carry, which is also its longest run. */
 export const AD_MAX_KUBES = 2000
-export const AD_MAX_DAYS = 14
+export const AD_MAX_DAYS = 30
 
 /** How long that many Kubes keeps a campaign up, the same sum the database does. */
 export const adDays = (kubes: number) =>

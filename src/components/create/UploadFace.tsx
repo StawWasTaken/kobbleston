@@ -11,6 +11,7 @@ import { useSignedUrl } from '@/hooks/useSignedUrl'
 import { formatCount, timeAgo } from '@/lib/format'
 import { cn } from '@/lib/cn'
 import type { ModerationStatus, OwnAsset } from '@/types/db'
+import { overlayChip, overlayButton } from '@/lib/overlay'
 
 /*
  * How an upload shows its face: its state, how big it is, and a preview that
@@ -122,7 +123,7 @@ export function UploadCard({ item }: { item: OwnAsset }) {
         <Preview item={item} />
 
         <span className={cn(
-          'absolute left-2 top-2 inline-flex items-center gap-1.5 rounded-full bg-black/65 px-2 py-1 text-[10px] font-extrabold uppercase tracking-wide backdrop-blur',
+          'absolute left-2 top-2 inline-flex items-center gap-1.5', overlayChip, 'rounded-full px-2 py-1 text-[10px]',
           look.tone,
         )}>
           <span className={cn('h-1.5 w-1.5 rounded-full', look.pip)} />
@@ -130,7 +131,7 @@ export function UploadCard({ item }: { item: OwnAsset }) {
         </span>
 
         {!item.is_public && (
-          <span className="absolute right-2 top-2 grid h-6 w-6 place-items-center rounded-full bg-black/65 text-[10px] text-white/80 backdrop-blur">
+          <span className={cn('absolute right-2 top-2 h-6 w-6 rounded-full text-[10px]', overlayButton)}>
             <FontAwesomeIcon icon={faLock} />
           </span>
         )}

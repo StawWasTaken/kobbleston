@@ -371,7 +371,8 @@ export default function CreateAds() {
         <div>
           <h1 className="font-display text-3xl font-extrabold sm:text-4xl">Ads</h1>
           <p className="mt-1.5 max-w-xl text-sm text-muted">
-            A campaign holds the name, the Kubes and the clock. The ads inside it are the work:
+            A campaign holds the name, the Kubes and the clock, up to a month of it. The ads
+            inside it are the work:
             as many as you like, each with its own decal, shape and destination, changed or
             rested without touching what you paid.
           </p>
@@ -390,7 +391,7 @@ export default function CreateAds() {
           <EmptyState
             mood="emptyBox"
             title="No campaigns yet"
-            body="A campaign is some Kubes and a fortnight at most. Put ads in it, point them at your Spaces, communities, events or Marketplace work, and they are shown across Kobbleston."
+            body="A campaign is some Kubes and a month at most. Put ads in it, point them at your Spaces, communities, events or Marketplace work, and they are shown across Kobbleston."
             action={<Button icon={faRectangleAd} onClick={() => setStarting(true)}>Start one</Button>}
           />
         </Card>
@@ -467,8 +468,8 @@ export default function CreateAds() {
             </div>
             <p className="mt-1.5 text-xs text-muted">
               That is {runsFor(budget)}, shared by every ad in it. The more Kubes behind it, the
-              longer it stays up, to a limit of a fortnight at {AD_MAX_KUBES}. A Space that shows
-              one of your ads keeps 15% of what that view costs.
+              longer it stays up, to a limit of a month at {AD_MAX_KUBES}. A Space that shows one
+              of your ads keeps 15% of what that view costs.
             </p>
           </div>
         </div>

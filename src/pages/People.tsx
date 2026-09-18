@@ -229,6 +229,8 @@ export default function People() {
         </Card>
       )}
 
+      <div className="grid gap-8 xl:grid-cols-[minmax(0,1fr)_160px] xl:items-start">
+        <div className="min-w-0">
       {!!found.length && (
         <section className="mt-6">
           <p className="mb-3 text-sm text-muted">
@@ -237,7 +239,7 @@ export default function People() {
           </p>
           {/* A long list gets one partway down, where somebody reading
               their way through it actually is. */}
-          <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+          <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-2 2xl:grid-cols-3">
             {found.slice(0, 9).map((person) => (
               <PersonCard
                 key={person.id}
@@ -254,7 +256,7 @@ export default function People() {
             <>
               <AdBanner className="my-6" quiet />
 
-              <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+              <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-2 2xl:grid-cols-3">
                 {found.slice(9).map((person) => (
                   <PersonCard
                     key={person.id}
@@ -270,6 +272,10 @@ export default function People() {
           )}
         </section>
       )}
+        </div>
+
+        <AdBanner size="tall" quiet className="hidden xl:block" />
+      </div>
     </div>
   )
 }

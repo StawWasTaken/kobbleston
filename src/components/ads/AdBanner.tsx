@@ -8,6 +8,7 @@ import { assetUrl, pickAd, recordAdClick } from '@/lib/api'
 import type { AdSize, ShownAd } from '@/lib/api'
 import { AD_SIZES } from '@/lib/blocks'
 import { cn } from '@/lib/cn'
+import { overlayChip, overlayButton } from '@/lib/overlay'
 
 /*
  * Ads on a page.
@@ -140,9 +141,7 @@ export function AdBanner({
                   mark is a soft dark pill with a light edge: it reads on
                   anything rather than becoming a black square on a light
                   page. */}
-              <span className="absolute left-1.5 top-1.5 rounded-md bg-black/35 px-1.5 py-0.5 text-[9px] font-extrabold uppercase tracking-wide text-white ring-1 ring-white/25 backdrop-blur-[2px]">
-                Ad
-              </span>
+              <span className={cn('absolute left-1.5 top-1.5', overlayChip)}>Ad</span>
             </button>
 
             {/* Anybody who is shown an ad can say something about it. */}
@@ -151,7 +150,11 @@ export function AdBanner({
                 onClick={() => setReporting(true)}
                 aria-label={`Report the ad ${ad.name}`}
                 title="Report this ad"
-                className="absolute right-1.5 top-1.5 grid h-6 w-6 place-items-center rounded-md bg-black/35 text-[10px] text-white/80 opacity-0 ring-1 ring-white/25 backdrop-blur-[2px] transition-opacity hover:text-white focus-visible:opacity-100 group-hover:opacity-100 sm:opacity-70"
+                className={cn(
+                  'absolute right-1.5 top-1.5 h-6 w-6 text-[10px] opacity-0',
+                  'focus-visible:opacity-100 group-hover:opacity-100 sm:opacity-70',
+                  overlayButton,
+                )}
               >
                 <FontAwesomeIcon icon={faFlag} />
               </button>

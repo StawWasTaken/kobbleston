@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import {
-  faComment, faFlag, faGear, faUserPlus, faClock, faUserCheck,
+  faComment, faFlag, faUserPlus, faClock, faUserCheck,
   faEllipsis, faLink, faCubes, faEye, faAward, faShapes, faUsers,
   faPalette, faPen, faCircleInfo,
 } from '@fortawesome/free-solid-svg-icons'
@@ -365,7 +365,7 @@ export default function Profile() {
               <StatusDot
                 presence={presenceOf(user)}
                 size="xl"
-                className="absolute bottom-[6%] right-[6%] translate-x-[35%] translate-y-[35%] ring-[4px] ring-ink"
+                className="absolute bottom-[7%] right-[7%] translate-x-[18%] translate-y-[18%] ring-[4px] ring-ink"
               />
 
               {isMe && (
@@ -373,9 +373,9 @@ export default function Profile() {
                   <button
                     onClick={() => picker.current?.click()}
                     aria-label="Change your picture"
-                    className="absolute inset-0 grid place-items-center rounded-full bg-black/55 text-sm font-bold text-white opacity-0 transition-opacity hover:opacity-100 focus-visible:opacity-100"
+                    className="absolute inset-0 grid place-items-center rounded-full bg-black/55 text-lg text-[#fff] opacity-0 transition-opacity hover:opacity-100 focus-visible:opacity-100"
                   >
-                    {uploading ? 'Uploading…' : 'Change'}
+                    <PenIcon className={uploading ? 'animate-pulse' : undefined} />
                   </button>
                   <input
                     ref={picker}
@@ -457,7 +457,6 @@ export default function Profile() {
                 >
                   <FontAwesomeIcon icon={faPalette} />
                 </button>
-                <Button variant="subtle" icon={faGear} to="/settings">Edit profile</Button>
               </>
             ) : (
               <>

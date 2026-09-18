@@ -22,6 +22,8 @@ import { timeAgo } from '@/lib/format'
 import { profileLink } from '@/lib/links'
 import type { CommunityOverview, CommunityPost } from '@/types/db'
 import { Verified } from '@/components/brand/Verified'
+import { overlayButton } from '@/lib/overlay'
+import { cn } from '@/lib/cn'
 
 const MAX_BYTES = 12 * 1024 * 1024
 
@@ -272,7 +274,7 @@ export function Announcements({
                   type="button"
                   onClick={() => setMedia(null)}
                   aria-label="Remove"
-                  className="absolute right-2 top-2 grid h-8 w-8 place-items-center rounded-lg bg-ink/80 text-white/80 backdrop-blur hover:text-white"
+                  className={cn('absolute right-2 top-2 h-8 w-8', overlayButton)}
                 >
                   <FontAwesomeIcon icon={faXmark} />
                 </button>

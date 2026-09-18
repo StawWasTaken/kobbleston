@@ -9,6 +9,8 @@ import { formatCount } from '@/lib/format'
 import type { AssetKind, MarketAsset } from '@/types/db'
 import { Tooltip } from '@/components/ui/Tooltip'
 import { Kube } from '@/components/brand/Kube'
+import { overlayChip } from '@/lib/overlay'
+import { cn } from '@/lib/cn'
 
 export const kindIcons: Record<AssetKind, IconDefinition> = {
   image: faImage,
@@ -59,7 +61,7 @@ export function AssetTile({ item, owned }: { item: MarketAsset; owned?: boolean 
         ) : (
           <FontAwesomeIcon icon={kindIcons[item.kind]} className="text-3xl text-white/35" />
         )}
-        <span className="absolute left-2 top-2 rounded-md bg-black/70 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide text-[#fff]/85">
+        <span className={cn('absolute left-2 top-2', overlayChip)}>
           {kindLabels[item.kind]}
         </span>
         {owned && (

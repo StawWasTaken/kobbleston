@@ -11,7 +11,7 @@ being burned.
 | Putting something up for sale | a tenth of the asking price, at least 5 and at most 250 | Kobbleston |
 | Taking it back off sale | nothing; a quarter of the listing fee comes back | from Kobbleston to the seller |
 | Buying somebody's work | the asking price | 35% Kobbleston, 65% the creator |
-| Starting an ad campaign | the budget, up front | spent a Kube a view; a Space showing one of its ads keeps 15% of that. Two shapes are sold: the banner and the tall one |
+| Starting an ad campaign | the budget, up front | spent a Kube a view, and it runs up to a month; a Space showing one of its ads keeps 15% of that. Two shapes are sold: the banner and the tall one |
 | Adding, changing or resting an ad inside a campaign | nothing | the campaign is already paid for |
 | Stopping or removing a campaign | nothing; whatever it never spent comes back | from the campaign to the buyer |
 | Giving to a Space | what the visitor chose | all of it, to whoever made the Space |

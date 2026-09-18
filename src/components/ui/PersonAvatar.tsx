@@ -65,7 +65,7 @@ export function PersonAvatar({
           'absolute',
           square
             ? '-bottom-0.5 -right-0.5'
-            : 'bottom-[6%] right-[6%] translate-x-[35%] translate-y-[35%]',
+            : 'bottom-[7%] right-[7%] translate-x-[18%] translate-y-[18%]',
           'ring-[3px]',
           ring,
         )}

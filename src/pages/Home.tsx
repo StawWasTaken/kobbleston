@@ -25,6 +25,7 @@ import { formatCount } from '@/lib/format'
 import { communityLink, spaceLink } from '@/lib/links'
 import { cn } from '@/lib/cn'
 import type { Space } from '@/types/db'
+import { overlayButton } from '@/lib/overlay'
 
 /** A row that slides, with the arrows only where there is a mouse to use them. */
 function Row({ title, children, more }: {
@@ -112,7 +113,11 @@ function Suggestion({ space, onNotInterested }: {
       <button
         onClick={() => setMenu((was) => !was)}
         aria-label={`Options for ${space.name}`}
-        className="absolute right-2 top-2 grid h-7 w-7 place-items-center rounded-lg bg-black/45 text-xs text-white opacity-0 ring-1 ring-white/20 backdrop-blur-[2px] transition-opacity focus-visible:opacity-100 group-hover:opacity-100"
+        className={cn(
+          'absolute right-2 top-2 h-7 w-7 text-xs opacity-0',
+          'focus-visible:opacity-100 group-hover:opacity-100',
+          overlayButton,
+        )}
       >
         <FontAwesomeIcon icon={faEllipsis} />
       </button>

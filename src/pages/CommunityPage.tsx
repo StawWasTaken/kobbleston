@@ -236,7 +236,7 @@ export default function CommunityPage() {
             <CommunityWall communityId={group.id} rights={rights.data} />
             </div>
 
-            <AdBanner size="tall" quiet className="hidden xl:block xl:sticky xl:top-20" />
+            <AdBanner size="tall" quiet className="hidden xl:block" />
           </div>
         )}
 

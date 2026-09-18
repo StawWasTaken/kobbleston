@@ -11,6 +11,7 @@ import { formatCount } from '@/lib/format'
 import type { CommunityRelation } from '@/types/db'
 import { communityLink } from '@/lib/links'
 import { cn } from '@/lib/cn'
+import { overlayButton } from '@/lib/overlay'
 
 const PER_PAGE = 12
 
@@ -85,7 +86,7 @@ export function AffiliateGrid({
                   <Menu
                     label={`Options for ${other.name}`}
                     trigger={
-                      <span className="grid h-7 w-7 place-items-center rounded-lg bg-ink/80 text-white/70 backdrop-blur hover:text-white">
+                      <span className={cn('h-7 w-7', overlayButton)}>
                         <FontAwesomeIcon icon={faEllipsis} className="text-xs" />
                       </span>
                     }

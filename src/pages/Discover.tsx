@@ -189,7 +189,7 @@ export default function Discover() {
       )}
         </div>
 
-        <AdBanner size="tall" quiet className="hidden xl:block xl:sticky xl:top-20" />
+        <AdBanner size="tall" quiet className="hidden xl:block" />
       </div>
     </Page>
   )

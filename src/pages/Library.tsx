@@ -17,6 +17,7 @@ import { useAsync } from '@/hooks/useAsync'
 import { listFavoriteSpaces, listSpacesByOwner, logSpaceUpdate } from '@/lib/api'
 import type { Space } from '@/types/db'
 import { useTitle } from '@/hooks/useTitle'
+import { overlayButton } from '@/lib/overlay'
 
 function UpdateDialog({
   space, onClose, onLogged,
@@ -185,7 +186,7 @@ export default function Library() {
                     to={`/spaces/${space.id}/build`}
                     aria-label={`Build ${space.name}`}
                     title="Build"
-                    className="grid h-8 w-8 place-items-center rounded-lg bg-ink/85 text-white/80 backdrop-blur transition-colors hover:text-white"
+                    className={cn('h-8 w-8', overlayButton)}
                   >
                     <FontAwesomeIcon icon={faHammer} />
                   </Link>
@@ -194,7 +195,7 @@ export default function Library() {
                       onClick={() => setUpdating(space)}
                       aria-label={`Post an update about ${space.name}`}
                       title="Post an update"
-                      className="grid h-8 w-8 place-items-center rounded-lg bg-ink/85 text-white/80 backdrop-blur transition-colors hover:text-white"
+                      className={cn('h-8 w-8', overlayButton)}
                     >
                       <FontAwesomeIcon icon={faPenToSquare} />
                     </button>
