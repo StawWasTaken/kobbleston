@@ -1,6 +1,8 @@
-import { Suspense, lazy } from 'react'
+import { Suspense } from 'react'
 import { BrowserRouter, Navigate, Outlet, Route, Routes } from 'react-router-dom'
 import { AppShell } from '@/components/layout/AppShell'
+import { Boundary } from '@/components/layout/Boundary'
+import { lazyPage } from '@/lib/lazyPage'
 import { PublicLayout } from '@/components/layout/PublicLayout'
 import { CommunityShell } from '@/components/community/CommunityRail'
 import { ToastProvider } from '@/components/ui/Toast'
@@ -15,31 +17,31 @@ import Discover from '@/pages/Discover'
 import NotFound from '@/pages/NotFound'
 
 // Everything behind the front door loads on demand.
-const SpacePage = lazy(() => import('@/pages/SpacePage'))
-const CreateHub = lazy(() => import('@/pages/CreateHub'))
-const AssetPage = lazy(() => import('@/pages/AssetPage'))
-const CreateOverview = lazy(() => import('@/pages/CreateHub').then((m) => ({ default: m.CreateOverview })))
-const CreateSpaces = lazy(() => import('@/pages/CreateHub').then((m) => ({ default: m.CreateSpaces })))
-const CreateUploads = lazy(() => import('@/pages/CreateUploads'))
-const CreateMarketplace = lazy(() => import('@/pages/CreateHub').then((m) => ({ default: m.CreateMarketplace })))
-const CreateInventory = lazy(() => import('@/pages/CreateHub').then((m) => ({ default: m.CreateInventory })))
-const CreateAnalytics = lazy(() => import('@/pages/CreateHub').then((m) => ({ default: m.CreateAnalytics })))
-const CreatorPage = lazy(() => import('@/pages/CreatorPage'))
-const EventPage = lazy(() => import('@/pages/EventPage'))
-const People = lazy(() => import('@/pages/People'))
-const Communities = lazy(() => import('@/pages/Communities'))
-const CommunityPage = lazy(() => import('@/pages/CommunityPage'))
-const NewSpace = lazy(() => import('@/pages/NewSpace'))
-const EditSpace = lazy(() => import('@/pages/EditSpace'))
-const BuildSpace = lazy(() => import('@/pages/BuildSpace'))
-const CreateAds = lazy(() => import('@/pages/CreateAds'))
-const ConfigureCommunity = lazy(() => import('@/pages/ConfigureCommunity'))
-const Terms = lazy(() => import('@/pages/Policies').then((m) => ({ default: m.Terms })))
-const Guidelines = lazy(() => import('@/pages/Policies').then((m) => ({ default: m.Guidelines })))
-const Friends = lazy(() => import('@/pages/Friends'))
-const Library = lazy(() => import('@/pages/Library'))
-const Profile = lazy(() => import('@/pages/Profile'))
-const Settings = lazy(() => import('@/pages/Settings'))
+const SpacePage = lazyPage(() => import('@/pages/SpacePage'))
+const CreateHub = lazyPage(() => import('@/pages/CreateHub'))
+const AssetPage = lazyPage(() => import('@/pages/AssetPage'))
+const CreateOverview = lazyPage(() => import('@/pages/CreateHub').then((m) => ({ default: m.CreateOverview })))
+const CreateSpaces = lazyPage(() => import('@/pages/CreateHub').then((m) => ({ default: m.CreateSpaces })))
+const CreateUploads = lazyPage(() => import('@/pages/CreateUploads'))
+const CreateMarketplace = lazyPage(() => import('@/pages/CreateHub').then((m) => ({ default: m.CreateMarketplace })))
+const CreateInventory = lazyPage(() => import('@/pages/CreateHub').then((m) => ({ default: m.CreateInventory })))
+const CreateAnalytics = lazyPage(() => import('@/pages/CreateHub').then((m) => ({ default: m.CreateAnalytics })))
+const CreatorPage = lazyPage(() => import('@/pages/CreatorPage'))
+const EventPage = lazyPage(() => import('@/pages/EventPage'))
+const People = lazyPage(() => import('@/pages/People'))
+const Communities = lazyPage(() => import('@/pages/Communities'))
+const CommunityPage = lazyPage(() => import('@/pages/CommunityPage'))
+const NewSpace = lazyPage(() => import('@/pages/NewSpace'))
+const EditSpace = lazyPage(() => import('@/pages/EditSpace'))
+const BuildSpace = lazyPage(() => import('@/pages/BuildSpace'))
+const CreateAds = lazyPage(() => import('@/pages/CreateAds'))
+const ConfigureCommunity = lazyPage(() => import('@/pages/ConfigureCommunity'))
+const Terms = lazyPage(() => import('@/pages/Policies').then((m) => ({ default: m.Terms })))
+const Guidelines = lazyPage(() => import('@/pages/Policies').then((m) => ({ default: m.Guidelines })))
+const Friends = lazyPage(() => import('@/pages/Friends'))
+const Library = lazyPage(() => import('@/pages/Library'))
+const Profile = lazyPage(() => import('@/pages/Profile'))
+const Settings = lazyPage(() => import('@/pages/Settings'))
 
 function Booting() {
   return (
@@ -75,6 +77,9 @@ export default function App() {
       <ThemeProvider>
       <AuthProvider>
         <ToastProvider>
+          {/* A page that will not draw says so, rather than leaving a blank
+              rectangle with nothing to press. */}
+          <Boundary>
           <Suspense fallback={<Booting />}>
             <Routes>
               <Route path="/terms" element={<Terms />} />
@@ -146,6 +151,7 @@ export default function App() {
               </Route>
             </Routes>
           </Suspense>
+          </Boundary>
         </ToastProvider>
       </AuthProvider>
     </ThemeProvider>

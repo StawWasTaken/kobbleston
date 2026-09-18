@@ -2,10 +2,13 @@ import { StatusDot, presenceOf, presenceWords } from '@/components/ui/StatusDot'
 import type { Presence } from '@/components/ui/StatusDot'
 import { Avatar } from '@/components/ui/Avatar'
 import { Tooltip } from '@/components/ui/Tooltip'
+import { useAuth } from '@/hooks/useAuth'
+import { useMyActivity } from '@/hooks/usePresence'
 import { avatarOf } from '@/lib/avatars'
 import { cn } from '@/lib/cn'
 
 type Somebody = {
+  id?: string
   display_name: string
   avatar_url?: string | null
   is_online?: boolean
@@ -58,7 +61,19 @@ export function PersonAvatar({
   /** Something drawn over the picture, under the dot. */
   overlay?: React.ReactNode
 }) {
-  const presence: Presence = presenceOf(person)
+  const { profile: me } = useAuth()
+
+  /*
+   * Your own dot is read from the account this tab is signed in as, not from
+   * whatever row a page happened to fetch a minute ago. Otherwise the sidebar
+   * says one thing about you and your profile says another, which is exactly
+   * what was happening.
+   */
+  const mine = useMyActivity()
+  const live = person?.id && me?.id === person.id
+    ? { ...person, ...me, is_online: true, activity: mine, last_seen_at: new Date().toISOString() }
+    : person
+  const presence: Presence = presenceOf(live)
 
   return (
     <span className={cn('relative inline-block shrink-0', sizes[size], className)}>

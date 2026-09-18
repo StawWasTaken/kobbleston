@@ -30,9 +30,13 @@ export const presenceWords: Record<Presence, string> = {
   offline: 'Offline',
 }
 
-/** Every dot is the same dot: one size chart, one set of marks. */
+/**
+ * Every dot is the same dot: one size chart, one set of marks, and the mark
+ * is always there. The smallest is twelve pixels because that is the smallest
+ * a mark inside a circle still reads at.
+ */
 const sizes = {
-  sm: 'h-2.5 w-2.5 text-[0px]',
+  sm: 'h-3 w-3 text-[6px]',
   md: 'h-3.5 w-3.5 text-[7px]',
   lg: 'h-4 w-4 text-[8px]',
   xl: 'h-5 w-5 text-[10px]',
@@ -107,8 +111,7 @@ export function StatusDot({
       role="img"
       aria-label={presenceWords[presence]}
     >
-      {/* Too small to hold a mark is still big enough to hold a colour. */}
-      {size !== 'sm' && <Mark presence={presence} />}
+      <Mark presence={presence} />
     </span>
   )
 }
