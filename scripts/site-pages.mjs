@@ -12,6 +12,8 @@
 
 export const SITE = 'https://kobblon.com'
 export const TAGLINE = 'make something nobody else has'
+/** The currency's name, kept in step with src/lib/currency.ts by hand. */
+const CURRENCY = 'Brix'
 
 export const pages = [
   {
@@ -73,6 +75,36 @@ export const pages = [
     path: 'policies',
     title: 'Policies - Kobblon',
     description: 'Every rule Kobblon has, split by subject, each with the day its wording last changed.',
+  },
+  {
+    path: 'policies/moderation',
+    title: 'Moderation and appeals - Kobblon',
+    description: 'How a decision gets made, what can happen to an account, and how to have one looked at again.',
+  },
+  {
+    path: 'policies/catalog',
+    title: 'Catalog and uploads - Kobblon',
+    description: 'What the Catalog is, what may go into it, how selling works, and how something comes back out.',
+  },
+  {
+    path: 'policies/creators',
+    title: 'Selling on Kobblon',
+    description: 'Who can sell, how you get paid, and how a seller behaves.',
+  },
+  {
+    path: 'policies/money',
+    title: `${CURRENCY} and spending - Kobblon`,
+    description: `What ${CURRENCY} are, how you get them, what you can do with them, and what happens when an account ends.`,
+  },
+  {
+    path: 'policies/spaces',
+    title: 'Spaces and experiences - Kobblon',
+    description: 'What somebody else’s Space is allowed to do while you are inside it, and what it can never get to.',
+  },
+  {
+    path: 'policies/copyright',
+    title: 'Copyright - Kobblon',
+    description: 'What to do when somebody else has put your work here, and what to do when yours went wrongly.',
   },
   {
     path: 'support',

@@ -5,6 +5,7 @@ import { faArrowUp } from '@fortawesome/free-solid-svg-icons'
 import type { IconDefinition } from '@fortawesome/fontawesome-svg-core'
 import { Wordmark } from '@/components/brand/Wordmark'
 import { PixelField } from '@/components/brand/PixelField'
+import { SiteFooter } from './SiteFooter'
 import { useForceDark } from '@/hooks/useTheme'
 import { cn } from '@/lib/cn'
 
@@ -79,8 +80,7 @@ export function StoryPage({
           <Wordmark to="/" className="h-6" />
           <nav className="flex items-center gap-5 text-sm font-semibold text-white/50">
             <Link to="/policies" className="hover:text-white">All policies</Link>
-            <Link to="/guidelines" className="hover:text-white">Guidelines</Link>
-            <Link to="/privacy" className="hover:text-white">Privacy</Link>
+            <Link to="/support" className="hover:text-white">Support</Link>
           </nav>
         </header>
 
@@ -208,13 +208,15 @@ export function StoryPage({
                 <FontAwesomeIcon icon={faArrowUp} className="text-xs" />
                 Back to the top
               </a>
-              <Link to="/" className="text-sm font-semibold text-white/45 hover:text-white">
-                Back to the front page
+              <Link to="/policies" className="text-sm font-semibold text-white/45 hover:text-white">
+                All policies
               </Link>
             </div>
           </div>
         </div>
       </div>
+
+      <SiteFooter className="relative mt-20 border-white/10 bg-transparent" />
     </div>
   )
 }

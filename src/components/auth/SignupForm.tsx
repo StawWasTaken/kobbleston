@@ -196,9 +196,9 @@ export function SignupForm({
 
       <p className="text-center text-[11px] leading-relaxed text-muted">
         By carrying on you agree to our{' '}
-        <Link to="/terms" className="font-semibold text-link hover:underline">Terms of Service</Link>
+        <Link to="/policies/terms" className="font-semibold text-link hover:underline">Terms of Service</Link>
         {' '}and{' '}
-        <Link to="/guidelines" className="font-semibold text-link hover:underline">Community Guidelines</Link>.
+        <Link to="/policies/guidelines" className="font-semibold text-link hover:underline">Community Guidelines</Link>.
       </p>
     </form>
   )

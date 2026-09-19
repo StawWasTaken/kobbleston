@@ -2113,3 +2113,23 @@ export async function replyTicket(id: number, body: string) {
 export async function closeTicket(id: number) {
   unwrap(await supabase.rpc('close_ticket', { ticket: id }))
 }
+
+export async function getViolation(id: number): Promise<Violation | null> {
+  const { data, error } = await supabase
+    .from('violations')
+    .select('id, rule, action, reason, target_type, target_id, blocks, expires_at, is_void, void_reason, created_at')
+    .eq('id', id)
+    .maybeSingle()
+  if (error) throw new Error(error.message)
+  return (data as Violation | null) ?? null
+}
+
+export async function getAppeal(violationId: number): Promise<Appeal | null> {
+  const { data, error } = await supabase
+    .from('appeals')
+    .select('id, violation_id, body, status, decision_note, decided_at, created_at')
+    .eq('violation_id', violationId)
+    .maybeSingle()
+  if (error) throw new Error(error.message)
+  return (data as Appeal | null) ?? null
+}

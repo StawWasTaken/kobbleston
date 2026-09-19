@@ -334,9 +334,9 @@ export default function Landing() {
               <span className="block text-brand-bright">worth trusting</span>
             </h2>
             <div className="mt-6 flex flex-wrap gap-4 text-sm font-bold">
-              <Link to="/guidelines" className="text-link hover:underline">Community Guidelines</Link>
-              <Link to="/terms" className="text-link hover:underline">Terms of Service</Link>
-              <Link to="/privacy" className="text-link hover:underline">Privacy</Link>
+              <Link to="/policies/guidelines" className="text-link hover:underline">Community Guidelines</Link>
+              <Link to="/policies/terms" className="text-link hover:underline">Terms of Service</Link>
+              <Link to="/policies/privacy" className="text-link hover:underline">Privacy</Link>
             </div>
           </div>
 

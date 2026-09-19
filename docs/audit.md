@@ -167,3 +167,17 @@ direction wants Spaces, Avatar, Catalog and, later, experiences.
 
 **What to do:** the rail is data, so this is a small change when the avatar
 work lands. Worth doing at the same time rather than twice.
+
+## 12. The rail and the bar have grown past their rule
+
+`nav.ts` says the rail down the left is yours and the bar across the top is
+the platform, and that nothing appears in both. That rule has held so far,
+but the rail is now eight items and the safety pages (standing, support, the
+inbox) arrived after it was written. The inbox sits in the rail and also
+beside the bell, which is on purpose for now, because a phone has no rail and
+no top bar either.
+
+**What to do, later:** go through the rail, the top bar, the phone row and the
+account menu in one pass and decide where each thing lives, rather than adding
+to whichever one is nearest. Not urgent, and not worth doing piecemeal: the
+point of doing it at all is that it comes out coherent.

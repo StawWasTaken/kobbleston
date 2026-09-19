@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Link, Outlet } from 'react-router-dom'
 import { Button } from '@/components/ui/Button'
 import { Wordmark } from '@/components/brand/Wordmark'
+import { SiteFooter } from './SiteFooter'
 import { useAuth } from '@/hooks/useAuth'
 
 /**
@@ -81,18 +82,7 @@ export function PublicLayout() {
         <Outlet />
       </main>
 
-      <footer className="border-t border-ink-line">
-        <div className="mx-auto flex max-w-6xl flex-col items-center gap-x-6 gap-y-2 px-4 py-8 text-sm text-muted sm:flex-row sm:px-6">
-          <Wordmark to="/" className="h-4 opacity-60" />
-          <Link to="/discover" className="hover:text-white">Discover</Link>
-          <Link to="/create" className="hover:text-white">Create</Link>
-          <Link to="/terms" className="hover:text-white">Terms</Link>
-          <Link to="/guidelines" className="hover:text-white">Guidelines</Link>
-          <Link to="/privacy" className="hover:text-white">Privacy</Link>
-          <Link to="/policies" className="hover:text-white">All policies</Link>
-          <Link to="/support" className="hover:text-white">Support</Link>
-        </div>
-      </footer>
+      <SiteFooter />
     </div>
   )
 }

@@ -3,6 +3,7 @@ import { NavLink } from 'react-router-dom'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { useAuth } from '@/hooks/useAuth'
 import { supabase } from '@/lib/supabase'
+import { unreadMail } from '@/lib/api'
 import { cn } from '@/lib/cn'
 import { sideNav } from './nav'
 import { profileLink } from '@/lib/links'
@@ -43,9 +44,44 @@ function useFriendRequestCount() {
   return count
 }
 
+/** Unread post from Kobblon, which is counted apart from the bell. */
+function useMailCount() {
+  const { profile } = useAuth()
+  const [count, setCount] = useState(0)
+
+  useEffect(() => {
+    if (!profile) return
+    let active = true
+
+    const load = async () => {
+      const waiting = await unreadMail().catch(() => 0)
+      if (active) setCount(waiting)
+    }
+    load()
+
+    const channel = supabase
+      .channel(`sidebar-mail:${profile.id}`)
+      .on('postgres_changes',
+        { event: '*', schema: 'public', table: 'mail', filter: `user_id=eq.${profile.id}` },
+        load)
+      .subscribe()
+
+    window.addEventListener('kobblon:mail', load)
+
+    return () => {
+      active = false
+      window.removeEventListener('kobblon:mail', load)
+      supabase.removeChannel(channel)
+    }
+  }, [profile])
+
+  return count
+}
+
 export function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
   const { profile } = useAuth()
   const requests = useFriendRequestCount()
+  const post = useMailCount()
 
   return (
     <div className="flex h-full flex-col border-r border-onbrand/10 bg-chrome">
@@ -55,7 +91,9 @@ export function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
           const to = item.to === '/profile'
             ? (profile ? profileLink(profile) : '/login')
             : item.to
-          const badge = item.badge === 'friends' ? requests : 0
+          const badge = item.badge === 'friends' ? requests
+            : item.badge === 'mail' ? post
+            : 0
 
           return (
             <NavLink

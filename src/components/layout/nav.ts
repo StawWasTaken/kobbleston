@@ -1,6 +1,6 @@
 import {
   faHouse, faCompass, faUserGroup, faBookmark, faShirt, faGear, faShapes, faUser, faUsers,
-  faPeopleGroup,
+  faPeopleGroup, faEnvelope,
 } from '@fortawesome/free-solid-svg-icons'
 import type { IconDefinition } from '@fortawesome/fontawesome-svg-core'
 
@@ -9,8 +9,11 @@ export type NavItem = {
   label: string
   icon: IconDefinition
   end?: boolean
-  /** 'friends' shows the number of pending friend requests. */
-  badge?: 'friends'
+  /**
+   * 'friends' shows the number of pending friend requests, 'mail' the number
+   * of unread letters from Kobblon.
+   */
+  badge?: 'friends' | 'mail'
 }
 
 /** Sections in the bar across the top. */
@@ -32,6 +35,7 @@ export const sideNav: NavItem[] = [
   { to: '/people', label: 'People', icon: faUsers },
   { to: '/style', label: 'Style', icon: faShirt },
   { to: '/library', label: 'Library', icon: faBookmark },
+  { to: '/inbox', label: 'Inbox', icon: faEnvelope, badge: 'mail' },
   { to: '/settings', label: 'Settings', icon: faGear },
 ]
 

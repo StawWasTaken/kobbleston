@@ -42,6 +42,7 @@ const Privacy = lazyPage(() => import('@/pages/Policies').then((m) => ({ default
 const PolicyHub = lazyPage(() => import('@/pages/Policies'))
 const PolicyPage = lazyPage(() => import('@/pages/Policies').then((m) => ({ default: m.PolicyPage })))
 const Standing = lazyPage(() => import('@/pages/Standing'))
+const StandingItem = lazyPage(() => import('@/pages/StandingItem'))
 const Inbox = lazyPage(() => import('@/pages/Inbox'))
 const Support = lazyPage(() => import('@/pages/Support'))
 const SupportTicket = lazyPage(() => import('@/pages/SupportTicket'))
@@ -166,6 +167,7 @@ export default function App() {
                   <Route path="/library" element={<Library />} />
                   <Route path="/settings" element={<Settings />} />
                   <Route path="/standing" element={<Standing />} />
+                  <Route path="/standing/:id" element={<StandingItem />} />
                   <Route path="/inbox" element={<Inbox />} />
                   <Route path="/support" element={<Support />} />
                   <Route path="/support/:id" element={<SupportTicket />} />

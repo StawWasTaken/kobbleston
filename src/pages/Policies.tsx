@@ -6,6 +6,7 @@ import {
 import { Wordmark } from '@/components/brand/Wordmark'
 import { PixelField } from '@/components/brand/PixelField'
 import { StoryPage } from '@/components/layout/StoryPage'
+import { SiteFooter } from '@/components/layout/SiteFooter'
 import { policies, policyBySlug } from '@/content/policies'
 import { useForceDark } from '@/hooks/useTheme'
 import { useTitle } from '@/hooks/useTitle'
@@ -118,36 +119,24 @@ export default function PolicyHub() {
           </Link>
         </div>
 
-        <p className="mt-10 flex items-start gap-3 rounded-2xl border border-white/10 bg-white/[0.03] p-5 text-sm leading-relaxed text-white/45">
+        <p className="mb-14 mt-10 flex items-start gap-3 rounded-2xl border border-white/10 bg-white/[0.03] p-5 text-sm leading-relaxed text-white/45">
           <FontAwesomeIcon icon={faCircleInfo} className="mt-0.5 text-white/30" />
           These pages are written plainly and say what actually happens. They have not been
           through a lawyer yet. They will be before Kobblon opens widely, and this note will go
           when that is done rather than before.
         </p>
       </div>
+
+      <SiteFooter className="relative border-white/10 bg-transparent" />
     </div>
   )
 }
 
-/* The three pages that had their own addresses before the hub existed keep
-   them, because they are the ones people have linked to. */
-export function Terms() { return <PolicyByName slug="terms" /> }
-export function Guidelines() { return <PolicyByName slug="guidelines" /> }
-export function Privacy() { return <PolicyByName slug="privacy" /> }
-
-function PolicyByName({ slug }: { slug: string }) {
-  const policy = policyBySlug(slug)
-  useTitle(policy?.title ?? 'Policies')
-  if (!policy) return <Navigate to="/policies" replace />
-  return (
-    <StoryPage
-      eyebrow={policy.eyebrow}
-      title={policy.title}
-      intro={policy.intro}
-      updated={policy.updated}
-      sections={policy.sections}
-      footnote={policy.footnote}
-      tagline={false}
-    />
-  )
-}
+/*
+ * The three addresses people linked to before the hub existed still answer,
+ * by sending the reader to the one copy. A second rendering of the same
+ * wording at a second address is how two privacy pages start disagreeing.
+ */
+export function Terms() { return <Navigate to="/policies/terms" replace /> }
+export function Guidelines() { return <Navigate to="/policies/guidelines" replace /> }
+export function Privacy() { return <Navigate to="/policies/privacy" replace /> }
