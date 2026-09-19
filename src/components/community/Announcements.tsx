@@ -146,10 +146,6 @@ export function Announcements({
             key={post.id}
             className="relative overflow-hidden rounded-2xl border border-brand/30 bg-brand/[0.07]"
           >
-            <span
-              aria-hidden="true"
-              className="pointer-events-none absolute -right-12 -top-12 h-36 w-36 rounded-full bg-brand/20 blur-2xl"
-            />
 
             <div className="relative p-4 sm:p-5">
               <div className="flex items-start gap-3">

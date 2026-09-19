@@ -179,10 +179,6 @@ export function NotificationsPanel({
       <div className="absolute right-2 top-[3.25rem] z-50 w-[min(94vw,25rem)] animate-pop-in overflow-hidden rounded-2xl border border-ink-line bg-ink-card shadow-pop sm:right-5">
         {/* ------------------------------------------------------- header */}
         <div className="relative overflow-hidden border-b border-ink-line bg-ink-raised px-4 py-3">
-          <span
-            aria-hidden="true"
-            className="pointer-events-none absolute -right-10 -top-12 h-32 w-32 rounded-full bg-brand/20 blur-2xl"
-          />
           <div className="relative flex items-center gap-3">
             <Kobby mood="notification" size="sm" bob={false} className="h-10" />
             <div className="min-w-0 flex-1">

@@ -156,14 +156,6 @@ export default function People() {
     <div className="mx-auto w-full max-w-[86rem] px-4 py-6 sm:px-6">
       {/* The search leads, the way it does in Create and in Communities. */}
       <section className="relative overflow-hidden rounded-3xl border border-ink-line bg-ink-card px-5 py-7 sm:px-8 sm:py-9">
-        <span
-          aria-hidden="true"
-          className="pointer-events-none absolute -right-24 -top-24 h-64 w-64 rounded-full bg-brand/20 blur-3xl"
-        />
-        <span
-          aria-hidden="true"
-          className="pointer-events-none absolute -bottom-28 -left-20 h-64 w-64 rounded-full bg-space/10 blur-3xl"
-        />
 
         <div className="relative">
           <h1 className="font-display text-3xl font-extrabold sm:text-4xl">People</h1>

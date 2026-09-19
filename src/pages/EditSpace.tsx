@@ -3,6 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom'
 import { faPlus, faTrash } from '@fortawesome/free-solid-svg-icons'
 import { Button } from '@/components/ui/Button'
 import { Card, SectionHeading } from '@/components/ui/Card'
+import { Choices } from '@/components/ui/Choices'
 import { Input, Textarea } from '@/components/ui/Input'
 import { ErrorState, Skeleton } from '@/components/ui/States'
 import { useToast } from '@/components/ui/Toast'
@@ -12,7 +13,6 @@ import { categoryLabels } from '@/components/spaces/SpaceCard'
 import { useAuth } from '@/hooks/useAuth'
 import { useAsync } from '@/hooks/useAsync'
 import { getSpaceById, updateSpace, uploadSpaceImage } from '@/lib/api'
-import { cn } from '@/lib/cn'
 import type { SpaceCategory } from '@/types/db'
 import { BackLink } from '@/components/ui/BackLink'
 import { spaceLink } from '@/lib/links'
@@ -170,46 +170,23 @@ export default function EditSpace() {
 
           <fieldset>
             <legend className="mb-2 text-xs font-bold uppercase tracking-wide text-muted">Category</legend>
-            <div className="flex flex-wrap gap-2">
-              {categories.map((c) => (
-                <button
-                  key={c}
-                  type="button"
-                  onClick={() => setCategory(c)}
-                  aria-pressed={category === c}
-                  className={cn(
-                    'h-9 rounded-lg border px-3.5 text-sm font-bold transition-colors',
-                    category === c
-                      ? 'border-brand-bright bg-brand text-white'
-                      : 'border-ink-line bg-ink-raised text-white/60 hover:bg-ink-hover hover:text-white',
-                  )}
-                >
-                  {categoryLabels[c]}
-                </button>
-              ))}
-            </div>
+            <Choices
+              label="Category"
+              value={category}
+              options={categories.map((c) => ({ value: c, label: categoryLabels[c] }))}
+              onChange={setCategory}
+            />
           </fieldset>
 
           <fieldset>
             <legend className="mb-2 text-xs font-bold uppercase tracking-wide text-muted">Genre</legend>
-            <div className="flex flex-wrap gap-2">
-              {genres.map((g) => (
-                <button
-                  key={g}
-                  type="button"
-                  onClick={() => setGenre(g)}
-                  aria-pressed={genre === g}
-                  className={cn(
-                    'h-9 rounded-lg border px-3.5 text-sm font-bold capitalize transition-colors',
-                    genre === g
-                      ? 'border-brand-bright bg-brand text-white'
-                      : 'border-ink-line bg-ink-raised text-white/60 hover:bg-ink-hover hover:text-white',
-                  )}
-                >
-                  {g}
-                </button>
-              ))}
-            </div>
+            <Choices
+              label="Genre"
+              value={genre}
+              options={genres.map((g) => ({ value: g, label: g }))}
+              onChange={setGenre}
+              className="capitalize"
+            />
           </fieldset>
 
           <label className="flex cursor-pointer items-start gap-3 rounded-xl border border-ink-line bg-ink-raised p-4">

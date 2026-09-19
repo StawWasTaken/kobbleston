@@ -9,6 +9,8 @@ import type { IconDefinition } from '@fortawesome/fontawesome-svg-core'
 import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
 import { Select } from '@/components/ui/Select'
+import { Choices } from '@/components/ui/Choices'
+import { SectionHeader } from '@/components/ui/SectionHeader'
 import { EmptyState, ErrorState, Skeleton } from '@/components/ui/States'
 import { GuestGate } from '@/components/ui/GuestGate'
 import { AssetTile, contentTag, kindIcons, kindLabels } from '@/components/create/AssetTile'
@@ -345,14 +347,6 @@ export function CreateMarketplace() {
       {/* The search is the page, so it opens the page rather than sitting in
           a corner of it. */}
       <section className="relative overflow-hidden rounded-3xl border border-ink-line bg-ink-card px-5 py-7 sm:px-8 sm:py-9">
-        <span
-          aria-hidden="true"
-          className="pointer-events-none absolute -right-20 -top-24 h-64 w-64 rounded-full bg-brand/20 blur-3xl"
-        />
-        <span
-          aria-hidden="true"
-          className="pointer-events-none absolute -bottom-28 -left-16 h-64 w-64 rounded-full bg-space/10 blur-3xl"
-        />
 
         <div className="relative">
           <h1 className="font-display text-3xl font-extrabold sm:text-4xl">Creator Marketplace</h1>
@@ -446,22 +440,16 @@ export function CreateMarketplace() {
 
       {/* What kind of thing, and in what order */}
       <div className="sticky top-14 z-20 -mx-4 flex flex-wrap items-center gap-2 bg-ink/90 px-4 py-3 backdrop-blur sm:-mx-6 sm:px-6">
-        {kinds.map((k) => (
-          <button
-            key={k}
-            onClick={() => setKind(k)}
-            aria-pressed={kind === k}
-            className={cn(
-              'inline-flex h-9 shrink-0 items-center gap-2 rounded-xl border px-3.5 text-sm font-bold transition-colors',
-              kind === k
-                ? 'border-brand-bright bg-brand text-onbrand'
-                : 'border-ink-line bg-ink-card text-white/60 hover:bg-ink-hover hover:text-white',
-            )}
-          >
-            {k !== 'all' && <FontAwesomeIcon icon={kindIcons[k]} className="text-xs" />}
-            {k === 'all' ? 'Everything' : kindLabels[k]}
-          </button>
-        ))}
+        <Choices
+          label="What kind of content"
+          value={kind}
+          options={kinds.map((k) => ({
+            value: k,
+            label: k === 'all' ? 'Everything' : kindLabels[k],
+            icon: k === 'all' ? undefined : kindIcons[k],
+          }))}
+          onChange={(next) => setKind(next)}
+        />
 
         <div className="ml-auto flex items-center gap-2">
           <Select
@@ -500,16 +488,14 @@ export function CreateMarketplace() {
       {/* Kobbleston's own shelf, when nothing has been asked for */}
       {!filtering && !!official.data?.length && (
         <section>
-          <h2 className="mb-3 flex items-center gap-2 font-display text-xl font-extrabold">
-            <FontAwesomeIcon icon={faCircleCheck} className="text-base text-[#4d68ff]" />
-            Made by Kobbleston
+          <SectionHeader title="Made by Kobbleston" icon={faCircleCheck}>
             <button
               onClick={() => { setMaker('kobbleston'); setMakerDraft('kobbleston') }}
-              className="ml-1 text-xs font-bold text-link hover:underline"
+              className="text-xs font-bold text-link hover:underline"
             >
               See all
             </button>
-          </h2>
+          </SectionHeader>
           <div className="-mx-4 flex gap-3 overflow-x-auto px-4 pb-2 sm:mx-0 sm:px-0 kob-scroll">
             {official.data.map((item) => (
               <div key={item.id} className="w-40 shrink-0 sm:w-44">
@@ -594,23 +580,15 @@ export function CreateInventory() {
         </p>
       </header>
 
-      <div className="flex gap-2 overflow-x-auto pb-1 kob-scroll">
-        {kinds.map((k) => (
-          <button
-            key={k}
-            onClick={() => setKind(k)}
-            aria-pressed={kind === k}
-            className={cn(
-              'h-9 shrink-0 rounded-lg border px-3.5 text-sm font-bold transition-colors',
-              kind === k
-                ? 'border-brand-bright bg-brand text-onbrand'
-                : 'border-ink-line bg-ink-card text-white/60 hover:bg-ink-hover hover:text-white',
-            )}
-          >
-            {k === 'all' ? 'Everything' : kindLabels[k]}
-          </button>
-        ))}
-      </div>
+      <Choices
+        label="What kind of content"
+        value={kind}
+        options={kinds.map((k) => ({
+          value: k,
+          label: k === 'all' ? 'Everything' : kindLabels[k],
+        }))}
+        onChange={(next) => setKind(next)}
+      />
 
       {inventory.loading && (
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 xl:grid-cols-5">

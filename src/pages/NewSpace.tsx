@@ -6,13 +6,13 @@ import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
 import { Input, Textarea } from '@/components/ui/Input'
 import { Badge } from '@/components/ui/Badge'
+import { Choices } from '@/components/ui/Choices'
 import { useToast } from '@/components/ui/Toast'
 import { Kobby } from '@/components/brand/Kobby'
 import { categoryLabels } from '@/components/spaces/SpaceCard'
 import { useAuth } from '@/hooks/useAuth'
 import { createSpace } from '@/lib/api'
 import { slugify } from '@/lib/format'
-import { cn } from '@/lib/cn'
 import type { SpaceCategory } from '@/types/db'
 import { spaceLink } from '@/lib/links'
 import { useTitle } from '@/hooks/useTitle'
@@ -110,24 +110,12 @@ export default function CreateSpace() {
 
           <fieldset>
             <legend className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted">Category</legend>
-            <div className="flex flex-wrap gap-2">
-              {categories.map((c) => (
-                <button
-                  key={c}
-                  type="button"
-                  onClick={() => setCategory(c)}
-                  aria-pressed={category === c}
-                  className={cn(
-                    'h-9 rounded-xl border px-3.5 text-sm font-semibold transition-colors',
-                    category === c
-                      ? 'border-brand-bright bg-brand text-white'
-                      : 'border-ink-line bg-ink-raised text-white/65 hover:bg-ink-hover hover:text-white',
-                  )}
-                >
-                  {categoryLabels[c]}
-                </button>
-              ))}
-            </div>
+            <Choices
+              label="Category"
+              value={category}
+              options={categories.map((c) => ({ value: c, label: categoryLabels[c] }))}
+              onChange={setCategory}
+            />
           </fieldset>
 
           <label className="flex cursor-pointer items-start gap-3 rounded-xl border border-ink-line bg-ink-raised p-4">

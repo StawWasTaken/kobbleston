@@ -145,10 +145,6 @@ export default function StyleItemPage() {
         {/* --------------------------------------------------------- stage */}
         <div className="space-y-3">
           <div className="relative grid aspect-square place-items-center overflow-hidden rounded-3xl border border-ink-line bg-ink-raised p-10">
-            <span
-              aria-hidden="true"
-              className="pointer-events-none absolute -bottom-20 -right-16 h-64 w-64 rounded-full bg-brand/15 blur-3xl"
-            />
             <FaceStage
               src={face}
               name={profile?.display_name ?? 'Kobbleston'}

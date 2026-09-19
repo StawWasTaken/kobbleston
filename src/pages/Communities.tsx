@@ -6,6 +6,7 @@ import {
 } from '@fortawesome/free-solid-svg-icons'
 import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
+import { SectionHeader } from '@/components/ui/SectionHeader'
 import { CommunityCard } from '@/components/community/CommunityCard'
 import { Verified } from '@/components/brand/Verified'
 import { EmptyState, ErrorState, Skeleton } from '@/components/ui/States'
@@ -63,14 +64,6 @@ export default function Communities() {
     <div className="px-4 py-6 sm:px-6">
         {/* The search leads, the way it does in Create. */}
         <section className="relative overflow-hidden rounded-3xl border border-ink-line bg-ink-card px-5 py-7 sm:px-8 sm:py-9">
-          <span
-            aria-hidden="true"
-            className="pointer-events-none absolute -right-24 -top-24 h-64 w-64 rounded-full bg-brand/20 blur-3xl"
-          />
-          <span
-            aria-hidden="true"
-            className="pointer-events-none absolute -bottom-28 -left-20 h-64 w-64 rounded-full bg-space/10 blur-3xl"
-          />
 
           <div className="relative">
             <h1 className="font-display text-3xl font-extrabold sm:text-4xl">Communities</h1>
@@ -151,10 +144,7 @@ export default function Communities() {
         {browsing && !!biggest.length && (
           <>
             <section className="mt-8">
-              <h2 className="mb-3 flex items-center gap-2 font-display text-xl font-extrabold">
-                <FontAwesomeIcon icon={faUsers} className="text-base" />
-                The biggest
-              </h2>
+              <SectionHeader title="The biggest" icon={faUsers} />
               {/* One size each, so a row of them lines up. */}
               <div className="grid auto-rows-fr gap-4 sm:grid-cols-2 lg:grid-cols-3">
                 {biggest.map((community) => (
@@ -166,10 +156,7 @@ export default function Communities() {
             <AdBanner className="mt-8" quiet />
 
             <section className="mt-8">
-              <h2 className="mb-3 flex items-center gap-2 font-display text-xl font-extrabold">
-                <FontAwesomeIcon icon={faSeedling} className="text-base" />
-                Just started
-              </h2>
+              <SectionHeader title="Just started" icon={faSeedling} />
               <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
                 {newest.map((community) => (
                   <CommunityCard key={community.id} community={community} />

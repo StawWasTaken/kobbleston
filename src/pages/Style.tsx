@@ -67,11 +67,7 @@ function ItemTile({
   return (
     <article className="group relative overflow-hidden rounded-2xl border border-ink-line bg-ink-card transition-all duration-200 hover:-translate-y-0.5 hover:border-brand/70 hover:shadow-pop">
       <Link to={`/style/${styleTag(item.content_id)}`} className="block">
-        <span className="relative grid aspect-square place-items-center bg-gradient-to-b from-ink-raised to-ink p-7">
-          <span
-            aria-hidden="true"
-            className="pointer-events-none absolute inset-x-6 bottom-4 h-16 rounded-full bg-brand/10 blur-2xl transition-opacity duration-200 group-hover:bg-brand/25"
-          />
+        <span className="relative grid aspect-square place-items-center bg-ink-raised p-7">
           <FaceStage
             src={face}
             name={name}
@@ -253,14 +249,6 @@ export default function Style() {
     <Page className="space-y-6">
       {/* ----------------------------------------------------------- hero */}
       <header className="relative overflow-hidden rounded-3xl border border-ink-line bg-ink-card">
-        <span
-          aria-hidden="true"
-          className="pointer-events-none absolute -right-28 -top-28 h-72 w-72 rounded-full bg-brand/25 blur-3xl"
-        />
-        <span
-          aria-hidden="true"
-          className="pointer-events-none absolute -bottom-24 left-1/3 h-56 w-56 rounded-full bg-space/10 blur-3xl"
-        />
 
         <div className="relative grid gap-6 p-5 sm:p-8 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-center">
           <div className="min-w-0">
