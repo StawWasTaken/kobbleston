@@ -157,7 +157,7 @@ export const BLOCK_DEFAULTS: Record<BlockKind, { w: number; h: number; props: Bl
   ad: { w: 728, h: 90, label: 'Ad slot', props: { size: 'banner' } },
   donate: {
     w: 260, h: 72, label: 'Donate',
-    props: { label: 'Give Kubes', amount: 10, colour: '#1CAE71', text: '#ffffff', radius: 12, icon: true },
+    props: { label: 'Give Brix', amount: 10, colour: '#1CAE71', text: '#ffffff', radius: 12, icon: true },
   },
   box: { w: 320, h: 200, label: 'Box', props: { colour: '#ffffff12', radius: 16, border: '#ffffff22' } },
 }
@@ -269,11 +269,11 @@ function icon(definition: IconDefinition, className = '') {
     + `width="1em" height="1em" aria-hidden="true" focusable="false">${shapes}</svg>`
 }
 
-/** The Kube, the same shape it is everywhere else on the site. */
-const KUBE = `<svg class="kob-kube" viewBox="0 0 512 512" fill="currentColor" width="1em" height="1em" aria-hidden="true" focusable="false">`
-  + `<path d="M440.9,136.3a4,4,0,0,0,0-6.91L288.16,40.65a64.14,64.14,0,0,0-64.33,0L71.12,129.39a4,4,0,0,0,0,6.91L254,243.88a4,4,0,0,0,4.06,0Z"/>`
-  + `<path d="M54,163.51A4,4,0,0,0,48,167V340.89a48,48,0,0,0,23.84,41.39L234,479.51a4,4,0,0,0,6-3.46V274.3a4,4,0,0,0-2-3.46Z"/>`
-  + `<path d="M272,275v201a4,4,0,0,0,6,3.46l162.15-97.23A48,48,0,0,0,464,340.89V167a4,4,0,0,0-6-3.45l-184,108A4,4,0,0,0,272,275Z"/>`
+/** The Brix mark, the same shape it is everywhere else on the site. */
+const MARK = `<svg class="kob-brix" viewBox="0 0 640 640" fill="currentColor" width="1em" height="1em" aria-hidden="true" focusable="false">`
+  + `<rect x="61" y="80" width="238" height="180" rx="55"/>`
+  + `<rect x="341" y="80" width="238" height="180" rx="55"/>`
+  + `<path d="M64 186h512a24 24 0 0 1 24 24v294a55 55 0 0 1-55 55H95a55 55 0 0 1-55-55V210a24 24 0 0 1 24-24Z"/>`
   + `</svg>`
 
 /**
@@ -402,7 +402,7 @@ function blockMarkup(block: Block): string {
 
     case 'donate':
       return `<button class="kob-donate" data-kob-donate="${escape(Math.round(asNumber(p.amount, 10)))}">`
-        + (p.icon === false ? '' : KUBE)
+        + (p.icon === false ? '' : MARK)
         + `<span>${escape(p.label)}</span></button>`
 
     case 'box':
@@ -627,7 +627,7 @@ body {
   border-radius: var(--kob-btn-radius, 12px);
 }
 .kob-btn:hover, .kob-donate:hover { filter: brightness(1.12); }
-.kob-kube { flex: none; }
+.kob-brix { flex: none; }
 
 .kob-hr {
   border: 0;

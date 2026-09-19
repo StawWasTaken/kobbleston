@@ -23,7 +23,7 @@ const terms: StorySection[] = [
     ],
   },
   {
-    id: 'kubes',
+    id: 'brix',
     heading: `${currency.plural} and buying things`,
     body: [
       `${currency.plural} are a number on your account for use inside Kobbleston. They are not money, they cannot be cashed out, and they have no value off the platform.`,

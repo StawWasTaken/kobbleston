@@ -41,9 +41,9 @@ function timeLeft(ends: string | null) {
 }
 
 /** What a budget buys, in both of the ways it runs out. */
-const runsFor = (kubes: number) => {
-  const days = adDays(kubes)
-  return `${kubes} views, or ${days} ${days === 1 ? 'day' : 'days'}, whichever goes first`
+const runsFor = (amount: number) => {
+  const days = adDays(amount)
+  return `${amount} views, or ${days} ${days === 1 ? 'day' : 'days'}, whichever goes first`
 }
 
 /* -------------------------------------------------------------- one ad */

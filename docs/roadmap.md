@@ -80,7 +80,7 @@ carry none. Banners and tall ones are sold in roughly equal number; the
 square was dropped, because nowhere on the site had a good place for it. Two
 slots on one page never show the same ad while there is another to show.
 Nobody takes a share of those views, because nobody owns the page. The Space showing it keeps 15%, counted in hundredths and paid in
-whole Kubes. A donate block gives Kubes straight to whoever made the Space,
+whole Brix. A donate block gives Brix straight to whoever made the Space,
 confirmed outside the page so the amount cannot be misrepresented.
 
 ### Spaces, the rest of it
@@ -177,7 +177,7 @@ quiet for three minutes counts as gone whatever their flag says.
 - **Friends**: the same page for anybody, so a profile can link to it, in the
   order friends, followers, following. It is called "My friends" on your own
   and "somebody's friends" on theirs, and requests are only on your own.
-- **Settings**: your face, your name and your Kubes at the top, and the
+- **Settings**: your face, your name and your Brix at the top, and the
   section list kept in view while you scroll.
 
 ### Profile and avatar customisation

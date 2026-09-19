@@ -57,6 +57,23 @@ In order, and only as far as each is actually needed:
 Nothing here is a reason to rip anything out. Each step leaves the site
 working, and each is small enough to test before the next one starts.
 
+## The words we use
+
+Decided, and not up for reinvention page by page:
+
+- **Brix.** The currency. It does not pluralise: one Brix, fifty Brix. The
+  word lives in `src/lib/currency.ts`, the mark in
+  `src/components/brand/Currency.tsx`, and `docs/currency.md` says how it
+  moves. Pixels and Kubes were the names before it.
+- **Ston.** The unit of length in a 3D Space, when there is one. A character
+  is so many stons tall, a wall so many stons wide. Nothing uses it yet, and
+  nothing should invent a second unit later.
+- **Space.** Anything somebody makes and other people go into: a 2D site
+  today, and eventually a 3D world, a game, or something in between.
+- **Catalog.** Things people make for other people to wear or use.
+- **Create.** Making and managing on the web. The desktop application, when it
+  exists, is not Create and is not called Studio by default.
+
 ## Principles
 
 - The existing work is the foundation, not a draft to be thrown away.

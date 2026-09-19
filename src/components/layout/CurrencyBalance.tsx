@@ -5,7 +5,7 @@ import { currency } from '@/lib/currency'
 import { formatCount } from '@/lib/format'
 
 /** What Kobbleston runs on. Guests do not carry a balance. */
-export function KubeBalance({ amount }: { amount: number }) {
+export function CurrencyBalance({ amount }: { amount: number }) {
   return (
     <Tooltip label={`Your ${currency.plural}`} side="bottom">
       <Link

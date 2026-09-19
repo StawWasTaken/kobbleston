@@ -1,42 +1,53 @@
-# The currency
+# Brix
 
-The name is not settled, and the site no longer hardcodes it: `src/lib/currency.ts`
-holds the word, the plural, the short code and how an amount reads, and
-`src/components/brand/Currency.tsx` holds the mark and a price. This document
-describes how the money moves, which is the part that does not change with the
-name. The stored column is still `profiles.pixels`, from the first name it
-had; `docs/audit.md` carries that rename.
+Kobbleston's currency. It was Pixels, then Kubes, and it is Brix from here.
 
-The currency, and where it goes. A closed circuit: Kubes are made when
+The word lives in `src/lib/currency.ts` and the mark in
+`src/components/brand/Currency.tsx`: a two stud brick, drawn as a path so it
+takes the colour and the size of whatever it sits in and holds up at sixteen
+pixels. `public/brand/brix.png` is the same mark as a picture, for the places
+that cannot draw one. Nothing else on the site draws its own.
+
+Brix does not pluralise: one Brix, fifty Brix.
+
+The stored column is still `profiles.pixels`, and the functions behind it are
+still named for that first name: `move_pixels`, `pixel_transactions`,
+`grant_community_kubes`, `burn_kubes`. Renaming those is a migration of its
+own, with policies and functions hanging off it, and it is on the list in
+`docs/audit.md`. The names people see do not depend on it.
+
+What follows is how the money moves, which did not change with the name.
+
+The currency, and where it goes. A closed circuit: Brix are made when
 somebody joins and when Kobbleston hands them out, and they only leave it by
 being burned.
 
-## What costs Kubes
+## What costs Brix
 
 | Doing this | Costs | Where it goes |
 | --- | --- | --- |
 | Putting something up for sale | a tenth of the asking price, at least 5 and at most 250 | Kobbleston |
 | Taking it back off sale | nothing; a quarter of the listing fee comes back | from Kobbleston to the seller |
 | Buying somebody's work | the asking price | 35% Kobbleston, 65% the creator |
-| Starting an ad campaign | the budget, up front | spent a Kube a view, and it runs up to a month; a Space showing one of its ads keeps 15% of that. Two shapes are sold: the banner and the tall one |
+| Starting an ad campaign | the budget, up front | spent a Brix a view, and it runs up to a month; a Space showing one of its ads keeps 15% of that. Two shapes are sold: the banner and the tall one |
 | Adding, changing or resting an ad inside a campaign | nothing | the campaign is already paid for |
 | Making a campaign run longer | the difference between what is behind it and what those days are worth | Kobbleston, as budget |
-| Making a campaign run shorter | nothing, and nothing comes back | the Kubes stay behind it as views |
+| Making a campaign run shorter | nothing, and nothing comes back | the Brix stay behind it as views |
 | Stopping or removing a campaign | nothing; whatever it never spent comes back | from the campaign to the buyer |
 | Giving to a Space | what the visitor chose | all of it, to whoever made the Space |
 | Changing your username | what that has always cost | Kobbleston |
 
-A community costs Kubes to make, which is what stops the name space filling
+A community costs Brix to make, which is what stops the name space filling
 with throwaways.
 
-A clock that could be wound back for Kubes would be a refund with extra
+A clock that could be wound back for Brix would be a refund with extra
 steps: buy a month, run it for an hour, shorten it, take the rest back. So
 shortening returns nothing. Stopping a campaign is the one way money comes
 back, and it only ever returns what was never spent on views.
 
 ## The burn
 
-Kubes are not destroyed during a sale. They are burned from Kobbleston's own
+Brix are not destroyed during a sale. They are burned from Kobbleston's own
 account instead, in one act, meant to run once a month:
 
 ```sql

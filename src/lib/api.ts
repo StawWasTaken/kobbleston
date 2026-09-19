@@ -740,7 +740,7 @@ export async function creatorAnalytics(userId: string): Promise<CreatorAssetRow[
  * else on the row is pinned by the database, so this cannot publish anything.
  */
 /**
- * The details of an upload. Not the price: selling costs Kubes, so that goes
+ * The details of an upload. Not the price: selling costs Brix, so that goes
  * through listForSale and unlistForSale, and the database ignores a price
  * written straight to the row.
  */
@@ -1668,11 +1668,11 @@ export type CampaignAd = {
   created_at: string
 }
 
-/** The most Kubes a campaign can carry, which is also its longest run. */
+/** The most Brix a campaign can carry, which is also its longest run. */
 export const AD_MAX_KUBES = 2000
 export const AD_MAX_DAYS = 30
 
-/** How long that many Kubes keeps a campaign up, the same sum the database does. */
+/** How long that much keeps a campaign up, the same sum the database does. */
 export const adDays = (kubes: number) =>
   Math.max(1, Math.min(AD_MAX_DAYS, Math.round((AD_MAX_DAYS * kubes) / AD_MAX_KUBES)))
 
@@ -1743,7 +1743,7 @@ export const adKubesFor = (days: number) =>
 /**
  * Changing how long a campaign runs, counted from now. Longer costs the
  * difference; shorter costs nothing and returns nothing, because a clock you
- * can wind back for Kubes is a refund with extra steps.
+ * can wind back for Brix is a refund with extra steps.
  */
 export async function setCampaignDays(campaignId: string, days: number): Promise<string> {
   return unwrap(await supabase.rpc('set_campaign_days', { target: campaignId, days })) as string
@@ -1850,12 +1850,12 @@ export async function listForSale(assetId: string, price: number): Promise<numbe
   return unwrap(await supabase.rpc('list_for_sale', { target: assetId, asking: price })) as number
 }
 
-/** Taking it back off sale. Returns the Kubes handed back. */
+/** Taking it back off sale. Returns what is handed back. */
 export async function unlistForSale(assetId: string): Promise<number> {
   return unwrap(await supabase.rpc('unlist_for_sale', { target: assetId })) as number
 }
 
-/** Giving Kubes to whoever made a Space. Returns what is left. */
+/** Giving Brix to whoever made a Space. Returns what is left. */
 export async function donateToSpace(spaceId: string, amount: number): Promise<number> {
   return unwrap(await supabase.rpc('donate_to_space', { space: spaceId, amount })) as number
 }

@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/Button'
 import { NotificationsPanel } from '@/components/social/NotificationsPanel'
 import { SearchBar } from './SearchBar'
 import { UserMenu } from './UserMenu'
-import { KubeBalance } from './KubeBalance'
+import { CurrencyBalance } from './CurrencyBalance'
 import { topNav } from './nav'
 import { useAuth } from '@/hooks/useAuth'
 import { supabase } from '@/lib/supabase'
@@ -95,7 +95,7 @@ export function AppTopbar({ onOpenNav }: { onOpenNav: () => void }) {
         <div className="ml-auto flex shrink-0 items-center gap-1 pl-1">
           {profile ? (
             <>
-              {!profile.is_guest && <KubeBalance amount={profile.pixels} />}
+              {!profile.is_guest && <CurrencyBalance amount={profile.pixels} />}
 
               <Tooltip label="Your profile" side="bottom">
                 <Link

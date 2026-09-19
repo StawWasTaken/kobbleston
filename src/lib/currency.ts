@@ -1,12 +1,13 @@
 /*
- * What Kobbleston runs on.
+ * What Kobbleston runs on: Brix.
  *
- * The name is not settled. It has been Pixels and it is Kubes today, and it
- * will very likely be something of our own before the Catalog, games and the
- * Player are carrying prices between them. So nothing outside this file is
- * allowed to know what it is called: pages ask here for the word, the mark
- * and the way an amount reads in a sentence, and renaming the currency is
- * changing these few lines rather than hunting through fifty of them.
+ * It was Pixels, then Kubes, and it is Brix from here. Nothing outside this
+ * file is allowed to know what it is called: pages ask here for the word and
+ * for the way an amount reads in a sentence, so the next time anything about
+ * it changes, it changes here.
+ *
+ * Brix does not pluralise. One Brix, fifty Brix, the way a currency behaves
+ * rather than the way a brick does.
  *
  * The stored column is still `profiles.pixels`, from the first name it had.
  * That is a database rename with functions and policies hanging off it, so it
@@ -17,16 +18,16 @@ import { formatCount } from './format'
 
 export const currency = {
   /** One of them. */
-  name: 'Kube',
-  /** More than one. */
-  plural: 'Kubes',
+  name: 'Brix',
+  /** More than one, which is the same word. */
+  plural: 'Brix',
   /** Short form for anywhere a word will not fit. Never shown alone. */
-  code: 'KUB',
-  /** How an amount reads in a sentence: "1 Kube", "2,400 Kubes". */
+  code: 'BRX',
+  /** How an amount reads in a sentence: "1 Brix", "2,400 Brix". */
   amount(n: number) {
-    return `${formatCount(n)} ${n === 1 ? this.name : this.plural}`
+    return `${formatCount(n)} ${this.plural}`
   },
-  /** "in Kubes", for a field label. */
+  /** "in Brix", for a field label. */
   get inWord() {
     return `in ${this.plural}`
   },
