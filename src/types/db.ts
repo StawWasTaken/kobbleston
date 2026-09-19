@@ -24,6 +24,10 @@ export type Profile = {
   activity: 'around' | 'building' | null
   /** What they have on their picture, kept on the row so lists can draw it. */
   style?: WornStyle[] | null
+  /** The Discord account tied to this one, once Discord has vouched for it. */
+  discord_id?: string | null
+  discord_username?: string | null
+  discord_linked_at?: string | null
   created_at: string
 }
 

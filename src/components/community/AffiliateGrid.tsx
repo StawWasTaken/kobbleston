@@ -101,7 +101,8 @@ export function AffiliateGrid({
                 <Link to={communityLink(other)} className="block">
                   <span
                     className={cn(
-                      'block aspect-square overflow-hidden rounded-xl bg-media ring-1 ring-ink-line',
+                      'block aspect-square overflow-hidden rounded-xl ring-1 ring-ink-line',
+                      other.icon_url ? '' : 'bg-media',
                       'transition-[transform,box-shadow] duration-200 group-hover:-translate-y-0.5 group-hover:ring-brand/70',
                     )}
                   >

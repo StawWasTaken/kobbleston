@@ -1,0 +1,1 @@
+import{$n as e,cr as t,er as n,or as r}from"./format-BPm9HHAu.js";var i=t(r(),1);function a(t){let{pathname:r,search:a,hash:o}=e(),s=n();(0,i.useEffect)(()=>{t&&decodeURIComponent(r).replace(/\/+$/,``)!==decodeURIComponent(t).replace(/\/+$/,``)&&s(`${t}${a}${o}`,{replace:!0})},[t,r,a,o,s])}export{a as t};

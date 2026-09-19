@@ -38,7 +38,11 @@ export function CommunityRow({
                 aria-hidden="true"
                 className="absolute -inset-2 rounded-[2rem] bg-brand/25 opacity-0 blur-xl transition-opacity duration-300 group-hover:opacity-100"
               />
-              <span className="relative block aspect-square overflow-hidden rounded-[1.75rem] border border-white/10 bg-media transition-transform duration-300 group-hover:-translate-y-1.5">
+              <span className={cn(
+                  'relative block aspect-square overflow-hidden rounded-[1.75rem] border border-white/10',
+                  'transition-transform duration-300 group-hover:-translate-y-1.5',
+                  group.icon_url ? '' : 'bg-media',
+                )}>
                 {group.icon_url ? (
                   <img
                     src={group.icon_url}

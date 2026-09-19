@@ -1,6 +1,6 @@
 // The link preview for an address that only the database knows about.
 //
-// Kobbleston is one document with a router inside it. The robots that build a
+// Kobblon is one document with a router inside it. The robots that build a
 // preview in Discord, Slack or a search result do not run routers: they read
 // whatever HTML they are handed. Every address that reads the same for
 // everybody already has its own file, written at build time. This is for the
@@ -13,9 +13,9 @@
 
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
-const SITE = 'https://kobbleston.com'
+const SITE = 'https://kobblon.com'
 const FALLBACK_IMAGE = `${SITE}/brand/og.png`
-const TAGLINE = 'Make Something Nobody Else Has'
+const TAGLINE = 'make something nobody else has'
 
 const supabase = createClient(
   Deno.env.get('SUPABASE_URL') ?? '',
@@ -46,7 +46,7 @@ const card = (
 <link rel="canonical" href="${escape(url)}" />
 <meta name="description" content="${escape(description)}" />
 <meta name="theme-color" content="#101012" />
-<meta property="og:site_name" content="Kobbleston" />
+<meta property="og:site_name" content="Kobblon" />
 <meta property="og:type" content="website" />
 <meta property="og:url" content="${escape(url)}" />
 <meta property="og:title" content="${escape(title)}" />
@@ -73,7 +73,7 @@ Deno.serve(async (request) => {
 
   const url = `${SITE}${path.startsWith('/') ? path : `/${path}`}`
 
-  let title = 'Kobbleston'
+  let title = 'Kobblon'
   let description = `${TAGLINE}. Build your own Space, fill it with whatever you want, and let people in.`
   let image = FALLBACK_IMAGE
   let square = false
@@ -82,7 +82,7 @@ Deno.serve(async (request) => {
     const { data } = await supabase.rpc('link_preview', { path })
     const found = Array.isArray(data) ? data[0] : data
     if (found?.title) {
-      title = `${found.title} - Kobbleston`
+      title = `${found.title} - Kobblon`
       description = found.description ?? description
       image = pictureOf(found.image ?? null)
       // An emblem and a picture of somebody are square, so a wide card would

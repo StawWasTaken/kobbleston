@@ -7,6 +7,7 @@ import { useAsync } from '@/hooks/useAsync'
 import { listBuildTargets } from '@/lib/api'
 import { avatarOf } from '@/lib/avatars'
 import { cn } from '@/lib/cn'
+import { Emblem } from '@/components/community/Emblem'
 import type { BuildTarget } from '@/types/db'
 
 const KEY = 'kobblon.building-as'
@@ -86,11 +87,7 @@ export function WorkingAsMenu() {
         )}
       >
         {target ? (
-          <span className="grid h-8 w-8 shrink-0 place-items-center overflow-hidden rounded-lg bg-brand-deep text-[11px] font-extrabold">
-            {target.icon_url
-              ? <img src={target.icon_url} alt="" className="h-full w-full object-cover" />
-              : target.name.slice(0, 2).toUpperCase()}
-          </span>
+          <Emblem src={target.icon_url} name={target.name} className="h-8 w-8 text-[11px]" />
         ) : (
           <Avatar src={avatarOf(profile)} name={profile.display_name} size="sm" className="rounded-lg" />
         )}
@@ -147,11 +144,12 @@ export function WorkingAsMenu() {
               onClick={() => { setTarget(option); setOpen(false) }}
               className="flex w-full items-center gap-2.5 px-3 py-2 text-left transition-colors hover:bg-ink-hover"
             >
-              <span className="grid h-6 w-6 shrink-0 place-items-center overflow-hidden rounded-md bg-brand-deep text-[10px] font-extrabold">
-                {option.icon_url
-                  ? <img src={option.icon_url} alt="" className="h-full w-full object-cover" />
-                  : option.name.slice(0, 2).toUpperCase()}
-              </span>
+              <Emblem
+                src={option.icon_url}
+                name={option.name}
+                rounded="rounded-md"
+                className="h-6 w-6 text-[10px]"
+              />
               <span className="min-w-0 flex-1 truncate text-sm font-semibold">{option.name}</span>
               {target?.id === option.id && (
                 <FontAwesomeIcon icon={faCheck} className="text-xs text-link" />

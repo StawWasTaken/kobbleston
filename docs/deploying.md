@@ -76,11 +76,12 @@ safe to run twice.
 
 ## Edge functions
 
-There are two: `login` (username and password, looked up behind the service
-role key) and `og` (link previews for addresses that depend on what they
-point at). Neither is required for the site to work: logging in falls back to
-`login_email_for` in the database, and previews fall back to the files the
-build writes.
+There are three: `login` (username and password, looked up behind the service
+role key), `og` (link previews for addresses that depend on what they point
+at) and `discord` (tying a Discord account to a Kobblon one, which
+`docs/discord.md` covers). None is required for the site to work: logging in
+falls back to `login_email_for` in the database, previews fall back to the
+files the build writes, and Settings says plainly when Discord is not set up.
 
 ### With the CLI
 
@@ -90,6 +91,7 @@ supabase login             # opens a browser
 supabase link --project-ref sdnjdgeqrhzkyfyohcsz
 supabase functions deploy login
 supabase functions deploy og
+supabase functions deploy discord
 ```
 
 `supabase functions deploy` reads `supabase/functions/<name>/index.ts` from

@@ -155,6 +155,31 @@ export async function addressNow(
   return (unwrap(await supabase.rpc('address_now', { kind, old_slug: old })) as string | null) ?? null
 }
 
+// ------------------------------------------------------------------ Discord
+
+/**
+ * Starting a Discord link. The function answers with where to send somebody;
+ * the exchange, and the writing of the tie, happen where the secret lives.
+ */
+export async function startDiscordLink(): Promise<string> {
+  const { data, error } = await supabase.functions.invoke<{ url: string }>('discord/start')
+  if (error) throw new Error('Discord is not set up on this Kobblon yet.')
+  if (!data?.url) throw new Error('Discord did not say where to go.')
+  return data.url
+}
+
+export async function unlinkDiscord() {
+  unwrap(await supabase.rpc('unlink_discord'))
+}
+
+/** The Kobblon account a Discord id belongs to, if it belongs to one. */
+export async function profileByDiscord(
+  discord: string,
+): Promise<{ username: string; content_id: number | null } | null> {
+  const rows = unwrap(await supabase.rpc('profile_by_discord', { discord }))
+  return (Array.isArray(rows) ? rows[0] : rows) ?? null
+}
+
 export async function usernameById(contentId: number): Promise<string | null> {
   return (unwrap(await supabase.rpc('username_by_id', { target: contentId })) as string | null) ?? null
 }

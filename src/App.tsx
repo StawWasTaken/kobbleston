@@ -42,6 +42,7 @@ const Friends = lazyPage(() => import('@/pages/Friends'))
 const Library = lazyPage(() => import('@/pages/Library'))
 const Style = lazyPage(() => import('@/pages/Style'))
 const Brix = lazyPage(() => import('@/pages/Brix'))
+const DiscordJump = lazyPage(() => import('@/pages/DiscordJump'))
 const BrixCodes = lazyPage(() => import('@/pages/BrixCodes'))
 const StyleItem = lazyPage(() => import('@/pages/StyleItem'))
 const Profile = lazyPage(() => import('@/pages/Profile'))
@@ -115,6 +116,7 @@ export default function App() {
                   <Route path=":tag" element={<AssetPage />} />
                 </Route>
                 <Route path="/people" element={<People />} />
+                <Route path="/d/:id" element={<DiscordJump />} />
                 <Route path="/style" element={<Style />} />
                 <Route path="/style/:tag" element={<StyleItem />} />
                 <Route element={<CommunityShell />}>

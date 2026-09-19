@@ -2,11 +2,12 @@ import { useEffect, useState } from 'react'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import {
   faCube, faRightFromBracket, faUser, faLock, faShieldHalved, faPen, faCheck, faPalette,
-  faMoon, faSun, faDesktop,
+  faMoon, faSun, faDesktop, faLink,
 } from '@fortawesome/free-solid-svg-icons'
 import type { IconDefinition } from '@fortawesome/fontawesome-svg-core'
 import { Page } from '@/components/layout/AppShell'
 import { Button } from '@/components/ui/Button'
+import { DiscordLink } from '@/components/social/DiscordLink'
 import { Balance } from '@/components/money/Balance'
 import { Transactions } from '@/components/money/Transactions'
 import { Card } from '@/components/ui/Card'
@@ -34,11 +35,12 @@ import { profileLink } from '@/lib/links'
  * called is not settled and is read from one place. The rest are named for
  * what they are, which does not change.
  */
-type Section = 'Account info' | 'Security' | 'Appearance' | 'money' | 'Safety'
+type Section = 'Account info' | 'Security' | 'Connections' | 'Appearance' | 'money' | 'Safety'
 
 const sections: { name: Section; label: string; icon: IconDefinition }[] = [
   { name: 'Account info', label: 'Account info', icon: faUser },
   { name: 'Security', label: 'Security', icon: faLock },
+  { name: 'Connections', label: 'Connections', icon: faLink },
   { name: 'Appearance', label: 'Appearance', icon: faPalette },
   { name: 'money', label: currency.plural, icon: faCube },
   { name: 'Safety', label: 'Safety', icon: faShieldHalved },
@@ -425,6 +427,7 @@ export default function Settings() {
         <div className="min-w-0">
           {section === 'Account info' && <AccountInfo />}
           {section === 'Security' && <Security />}
+          {section === 'Connections' && <DiscordLink />}
           {section === 'Appearance' && <Appearance />}
           {section === 'money' && <Money />}
           {section === 'Safety' && <Safety />}

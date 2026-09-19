@@ -19,7 +19,9 @@ import { SpaceCard } from '@/components/spaces/SpaceCard'
 import { BadgeTile } from '@/components/spaces/BadgeGrid'
 import { AssetTile } from '@/components/create/AssetTile'
 import { useChatDock } from '@/components/chat/ChatDock'
+import { faDiscord } from '@fortawesome/free-brands-svg-icons'
 import { Menu } from '@/components/ui/Menu'
+import { Emblem } from '@/components/community/Emblem'
 import { usePersonActions } from '@/components/social/personActions'
 import { Dialog } from '@/components/ui/Dialog'
 import { Textarea } from '@/components/ui/Input'
@@ -423,6 +425,15 @@ export default function Profile() {
               ))}
             </div>
 
+            {/* Somebody's Discord, when they have said which one is theirs
+                and Discord has agreed. */}
+            {user.discord_username && (
+              <p className="mt-3 inline-flex items-center gap-2 rounded-lg border border-ink-line bg-ink-raised px-2.5 py-1.5 text-xs font-bold">
+                <FontAwesomeIcon icon={faDiscord} className="text-[#5865F2]" />
+                {user.discord_username}
+              </p>
+            )}
+
             {/* A line or two of the bio, with the rest behind About, the way
                 somebody reads a page rather than a form. */}
             <div className="mt-4 max-w-2xl">
@@ -661,11 +672,12 @@ export default function Profile() {
                     to={communityLink(community)}
                     className="w-40 shrink-0 rounded-2xl border border-ink-line bg-ink-card p-3 text-center transition-colors hover:border-brand/60"
                   >
-                    <span className="mx-auto grid h-14 w-14 place-items-center overflow-hidden rounded-xl bg-brand-deep font-display text-lg font-extrabold">
-                      {community.icon_url
-                        ? <img src={community.icon_url} alt="" className="h-full w-full object-cover" />
-                        : community.name.slice(0, 2).toUpperCase()}
-                    </span>
+                    <Emblem
+                      src={community.icon_url}
+                      name={community.name}
+                      rounded="rounded-xl"
+                      className="mx-auto h-14 w-14 text-lg"
+                    />
                     <p className="mt-2 truncate text-sm font-bold">{community.name}</p>
                     <p className="text-xs text-muted">
                       {formatCount(community.member_count)} members

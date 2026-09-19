@@ -24,6 +24,7 @@ import {
 import { formatCount } from '@/lib/format'
 import { communityLink, spaceLink } from '@/lib/links'
 import { cn } from '@/lib/cn'
+import { Emblem } from '@/components/community/Emblem'
 import type { Space } from '@/types/db'
 import { overlayButton } from '@/lib/overlay'
 
@@ -255,11 +256,7 @@ export default function Home() {
                 'transition-colors hover:border-brand/60',
               )}
             >
-              <span className="grid h-10 w-10 shrink-0 place-items-center overflow-hidden rounded-lg bg-brand-deep text-xs font-extrabold">
-                {community.icon_url
-                  ? <img src={community.icon_url} alt="" className="h-full w-full object-cover" />
-                  : community.name.slice(0, 2).toUpperCase()}
-              </span>
+              <Emblem src={community.icon_url} name={community.name} className="h-10 w-10 text-xs" />
               <span className="min-w-0">
                 <span className="block truncate text-sm font-bold">{community.name}</span>
                 <span className="block text-xs text-muted">

@@ -30,6 +30,7 @@ import {
 } from '@/lib/api'
 import { formatCount, timeAgo } from '@/lib/format'
 import { cn } from '@/lib/cn'
+import { Emblem } from '@/components/community/Emblem'
 import { avatarOf } from '@/lib/avatars'
 import { profileLink } from '@/lib/links'
 import { CurrencyMark } from '@/components/brand/Currency'
@@ -107,11 +108,12 @@ export default function ConfigureCommunity() {
       {/* The Community you are configuring, so it is never in doubt which
           one you are changing. */}
       <header className="mb-6 flex flex-wrap items-center gap-4 rounded-2xl border border-ink-line bg-ink-card p-4">
-        <span className="grid h-14 w-14 shrink-0 place-items-center overflow-hidden rounded-xl bg-brand-deep font-display text-base font-extrabold">
-          {group.icon_url
-            ? <img src={group.icon_url} alt="" className="h-full w-full object-cover" />
-            : group.name.slice(0, 2).toUpperCase()}
-        </span>
+        <Emblem
+          src={group.icon_url}
+          name={group.name}
+          rounded="rounded-xl"
+          className="h-14 w-14 text-base"
+        />
 
         <div className="min-w-0 flex-1">
           <h1 className="truncate font-display text-xl font-extrabold sm:text-2xl">{group.name}</h1>
