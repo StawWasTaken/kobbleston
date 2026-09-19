@@ -1,7 +1,45 @@
 # Deploying the parts that are not the site
 
 The site itself deploys on its own: a push to main rebuilds it and GitHub
-Pages serves it. Two things sit outside that, and both are done by hand.
+Pages serves it. Three things sit outside that, and all of them are done by
+hand.
+
+## The domain
+
+`CNAME` in the repository root says `kobblon.com`, which is what tells GitHub
+Pages to answer for it. The other half is at the registrar, Spaceship, where
+the domain was bought, and it is four A records, four AAAA records and one
+CNAME. The exact values are below, and GitHub prints the same ones under
+**Settings → Pages** on the repository.
+
+| Type  | Host  | Value |
+| ----- | ----- | ----- |
+| A     | `@`   | `185.199.108.153` |
+| A     | `@`   | `185.199.109.153` |
+| A     | `@`   | `185.199.110.153` |
+| A     | `@`   | `185.199.111.153` |
+| AAAA  | `@`   | `2606:50c0:8000::153` |
+| AAAA  | `@`   | `2606:50c0:8001::153` |
+| AAAA  | `@`   | `2606:50c0:8002::153` |
+| AAAA  | `@`   | `2606:50c0:8003::153` |
+| CNAME | `www` | `stawwastaken.github.io.` |
+
+Four A records rather than one because Pages answers from four addresses, and
+the AAAA records are the same thing over IPv6. The `www` record points at the
+GitHub host rather than at an address, so it follows if those ever move.
+
+Nothing else belongs on the apex: an old A record, a parking page or a
+forwarding rule left behind will answer instead of Pages and the site will
+look down.
+
+After the records are in, on the repository: **Settings → Pages**, custom
+domain `kobblon.com`, save, wait for the check to pass, then tick **Enforce
+HTTPS**. The certificate takes a few minutes and cannot be issued until the
+records resolve.
+
+If `kobbleston.com` is still owned, point it at the new one with a
+redirect at the registrar rather than a second custom domain: Pages answers
+for one domain at a time.
 
 ## Migrations
 
