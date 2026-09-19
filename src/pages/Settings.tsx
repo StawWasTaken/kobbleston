@@ -20,6 +20,7 @@ import {
    usernameHistory,
 } from '@/lib/api'
 import { supabase } from '@/lib/supabase'
+import { currency } from '@/lib/currency'
 import { formatCount, timeAgo } from '@/lib/format'
 import { cn } from '@/lib/cn'
 import { useTitle } from '@/hooks/useTitle'
@@ -165,7 +166,7 @@ function AccountInfo() {
         open={renaming}
         onClose={() => setRenaming(false)}
         title="Change your username"
-        description={`It costs ${USERNAME_CHANGE_COST} Kubes, and your old names stay on your profile.`}
+        description={`It costs ${currency.amount(USERNAME_CHANGE_COST)}, and your old names stay on your profile.`}
         footer={
           <>
             <Button variant="ghost" onClick={() => setRenaming(false)}>Cancel</Button>
@@ -174,7 +175,7 @@ function AccountInfo() {
               disabled={!affordable || newName.trim().length < 3}
               onClick={rename}
             >
-              Pay {USERNAME_CHANGE_COST} Kubes
+              Pay {currency.amount(USERNAME_CHANGE_COST)}
             </Button>
           </>
         }
@@ -188,7 +189,7 @@ function AccountInfo() {
           hint="3 to 16 letters, numbers or underscores."
         />
         <p className={cn('mt-3 text-sm', affordable ? 'text-muted' : 'text-danger')}>
-          You have {formatCount(profile.pixels)} Kubes.
+          You have {currency.amount(profile.pixels)}.
           {!affordable && ` You need ${USERNAME_CHANGE_COST}.`}
         </p>
       </Dialog>
@@ -337,7 +338,7 @@ function Kubes() {
         <p className="font-display text-2xl font-extrabold tabular-nums">
           {formatCount(profile?.pixels ?? 0)}
         </p>
-        <p className="text-sm text-muted">Kubes</p>
+        <p className="text-sm text-muted">{currency.plural}</p>
       </div>
 
       {ledger.loading && (

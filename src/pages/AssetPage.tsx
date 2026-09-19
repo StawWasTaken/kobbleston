@@ -30,6 +30,7 @@ import {
 import { useSignedUrl } from '@/hooks/useSignedUrl'
 import { useTitle } from '@/hooks/useTitle'
 import { avatarOf } from '@/lib/avatars'
+import { currency } from '@/lib/currency'
 import { formatCount } from '@/lib/format'
 import { cn } from '@/lib/cn'
 import type { AssetDay, AssetPageItem } from '@/types/db'
@@ -228,7 +229,7 @@ function UsePanel({ asset, onChanged }: { asset: AssetPageItem; onChanged: () =>
       </Button>
       <p className="text-xs leading-relaxed text-muted">
         {paid
-          ? `The Kubes go to ${asset.creator_display_name}. You get the right to use ${tag}, not the file.`
+          ? `The ${currency.plural} go to ${asset.creator_display_name}. You get the right to use ${tag}, not the file.`
           : `Free to take. It lands in your inventory and ${tag} is yours to paste.`}
       </p>
     </div>
@@ -343,7 +344,7 @@ export default function AssetPage() {
     try {
       const asked = Math.max(0, Math.round(Number(price) || 0))
       if (asked > priceCeilings[asset.kind]) {
-        toast(`The most you can charge is ${priceCeilings[asset.kind]} Kubes.`, 'error')
+        toast(`The most you can charge is ${currency.amount(priceCeilings[asset.kind])}.`, 'error')
         return
       }
       await updateAsset(asset.id, {
@@ -359,11 +360,11 @@ export default function AssetPage() {
       if (asked !== asset.price) {
         if (asked > 0) {
           const fee = await listForSale(asset.id, asked)
-          toast(`Up for sale at ${asked}. Putting it up cost ${fee} Kubes.`, 'success')
+          toast(`Up for sale at ${asked}. Putting it up cost ${currency.amount(fee)}.`, 'success')
         } else {
           const back = await unlistForSale(asset.id)
           toast(
-            back > 0 ? `Off sale. ${back} Kubes came back.` : 'Off sale.',
+            back > 0 ? `Off sale. ${currency.amount(back)} came back.` : 'Off sale.',
             'success',
           )
         }
@@ -545,7 +546,7 @@ export default function AssetPage() {
         title="Remove this from your inventory?"
         description={
           asset.price > 0
-            ? `You paid ${formatCount(asset.price)} Kubes for this. Removing it does not refund them, and taking it again would cost the same.`
+            ? `You paid ${currency.amount(asset.price)} for this. Removing it does not refund them, and taking it again would cost the same.`
             : 'Any Space already using it keeps working. You would have to take it again to use it somewhere new.'
         }
         footer={
@@ -672,14 +673,14 @@ export default function AssetPage() {
                       maxLength={400}
                     />
                     <Input
-                      label="Price in Kubes"
+                      label={`Price ${currency.inWord}`}
                       type="number"
                       min={0}
                       max={priceCeilings[asset.kind]}
                       value={price}
                       onChange={(e) => setPrice(e.target.value)}
                       icon={faTag}
-                      hint={`0 means free. The most you can charge for ${kindLabels[asset.kind].toLowerCase()} is ${priceCeilings[asset.kind]} Kubes.`}
+                      hint={`0 means free. The most you can charge for ${kindLabels[asset.kind].toLowerCase()} is ${currency.amount(priceCeilings[asset.kind])}.`}
                       className="max-w-xs"
                     />
 
@@ -694,7 +695,7 @@ export default function AssetPage() {
                         return (
                           <p className="rounded-xl border border-ink-line bg-ink-raised p-3 text-xs leading-relaxed text-muted">
                             Putting this up for sale costs <span className="font-bold text-white">{fee}</span>{' '}
-                            Kubes, paid to Kobbleston now. Taking it back off sale later hands a
+                            {currency.plural}, paid to Kobbleston now. Taking it back off sale later hands a
                             quarter of that back. On each sale you keep{' '}
                             <span className="font-bold text-white">{keeps}</span> of the{' '}
                             {asked}; the other {PLATFORM_SHARE}% is Kobbleston&rsquo;s share.

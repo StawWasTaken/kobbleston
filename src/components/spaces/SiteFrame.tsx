@@ -9,6 +9,7 @@ import {
   assetUrl, donateToSpace, isAssetRef, pickAd, recordAdClick, resolveAssetRef,
 } from '@/lib/api'
 import type { AdSize, ShownAd, SpaceFile } from '@/lib/api'
+import { currency } from '@/lib/currency'
 import { cn } from '@/lib/cn'
 
 /*
@@ -319,7 +320,7 @@ export function SiteFrame({
 
       if (body.kob === 'donate') {
         if (building) { toast('This is how it will work once it is live.', 'info'); return }
-        if (!profile) { toast('Make an account to give Kubes.', 'info'); return }
+        if (!profile) { toast(`Make an account to give ${currency.plural}.`, 'info'); return }
         setGiving(Math.min(Math.max(Math.round(Number(body.amount) || 0), 1), 10000))
         return
       }
@@ -342,7 +343,7 @@ export function SiteFrame({
     setSending(true)
     try {
       const left = await donateToSpace(spaceId, giving)
-      toast(`Given. You have ${left} Kubes left.`, 'success')
+      toast(`Given. You have ${currency.amount(left)} left.`, 'success')
       setGiving(null)
     } catch (err) {
       toast(err instanceof Error ? err.message : 'That did not go through.', 'error')
@@ -381,7 +382,7 @@ export function SiteFrame({
     <Dialog
       open={giving !== null}
       onClose={() => setGiving(null)}
-      title="Give Kubes"
+      title={`Give ${currency.plural}`}
       description="A gift to whoever made this Space. Nothing is promised in return."
       size="sm"
       footer={
@@ -395,7 +396,7 @@ export function SiteFrame({
       }
     >
       <p className="text-sm leading-relaxed text-muted">
-        This sends <span className="font-bold text-white">{giving}</span> Kubes from your account
+        This sends <span className="font-bold text-white">{giving}</span> {currency.plural} from your account
         to the owner of this Space. It cannot be taken back.
       </p>
     </Dialog>

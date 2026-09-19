@@ -18,6 +18,7 @@ import { useAuth } from '@/hooks/useAuth'
 import { useAsync } from '@/hooks/useAsync'
 import { useForceDark } from '@/hooks/useTheme'
 import { getPlatformStats, listAssets, listCommunities, listSpaces, styleShop } from '@/lib/api'
+import { currency } from '@/lib/currency'
 import { asset } from '@/lib/asset'
 import { formatCount } from '@/lib/format'
 import type { MarketAsset } from '@/types/db'
@@ -237,7 +238,7 @@ export default function Landing() {
             kicker="Kobbleston Create"
             title="Built From"
             accent="Real Work"
-            body="Decals, sounds, video and fonts, made by people here and checked before anybody sees them. Take what you need, use it by its number, and sell what you make for Kubes."
+            body={`Decals, sounds, video and fonts, made by people here and checked before anybody sees them. Take what you need, use it by its number, and sell what you make for ${currency.plural}.`}
             to="/create/marketplace"
             action="Open the marketplace"
           />

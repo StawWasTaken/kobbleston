@@ -11,6 +11,7 @@ import { useToast } from '@/components/ui/Toast'
 import { Kube } from '@/components/brand/Kube'
 import { useAsync } from '@/hooks/useAsync'
 import { grantCommunityKubes, listCommunityMoney, listCommunityRoster } from '@/lib/api'
+import { currency } from '@/lib/currency'
 import { avatarOf } from '@/lib/avatars'
 import { formatCount, timeAgo } from '@/lib/format'
 import { cn } from '@/lib/cn'
@@ -39,7 +40,7 @@ export function FundsPanel({
   const give = async () => {
     const value = Math.round(Number(amount) || 0)
     if (!who) { toast('Pick somebody.', 'error'); return }
-    if (value < 1) { toast('Give at least 1 Kube.', 'error'); return }
+    if (value < 1) { toast(`Give at least 1 ${currency.name}.`, 'error'); return }
 
     setPending(true)
     try {
@@ -76,7 +77,7 @@ export function FundsPanel({
           disabled={(group.funds ?? 0) < 1}
           onClick={() => setGiving(true)}
         >
-          Give Kubes
+          Give {currency.plural}
         </Button>
       </div>
 
@@ -100,7 +101,7 @@ export function FundsPanel({
                   {row.kind === 'sale'
                     ? `Sold ${row.note ?? 'something'}`
                     : row.kind === 'grant'
-                      ? `Gave Kubes to ${row.target_display_name ?? 'a member'}`
+                      ? `Gave ${currency.plural} to ${row.target_display_name ?? 'a member'}`
                       : row.note ?? 'Adjustment'}
                 </span>
                 <span className="block text-xs text-muted">
@@ -127,7 +128,7 @@ export function FundsPanel({
       <Dialog
         open={giving}
         onClose={() => setGiving(false)}
-        title="Give Kubes to a member"
+        title={`Give ${currency.plural} to a member`}
         description="It comes out of the Community's funds and lands in their balance straight away."
         footer={
           <>

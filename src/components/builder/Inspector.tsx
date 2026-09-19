@@ -13,6 +13,7 @@ import { ColourPicker } from '@/components/ui/ColourPicker'
 import { AssetField } from '@/components/builder/AssetField'
 import { FontField } from '@/components/builder/FontField'
 import { AD_SIZES, BLOCK_DEFAULTS, BUYABLE_AD_SIZES } from '@/lib/blocks'
+import { currency } from '@/lib/currency'
 import type { Block, Page } from '@/lib/blocks'
 import { cn } from '@/lib/cn'
 
@@ -503,7 +504,7 @@ export function Inspector({
           </Row>
           <p className="text-xs leading-relaxed text-muted">
             An ad somebody has paid for goes here. You keep 15% of what each view costs, paid in
-            Kubes as it adds up. Your own ads are never shown in your own Space.
+            {currency.plural} as it adds up. Your own ads are never shown in your own Space.
           </p>
         </>
       )}
@@ -511,12 +512,12 @@ export function Inspector({
       {block.kind === 'donate' && (
         <>
           <Row label="Label"><Input value={String(p.label)} onChange={(e) => set('label', e.target.value)} /></Row>
-          <Row label="How many Kubes">
+          <Row label={`How many ${currency.plural}`}>
             <Slider value={Number(p.amount)} min={1} max={1000} onChange={(v) => set('amount', v)} />
           </Row>
           <Row label="Colour"><ColourPicker value={String(p.colour)} onChange={(v) => set('colour', v)} /></Row>
           <Row label="Label colour"><ColourPicker value={String(p.text)} onChange={(v) => set('text', v)} /></Row>
-          <Row label="The Kube">
+          <Row label={`The ${currency.name}`}>
             <Choice
               value={p.icon === false ? 'off' : 'on'}
               onChange={(v) => set('icon', v === 'on')}

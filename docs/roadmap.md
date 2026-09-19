@@ -3,6 +3,13 @@
 Kept here rather than in my head, so nothing quietly falls off. Order is
 roughly what I would do next, not a promise about dates.
 
+**Read `docs/direction.md` first.** Kobbleston is growing from a 2D Space
+platform into avatars, a Catalog, 3D worlds and games, with a player and a
+desktop creator beside the website. Nothing below is cancelled by that: the
+website and its builder are the first generation and stay. `docs/audit.md`
+lists what in the architecture would make the rest awkward, and what to do
+about each of them.
+
 ## Big pieces
 
 ### The Spaces creator

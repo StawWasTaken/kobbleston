@@ -1,4 +1,11 @@
-# Kubes
+# The currency
+
+The name is not settled, and the site no longer hardcodes it: `src/lib/currency.ts`
+holds the word, the plural, the short code and how an amount reads, and
+`src/components/brand/Currency.tsx` holds the mark and a price. This document
+describes how the money moves, which is the part that does not change with the
+name. The stored column is still `profiles.pixels`, from the first name it
+had; `docs/audit.md` carries that rename.
 
 The currency, and where it goes. A closed circuit: Kubes are made when
 somebody joins and when Kobbleston hands them out, and they only leave it by

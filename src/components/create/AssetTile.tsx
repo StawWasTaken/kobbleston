@@ -6,6 +6,7 @@ import {
 import type { IconDefinition } from '@fortawesome/fontawesome-svg-core'
 import { useSignedUrl } from '@/hooks/useSignedUrl'
 import { formatCount } from '@/lib/format'
+import { currency } from '@/lib/currency'
 import type { AssetKind, MarketAsset } from '@/types/db'
 import { Tooltip } from '@/components/ui/Tooltip'
 import { Kube } from '@/components/brand/Kube'
@@ -42,7 +43,7 @@ export function AssetTile({ item, owned }: { item: MarketAsset; owned?: boolean 
 
   return (
     <Tooltip
-      label={item.price ? `${item.name} · ${item.price} Kubes` : `${item.name} · free`}
+      label={item.price ? `${item.name} · ${currency.amount(item.price)}` : `${item.name} · free`}
       side="top"
     >
     <Link

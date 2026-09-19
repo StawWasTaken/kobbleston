@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import { Select } from '@/components/ui/Select'
 import { defaultAvatars } from '@/lib/avatars'
+import { currency } from '@/lib/currency'
 import { cn } from '@/lib/cn'
 import type { Placement, StyleItem } from '@/lib/api'
 
@@ -258,7 +259,7 @@ export function StyleDetails({
 
       <label className="block">
         <span className="mb-1.5 block text-xs font-bold uppercase tracking-wide text-muted">
-          Price in Kubes
+          Price {currency.inWord}
         </span>
         <Input
           value={price}

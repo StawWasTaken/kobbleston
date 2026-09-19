@@ -1,4 +1,5 @@
 import { StoryPage } from '@/components/layout/StoryPage'
+import { currency } from '@/lib/currency'
 import type { StorySection } from '@/components/layout/StoryPage'
 import { useTitle } from '@/hooks/useTitle'
 
@@ -23,11 +24,11 @@ const terms: StorySection[] = [
   },
   {
     id: 'kubes',
-    heading: 'Kubes and buying things',
+    heading: `${currency.plural} and buying things`,
     body: [
-      'Kubes are a number on your account for use inside Kobbleston. They are not money, they cannot be cashed out, and they have no value off the platform.',
+      `${currency.plural} are a number on your account for use inside Kobbleston. They are not money, they cannot be cashed out, and they have no value off the platform.`,
       'Getting something from the Creator Marketplace puts it in your inventory and lets you use its number in your Spaces. It does not give you the file to keep, and it is not a resale right.',
-      'An account removed for breaking the rules loses whatever is on it. We do not refund Kubes spent before that.',
+      `An account removed for breaking the rules loses whatever is on it. We do not refund ${currency.plural} spent before that.`,
     ],
   },
   {

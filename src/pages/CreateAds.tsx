@@ -22,6 +22,7 @@ import {
   pauseAd, removeAd, removeCampaign, renameCampaign, renewCampaign, setCampaignDays,
 } from '@/lib/api'
 import type { Campaign, CampaignAd } from '@/lib/api'
+import { currency } from '@/lib/currency'
 import { AD_SIZES } from '@/lib/blocks'
 import { formatCount } from '@/lib/format'
 import { cn } from '@/lib/cn'
@@ -151,7 +152,7 @@ function CampaignCard({ campaign, onChanged, onRenew, onRemove, onRename, onCloc
   const stop = async () => {
     try {
       const back = await endCampaign(campaign.id)
-      toast(back > 0 ? `Stopped. ${back} Kubes came back.` : 'Stopped.', 'info')
+      toast(back > 0 ? `Stopped. ${currency.amount(back)} came back.` : 'Stopped.', 'info')
       onChanged()
     } catch (err) {
       toast(err instanceof Error ? err.message : 'That did not stop.', 'error')
@@ -348,7 +349,7 @@ export default function CreateAds() {
     setPending(true)
     try {
       const back = await removeCampaign(removing.id)
-      toast(back > 0 ? `Removed. ${back} Kubes came back.` : 'Removed.', 'success')
+      toast(back > 0 ? `Removed. ${currency.amount(back)} came back.` : 'Removed.', 'success')
       setRemoving(null)
       campaigns.reload()
       refreshProfile()
@@ -399,7 +400,7 @@ export default function CreateAds() {
         <div>
           <h1 className="font-display text-3xl font-extrabold sm:text-4xl">Ads</h1>
           <p className="mt-1.5 max-w-xl text-sm text-muted">
-            A campaign holds the name, the Kubes and the clock, up to a month of it. The ads
+            A campaign holds the name, the {currency.plural} and the clock, up to a month of it. The ads
             inside it are the work:
             as many as you like, each with its own decal, shape and destination, changed or
             rested without touching what you paid.
@@ -419,7 +420,7 @@ export default function CreateAds() {
           <EmptyState
             mood="emptyBox"
             title="No campaigns yet"
-            body="A campaign is some Kubes and a month at most. Put ads in it, point them at your Spaces, communities, events or Marketplace work, and they are shown across Kobbleston."
+            body={`A campaign is some ${currency.plural} and a month at most. Put ads in it, point them at your Spaces, communities, events or Marketplace work, and they are shown across Kobbleston.`}
             action={<Button icon={faRectangleAd} onClick={() => setStarting(true)}>Start one</Button>}
           />
         </Card>
@@ -449,7 +450,7 @@ export default function CreateAds() {
         open={starting}
         onClose={() => setStarting(false)}
         title="Start a campaign"
-        description="The Kubes are paid now, and they decide how long it runs."
+        description={`The ${currency.plural} are paid now, and they decide how long it runs.`}
         size="md"
         footer={
           <>
@@ -480,7 +481,7 @@ export default function CreateAds() {
 
           <div>
             <p className="mb-1.5 text-[11px] font-extrabold uppercase tracking-wide text-muted">
-              Kubes behind it
+              {currency.plural} behind it
             </p>
             <div className="flex items-center gap-3">
               <input
@@ -491,7 +492,7 @@ export default function CreateAds() {
                 value={budget}
                 onChange={(e) => setBudget(Number(e.target.value))}
                 className="h-2 w-full accent-[#1B34E8]"
-                aria-label="Kubes behind this campaign"
+                aria-label={`${currency.plural} behind this campaign`}
               />
               <span className="inline-flex shrink-0 items-center gap-1.5 font-display text-lg font-extrabold tabular-nums">
                 <Kube />
@@ -499,7 +500,7 @@ export default function CreateAds() {
               </span>
             </div>
             <p className="mt-1.5 text-xs text-muted">
-              That is {runsFor(budget)}, shared by every ad in it. The more Kubes behind it, the
+              That is {runsFor(budget)}, shared by every ad in it. The more {currency.plural} behind it, the
               longer it stays up, to a limit of a month at {AD_MAX_KUBES}. A Space that shows one
               of your ads keeps 15% of what that view costs.
             </p>
@@ -573,8 +574,8 @@ export default function CreateAds() {
 
           <p className="text-xs leading-relaxed text-muted">
             Longer costs the difference between what is behind it and what that many days is
-            worth, paid now. Shorter costs nothing and gives nothing back: the Kubes stay behind
-            the campaign as views. Nobody gets Kubes back by moving the clock, which is the whole
+            worth, paid now. Shorter costs nothing and gives nothing back: the {currency.plural} stay behind
+            the campaign as views. Nobody gets {currency.plural} back by moving the clock, which is the whole
             point of saying so.
           </p>
         </div>
@@ -610,7 +611,7 @@ export default function CreateAds() {
               value={again}
               onChange={(e) => setAgain(Number(e.target.value))}
               className="h-2 w-full accent-[#1B34E8]"
-              aria-label="Kubes behind this renewal"
+              aria-label={`${currency.plural} behind this renewal`}
             />
             <span className="inline-flex shrink-0 items-center gap-1.5 font-display text-lg font-extrabold tabular-nums">
               <Kube />
