@@ -2,13 +2,12 @@ import { useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import {
-  faGear, faShieldHalved, faRightFromBracket, faUser, faScroll, faRightLeft, faUserPlus,
+  faGear, faShieldHalved, faRightFromBracket, faScroll, faRightLeft, faUserPlus,
   faHeadset,
 } from '@fortawesome/free-solid-svg-icons'
 import type { IconDefinition } from '@fortawesome/fontawesome-svg-core'
 import { SwitchAccounts } from './SwitchAccounts'
 import { useAuth } from '@/hooks/useAuth'
-import { profileLink } from '@/lib/links'
 
 type Item = { to?: string; label: string; icon: IconDefinition; onSelect?: () => void }
 
@@ -38,7 +37,6 @@ export function UserMenu() {
     ...(profile?.is_guest
       ? [{ to: '/signup', label: 'Keep this account', icon: faUserPlus }]
       : []),
-    ...(profile ? [{ to: profileLink(profile), label: 'My Profile', icon: faUser }] : []),
     { to: '/settings', label: 'Settings', icon: faGear },
     ...(profile
       ? [
