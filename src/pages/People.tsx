@@ -15,11 +15,11 @@ import { useAsync } from '@/hooks/useAsync'
 import { useTitle } from '@/hooks/useTitle'
 import { listPeople, sendFriendRequest } from '@/lib/api'
 import { Menu } from '@/components/ui/Menu'
+import { Choices } from '@/components/ui/Choices'
 import { usePersonActions } from '@/components/social/personActions'
 import type { PeopleSort } from '@/lib/api'
 import { profileLink } from '@/lib/links'
 import { formatCount } from '@/lib/format'
-import { cn } from '@/lib/cn'
 import type { Profile } from '@/types/db'
 import { AdBanner } from '@/components/ads/AdBanner'
 import { PersonAvatar } from '@/components/ui/PersonAvatar'
@@ -196,22 +196,12 @@ export default function People() {
           </div>
 
           <div className="mt-4 flex flex-wrap items-center gap-2">
-            {sorts.map((option) => (
-              <button
-                key={option.value}
-                onClick={() => setSort(option.value)}
-                aria-pressed={sort === option.value}
-                className={cn(
-                  'inline-flex h-9 items-center gap-2 rounded-xl border px-3.5 text-sm font-semibold transition-colors',
-                  sort === option.value
-                    ? 'border-brand-bright bg-brand text-onbrand'
-                    : 'border-ink-line bg-ink-raised text-white/65 hover:bg-ink-hover hover:text-white',
-                )}
-              >
-                <FontAwesomeIcon icon={option.icon} className="text-xs" />
-                {option.label}
-              </button>
-            ))}
+            <Choices
+              label="How to sort"
+              value={sort}
+              options={sorts}
+              onChange={(next) => setSort(next)}
+            />
           </div>
         </div>
       </section>

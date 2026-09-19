@@ -5,6 +5,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { Page } from '@/components/layout/AppShell'
 import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
+import { StatTile } from '@/components/ui/StatTile'
 import { Dialog } from '@/components/ui/Dialog'
 import { Input } from '@/components/ui/Input'
 import { EmptyState, ErrorState, SpaceCardSkeleton } from '@/components/ui/States'
@@ -113,32 +114,18 @@ export default function Library() {
       {/* Three shelves, one at a time, rather than three stacked sections you
           scroll past to reach the one you wanted. */}
       <div className="grid grid-cols-3 gap-2.5">
-        {(['Published', 'Drafts', 'Saved'] as const).map((name) => {
-          const count = shelves[name].length
-          const note = name === 'Published'
-            ? 'Live on Kobbleston'
-            : name === 'Drafts' ? 'Only you can see these' : 'Spaces you starred'
-
-          return (
-            <button
-              key={name}
-              onClick={() => setShelf(name)}
-              aria-pressed={shelf === name}
-              className={cn(
-                'rounded-2xl border px-4 py-3 text-left transition-colors',
-                shelf === name
-                  ? 'border-brand-bright bg-brand/15'
-                  : 'border-ink-line bg-ink-card hover:bg-ink-hover',
-              )}
-            >
-              <span className="block font-display text-xl font-extrabold tabular-nums leading-none">
-                {formatCount(count)}
-              </span>
-              <span className="mt-1 block text-sm font-bold">{name}</span>
-              <span className="mt-0.5 hidden text-xs text-muted sm:block">{note}</span>
-            </button>
-          )
-        })}
+        {(['Published', 'Drafts', 'Saved'] as const).map((name) => (
+          <StatTile
+            key={name}
+            value={formatCount(shelves[name].length)}
+            label={
+              name === 'Published' ? 'Published'
+                : name === 'Drafts' ? 'Drafts' : 'Saved'
+            }
+            active={shelf === name}
+            onClick={() => setShelf(name)}
+          />
+        ))}
       </div>
 
       {mine.error && <ErrorState message={mine.error} onRetry={mine.reload} />}

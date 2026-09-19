@@ -5,12 +5,12 @@ import {
   faCheck, faComment, faEllipsis, faFilter, faInbox, faUserGroup, faUserPlus,
   faUsers, faXmark, faHeart, faStar, faBan, faEyeSlash, faUser,
 } from '@fortawesome/free-solid-svg-icons'
-import type { IconDefinition } from '@fortawesome/fontawesome-svg-core'
 import { Page } from '@/components/layout/AppShell'
 import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
 import { Input } from '@/components/ui/Input'
 import { Menu } from '@/components/ui/Menu'
+import { StatTile } from '@/components/ui/StatTile'
 import { Avatar } from '@/components/ui/Avatar'
 import type { Presence } from '@/components/ui/StatusDot'
 import { useLivePresence } from '@/hooks/usePresenceStore'
@@ -123,36 +123,6 @@ function List({ children }: { children: React.ReactNode }) {
 
 function Loading() {
   return <List>{[0, 1, 2, 3, 4, 5].map((i) => <Skeleton key={i} className="h-[4.75rem] rounded-2xl" />)}</List>
-}
-
-/** A count that is a real number from a real list, never a guess. */
-function Count({ icon, value, label, active, onClick }: {
-  icon: IconDefinition
-  value: number | null
-  label: string
-  active: boolean
-  onClick: () => void
-}) {
-  return (
-    <button
-      onClick={onClick}
-      aria-pressed={active}
-      className={cn(
-        'flex items-center gap-3 rounded-2xl border px-4 py-3 text-left transition-colors',
-        active
-          ? 'border-brand-bright bg-brand/15'
-          : 'border-ink-line bg-ink-card hover:bg-ink-hover',
-      )}
-    >
-      <FontAwesomeIcon icon={icon} className="text-base" />
-      <span className="min-w-0">
-        <span className="block font-display text-xl font-extrabold tabular-nums leading-none">
-          {value ?? '·'}
-        </span>
-        <span className="block text-xs text-muted">{label}</span>
-      </span>
-    </button>
-  )
 }
 
 export default function Friends() {
@@ -334,37 +304,37 @@ export default function Friends() {
 
       {/* The numbers are the lists, and each one is the way in. */}
       <div className={cn('grid grid-cols-2 gap-2.5', isMe ? 'sm:grid-cols-3 xl:grid-cols-6' : 'sm:grid-cols-3')}>
-        <Count
+        <StatTile
           icon={faUserGroup}
           value={friends.loading ? null : friends.data?.length ?? 0}
           label="Friends" active={current.name === 'Friends'} onClick={() => setTab('Friends')}
         />
         {isMe && (
-          <Count
+          <StatTile
             icon={faInbox}
             value={incoming.loading ? null : waiting}
             label={waiting === 1 ? 'Request' : 'Requests'}
             active={current.name === 'Requests'} onClick={() => setTab('Requests')}
           />
         )}
-        <Count
+        <StatTile
           icon={faStar}
           value={followers.loading ? null : followers.data?.length ?? 0}
           label="Followers" active={current.name === 'Followers'} onClick={() => setTab('Followers')}
         />
-        <Count
+        <StatTile
           icon={faHeart}
           value={following.loading ? null : following.data?.length ?? 0}
           label="Following" active={current.name === 'Following'} onClick={() => setTab('Following')}
         />
         {isMe && (
           <>
-            <Count
+            <StatTile
               icon={faEyeSlash}
               value={ignored.loading ? null : ignored.data?.length ?? 0}
               label="Ignored" active={current.name === 'Ignored'} onClick={() => setTab('Ignored')}
             />
-            <Count
+            <StatTile
               icon={faBan}
               value={blocked.loading ? null : blocked.data?.length ?? 0}
               label="Blocked" active={current.name === 'Blocked'} onClick={() => setTab('Blocked')}

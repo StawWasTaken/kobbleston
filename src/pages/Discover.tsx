@@ -3,6 +3,8 @@ import { useSearchParams } from 'react-router-dom'
 import { faMagnifyingGlass } from '@fortawesome/free-solid-svg-icons'
 import { Page } from '@/components/layout/AppShell'
 import { Card } from '@/components/ui/Card'
+import { Choices } from '@/components/ui/Choices'
+import { SectionHeader } from '@/components/ui/SectionHeader'
 import { Input } from '@/components/ui/Input'
 import { EmptyState, ErrorState, SpaceCardSkeleton } from '@/components/ui/States'
 import { categoryLabels } from '@/components/spaces/SpaceCard'
@@ -11,7 +13,6 @@ import { useAsync } from '@/hooks/useAsync'
 import { listSpaces } from '@/lib/api'
 import type { SpaceSort } from '@/lib/api'
 import type { Space, SpaceCategory } from '@/types/db'
-import { cn } from '@/lib/cn'
 import { useTitle } from '@/hooks/useTitle'
 import { AdBanner } from '@/components/ads/AdBanner'
 
@@ -23,29 +24,6 @@ const sorts: { value: SpaceSort; label: string }[] = [
 
 const categories: (SpaceCategory | 'all')[] =
   ['all', 'personal', 'community', 'interactive', 'experiment', 'story', 'fan']
-
-function Chip({
-  active, children, onClick,
-}: {
-  active: boolean
-  children: React.ReactNode
-  onClick: () => void
-}) {
-  return (
-    <button
-      onClick={onClick}
-      aria-pressed={active}
-      className={cn(
-        'h-9 shrink-0 rounded-xl border px-3.5 text-sm font-semibold transition-colors',
-        active
-          ? 'border-brand-bright bg-brand text-white'
-          : 'border-ink-line bg-ink-card text-white/65 hover:bg-ink-hover hover:text-white',
-      )}
-    >
-      {children}
-    </button>
-  )
-}
 
 /**
  * A section of the directory: a heading and a grid under it, rather than a
@@ -61,7 +39,7 @@ function Shelf({ title, spaces, loading }: {
 
   return (
     <section className="mb-9">
-      <h2 className="mb-3 font-display text-xl font-extrabold sm:text-2xl">{title}</h2>
+      <SectionHeader title={title} />
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4">
         {loading
           ? [0, 1, 2, 3].map((i) => <SpaceCardSkeleton key={i} />)
@@ -119,18 +97,23 @@ export default function Discover() {
           placeholder="Search Spaces by name"
           aria-label="Search Spaces"
         />
-        <div className="flex gap-2 overflow-x-auto pb-1 kob-scroll">
-          {!browsing && sorts.map((s) => (
-            <Chip key={s.value} active={sort === s.value} onClick={() => setSort(s.value)}>
-              {s.label}
-            </Chip>
-          ))}
-          {!browsing && <span className="mx-1 w-px shrink-0 bg-ink-line" />}
-          {categories.map((c) => (
-            <Chip key={c} active={category === c} onClick={() => setCategory(c)}>
-              {c === 'all' ? 'Everything' : categoryLabels[c]}
-            </Chip>
-          ))}
+        <div className="flex flex-wrap items-center gap-2">
+          {!browsing && (
+            <>
+              <Choices label="How to sort" value={sort} options={sorts} onChange={setSort} />
+              <span className="mx-1 hidden h-6 w-px bg-ink-line sm:block" />
+            </>
+          )}
+          <Choices
+            label="What kind of Space"
+            tone="soft"
+            value={category}
+            options={categories.map((c) => ({
+              value: c,
+              label: c === 'all' ? 'Everything' : categoryLabels[c],
+            }))}
+            onChange={setCategory}
+          />
         </div>
       </div>
 

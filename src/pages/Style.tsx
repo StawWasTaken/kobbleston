@@ -9,6 +9,9 @@ import { Page } from '@/components/layout/AppShell'
 import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
 import { Input } from '@/components/ui/Input'
+import { Tabs } from '@/components/ui/Tabs'
+import { Choices } from '@/components/ui/Choices'
+import { Toolbar } from '@/components/ui/Toolbar'
 import { Dialog } from '@/components/ui/Dialog'
 import { Confirm } from '@/components/ui/Confirm'
 import { EmptyState, ErrorState, Skeleton } from '@/components/ui/States'
@@ -29,7 +32,6 @@ import {
 } from '@/lib/api'
 import type { Placement, StyleItem } from '@/lib/api'
 import { avatarOf } from '@/lib/avatars'
-import { cn } from '@/lib/cn'
 
 const slotNames: Record<StyleItem['slot'], string> = {
   hat: 'Hat', hair: 'Hair', face: 'Face', accessory: 'Accessory', frame: 'Frame',
@@ -321,22 +323,17 @@ export default function Style() {
       </header>
 
       {/* --------------------------------------------------------- filters */}
-      <div className="sticky top-[3.25rem] z-20 -mx-4 space-y-2.5 border-b border-ink-line bg-ink/85 px-4 py-3 backdrop-blur sm:-mx-6 sm:px-6">
+      <Toolbar>
         <div className="flex flex-wrap items-center gap-2">
-          <div className="flex rounded-xl border border-ink-line bg-ink-card p-1">
-            {(['shop', 'mine'] as const).map((one) => (
-              <button
-                key={one}
-                onClick={() => setTab(one)}
-                className={cn(
-                  'rounded-lg px-3 py-1.5 text-sm font-bold transition-colors',
-                  tab === one ? 'bg-brand text-onbrand' : 'text-white/60 hover:text-white',
-                )}
-              >
-                {one === 'shop' ? 'The shop' : 'Yours'}
-              </button>
-            ))}
-          </div>
+          <Tabs
+            label="The shop, or what you own"
+            value={tab}
+            onChange={setTab}
+            options={[
+              { value: 'shop', label: 'The shop' },
+              { value: 'mine', label: 'Yours', count: mine.data?.length ?? null },
+            ]}
+          />
 
           {tab === 'shop' && (
             <Input
@@ -351,24 +348,16 @@ export default function Style() {
         </div>
 
         {tab === 'shop' && (
-          <div className="flex flex-wrap gap-1.5">
-            {filters.map((one) => (
-              <button
-                key={one.label}
-                onClick={() => setSlot(one.value)}
-                className={cn(
-                  'rounded-lg border px-2.5 py-1.5 text-xs font-bold transition-colors',
-                  slot === one.value
-                    ? 'border-brand-bright bg-brand/15 text-white'
-                    : 'border-ink-line bg-ink-card text-white/60 hover:text-white',
-                )}
-              >
-                {one.label}
-              </button>
-            ))}
-          </div>
+          <Choices
+            label="What kind of thing"
+            size="sm"
+            tone="soft"
+            value={slot ?? 'all'}
+            options={filters.map((one) => ({ value: one.value ?? 'all', label: one.label }))}
+            onChange={(next) => setSlot(next === 'all' ? null : next as StyleItem['slot'])}
+          />
         )}
-      </div>
+      </Toolbar>
 
       {source.error && <ErrorState message={source.error} onRetry={source.reload} />}
 
