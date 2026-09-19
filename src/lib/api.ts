@@ -1103,6 +1103,20 @@ export async function transferCommunity(communityId: string, toUser: string) {
   unwrap(await supabase.rpc('transfer_community', { target: communityId, to_user: toUser }))
 }
 
+/** Redeeming a code. The database decides what it is worth, and says why not. */
+export async function redeemCode(code: string): Promise<{ reward: number; message: string }> {
+  const rows = unwrap(await supabase.rpc('redeem_code', { entered: code }))
+  const row = (Array.isArray(rows) ? rows[0] : rows) as { reward: number; message: string }
+  return row ?? { reward: 0, message: 'Code accepted.' }
+}
+
+/** Your own movements, as far back as you ask and of the kinds you ask for. */
+export async function myTransactions(
+  { days = 30, kinds = null }: { days?: number; kinds?: string[] | null } = {},
+): Promise<PixelTransaction[]> {
+  return (unwrap(await supabase.rpc('my_transactions', { days, kinds })) as PixelTransaction[]) ?? []
+}
+
 export async function listPixelTransactions(userId: string): Promise<PixelTransaction[]> {
   return (unwrap(await supabase.from('pixel_transactions')
     .select('id, amount, kind, note, created_at')

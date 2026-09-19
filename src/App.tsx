@@ -41,6 +41,8 @@ const Guidelines = lazyPage(() => import('@/pages/Policies').then((m) => ({ defa
 const Friends = lazyPage(() => import('@/pages/Friends'))
 const Library = lazyPage(() => import('@/pages/Library'))
 const Style = lazyPage(() => import('@/pages/Style'))
+const Brix = lazyPage(() => import('@/pages/Brix'))
+const BrixCodes = lazyPage(() => import('@/pages/BrixCodes'))
 const StyleItem = lazyPage(() => import('@/pages/StyleItem'))
 const Profile = lazyPage(() => import('@/pages/Profile'))
 const Settings = lazyPage(() => import('@/pages/Settings'))
@@ -147,6 +149,8 @@ export default function App() {
                     <Route path="/c/:slug/configure" element={<ConfigureCommunity />} />
                   </Route>
                   <Route path="/friends" element={<Friends />} />
+                  <Route path="/brix" element={<Brix />} />
+                  <Route path="/brix/codes" element={<BrixCodes />} />
                   <Route path="/library" element={<Library />} />
                   <Route path="/settings" element={<Settings />} />
                 </Route>
