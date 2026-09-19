@@ -108,7 +108,32 @@ clients would want the row shapes on their own.
 **What to do:** split when the second client exists, not now. Noted so it is a
 decision rather than an accident.
 
-## 8. Create is built around uploads and Spaces
+## 8. Notifications carry everything, including things that must not be lost
+
+One `notifications` table, one bell, one feed. The direction separates two
+kinds of message: ordinary activity, and communication from Kobbleston
+itself, which is moderation decisions, security notices, support replies,
+policy notices and announcements. The second kind cannot be allowed to scroll
+past behind six people liking a Space.
+
+**What to do:** an official inbox as its own thing, with its own address, its
+own unread count and its own retention, feeding from moderation, support and
+announcements. The notifications table stays as it is for activity. This
+lands with the safety structure below rather than on its own.
+
+## 9. There is no account standing, and nothing to appeal to
+
+Reports exist and create real rows. What does not exist is the other half:
+what happened as a result, what somebody is currently restricted from doing,
+and a way to ask for that to be looked at again. Moderation today can only
+remove things.
+
+**What to do:** violations as records against an account, an account status
+page that says plainly where somebody stands without exposing internal
+moderation notes, and appeals that create real rows a moderator sees. No
+decorative pages: if it is on screen, it is connected to something.
+
+## 10. Create is built around uploads and Spaces
 
 The hub's rail is Spaces, Uploads, Marketplace, Inventory, Analytics, Ads. The
 direction wants Spaces, Avatar, Catalog and, later, experiences.

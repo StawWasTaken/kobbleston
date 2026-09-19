@@ -1,10 +1,11 @@
 /*
  * What Kobbleston runs on: Brix.
  *
- * It was Pixels, then Kubes, and it is Brix from here. Nothing outside this
- * file is allowed to know what it is called: pages ask here for the word and
- * for the way an amount reads in a sentence, so the next time anything about
- * it changes, it changes here.
+ * It was Pixels, then Kubes, and it says Brix today. That name is still
+ * provisional: the currency has to work across the Catalog, Spaces, games,
+ * the player and whatever pays creators, and it gets its final name once
+ * that is settled. Nothing outside this file knows what it is called, so
+ * that day is a few lines rather than a search through fifty of them.
  *
  * Brix does not pluralise. One Brix, fifty Brix, the way a currency behaves
  * rather than the way a brick does.

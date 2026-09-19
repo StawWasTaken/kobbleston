@@ -1,87 +1,148 @@
 # Where Kobbleston is going
 
-Written down after the direction meeting, so the work has one place to point
-at rather than living in a chat log.
+The product direction, kept here so the work has one place to point at. When
+this and anything else disagree, this wins.
 
-## The short version
+## What Kobbleston is
 
-Kobbleston is a social creation platform. It begins with 2D Spaces and grows
-into avatars, a Catalog, 3D worlds and games, with a player and a desktop
-creator alongside the website. The website builder is not being replaced. It
-becomes the first generation of Kobbleston, and a Space eventually means more
-than one kind of thing.
+A social creation platform: a place where people make things, share them,
+find each other's, and eventually go inside them together. Not a website
+builder that gets games bolted on later. One platform that starts with 2D
+creation and grows into 3D experiences.
 
-The goal is not to rebuild somebody else's platform under our name. It is to
-build a place where people make things, share them and experience them
-together, which is what Kobbleston already is at a smaller size.
+A Space is the universal thing somebody makes. Today that is a 2D site. In
+time a Space can be a 3D world, a game, a social environment, an interactive
+experience, or a mixture. The builder we have is the first creation format,
+not a draft to be thrown away.
+
+- Name: Kobbleston. The name should feel like a place.
+- Tagline: Pixels go brrr.
+- Brand blue `#1B34E8`, background `#101012`, sidebar `#162382`, presence and
+  Enter green `#1CAE71`, font BD Gravel-VF, mascot Kobby.
+- Modern, polished, social, playful, a little strange, young, creative.
+- Never generic SaaS, corporate software, startup-template UI, purple
+  gradients, glass everywhere, or sterile enterprise design.
+
+## Who it is for
+
+Roughly 15 to 35. The minimum age is not settled and depends on privacy law,
+parental consent, messaging rules, user content, payments and data
+collection in each place we operate. It needs proper legal review before any
+broad launch, and nothing in the product should state a final number as
+though it were decided.
+
+Safety and moderation are part of the platform from the beginning rather than
+something added once it is big.
 
 ## Three doors, one platform
 
-Eventually there are three ways in, and they are the same Kobbleston:
+Kobbleston Web, a future player, and a future desktop creator are clients of
+one platform, not three products. They share accounts, profiles, avatars,
+inventory, currency, friends, blocks, communities, chat, badges, events,
+notifications, moderation and publishing.
 
-- **Kobbleston Web.** What exists today: accounts, profiles, friends, chat,
-  discovery, 2D Spaces, the Catalog, creator management, publishing, settings.
-  This does not shrink as the rest arrives. It grows.
-- **A player.** A dedicated application for entering 3D Spaces and games.
-  Not built, not named.
-- **A desktop creator.** Deep 3D creation: scenes, assets, scripting, testing,
-  publishing, versioning. Not built, not named, and deliberately not called
-  Studio by default. Kobbleston Create on the web is management and 2D making;
-  the desktop application is for the heavy work. They are not the same product
-  and neither pretends to be the other.
+The test of whether we have built it right: somebody customises an avatar on
+the web, walks into a 3D Space, is seen by another person wearing that same
+avatar, befriends them, opens their profile, buys something from the Catalog,
+wears it, earns a badge, joins a community, messages a friend who is on the
+website, and comes back to the web to find all of it already true.
 
-They share accounts, profiles, avatars, friends, chat, Spaces, the Catalog,
-the currency, permissions, moderation, publishing, notifications and the
-backend. Somebody moving between them should feel like they walked through a
-different door of the same building.
-
-## What is being built now, and what is not
-
-In order, and only as far as each is actually needed:
-
-1. Keep today's Kobbleston working and coherent.
-2. Know what in the architecture would make the rest awkward, and write it
-   down (`docs/audit.md`).
-3. One product, visually and behaviourally: a real component language rather
-   than forty pages each solving tabs and chips their own way.
-4. The currency behind an abstraction, so it can be renamed once and properly.
-5. A policy system rather than two legal pages.
-6. The avatar data model, derived from Kobby, with the profile picture drawn
-   from the avatar rather than uploaded beside it.
-7. Create grows: Spaces, Avatar, Catalog, and later experiences.
-8. Catalog and UGC foundations, with user content treated as untrusted at
-   every step.
-9. Only then, research on a 3D runtime, starting at the smallest thing that
-   runs: a scene, a Kobby shaped character, a camera, movement, a floor.
-
-Nothing here is a reason to rip anything out. Each step leaves the site
-working, and each is small enough to test before the next one starts.
+Do not build the player or the creator application yet. Leave room for them.
 
 ## The words we use
 
-Decided, and not up for reinvention page by page:
-
-- **Brix.** The currency. It does not pluralise: one Brix, fifty Brix. The
-  word lives in `src/lib/currency.ts`, the mark in
-  `src/components/brand/Currency.tsx`, and `docs/currency.md` says how it
-  moves. Pixels and Kubes were the names before it.
-- **Ston.** The unit of length in a 3D Space, when there is one. A character
-  is so many stons tall, a wall so many stons wide. Nothing uses it yet, and
-  nothing should invent a second unit later.
-- **Space.** Anything somebody makes and other people go into: a 2D site
-  today, and eventually a 3D world, a game, or something in between.
+- **Space.** Anything somebody makes and other people go into.
+- **Create.** Making and managing on the web: accessible, quick, social. The
+  future desktop application is for deep 3D work and is not called Studio by
+  default.
 - **Catalog.** Things people make for other people to wear or use.
-- **Create.** Making and managing on the web. The desktop application, when it
-  exists, is not Create and is not called Studio by default.
+- **Ston.** The unit of length inside a 3D Space, when there is one.
+- **The currency.** A platform level abstraction. The name is not settled,
+  which is why nothing outside `src/lib/currency.ts` knows what it is called.
+  Brix is what it says today, and it is provisional.
 
-## Principles
+## How the platform is shaped
 
-- The existing work is the foundation, not a draft to be thrown away.
-- Small subsystem, tested, integrated, committed, then the next one. No giant
-  speculative architecture in one pass.
-- Kobbleston looks like Kobbleston: our own type, our own components, our own
-  motion, our own words, Kobby used deliberately. Not a generic product, and
-  not a copy of the platforms we are compared to.
-- User content is untrusted input, always, in every surface. Nothing a person
-  uploads runs as trusted platform code, and authorisation lives in the
-  database rather than in a form.
+One core, several clients. The core owns identity, profiles, avatars,
+friends, blocks, chat, communities, Catalog, inventory, currency, badges,
+events, Spaces, moderation, reports, account status, notifications, the
+official inbox, support, permissions and publishing.
+
+The entities to think in, which is not the same as tables to create: User,
+Profile, Avatar, Inventory, CatalogItem, Currency, Space, Experience,
+Friendship, Block, Community, Message, Badge, Event, Report, Violation,
+Appeal, SupportTicket, OfficialMessage. Several of these already exist under
+other names. Understand what is there before adding anything.
+
+## Rules that decide arguments
+
+**Nothing fake.** No invented visits, activity, statistics, notifications,
+reports, appeals, tickets, purchases or inventory. If a thing is not built,
+the page says so plainly. A good empty state beats a convincing lie.
+
+**Real time is real.** Presence, chat, notifications and activity come from
+the backend, never from a timer pretending.
+
+**User content is untrusted, everywhere.** Server side authorisation, row
+level security, validation, rate limits, moderation hooks. Nothing anybody
+uploads runs as trusted platform code. No secrets in the frontend, and no
+pretending frontend code can be hidden.
+
+**Games get permission, not the account.** A Space or game may eventually ask
+for narrow things: public profile, avatar, a friend request, a report, an
+authorised badge, its own chat. Never private messages, credentials,
+personal data, arbitrary account changes or a way round moderation. Enforced
+on the server.
+
+**Moderation is a ladder, not a trapdoor.** Broad freedom of expression,
+narrow tolerance for real harm. Swearing, arguments and edgy humour are not
+punishments. Threats, targeted abuse, hate, extremist recruitment, doxxing,
+exploitation and attacks on the platform are. Detection, warning, removal,
+timeout, restriction, suspension, permanent, in that order, with review and
+appeal before anything irreversible. Context matters, and fiction is
+fiction.
+
+**Reports, blocks, friends, badges, communities and events are platform
+level.** Made anywhere, true everywhere.
+
+**Notifications and the official inbox are different things.** Ordinary
+activity goes to notifications. Moderation decisions, security notices,
+support replies, policy notices and platform announcements go to an inbox
+that does not get lost in the noise.
+
+**Copyright is a process, not a disclaimer.** Uploaders must have the rights,
+and that alone is not enough: reporting, removal, repeat infringement,
+appeals and moderation records are part of the platform. The wording needs a
+lawyer, and nothing should claim it has had one until it has.
+
+## Design
+
+One product, not a pile of pages. Shared components for typography, spacing,
+buttons, inputs, cards, tabs, navigation, dropdowns, modals, notifications,
+badges, avatars, status, loading, empty, error and confirmation.
+
+Colour and light carry meaning, never mood: brand blue for identity and what
+is chosen, green for presence and Enter, grey for gone. Structure comes from
+spacing and one card surface, not from glow. Icons are filled Font Awesome or
+our own art, never emoji. Motion supports the moment and respects a request
+for less of it. Kobby turns up where he has something to do.
+
+Everything works on a phone, with keyboard access, visible focus, readable
+contrast and sensible touch targets.
+
+## The order of work
+
+1. Keep today's Kobbleston working and coherent.
+2. Know what would make the rest awkward: `docs/audit.md`.
+3. One product: the shared component language, page by page.
+4. The currency as an abstraction, named once properly.
+5. The policy and safety structure: policies, account status, violations,
+   appeals, support, the official inbox.
+6. The avatar model, canonical, with the profile picture drawn from it.
+7. Create grows: Spaces, Avatar, Catalog, and later experiences.
+8. Catalog and user content foundations.
+9. Only then the smallest possible 3D runtime: a scene, a Kobby, a camera,
+   movement, a floor. Then two of them who can see each other. Then the
+   platform behind it.
+
+Every step leaves the site working. Small piece, tested, committed, next.

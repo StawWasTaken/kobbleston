@@ -11,7 +11,7 @@
  */
 
 export const SITE = 'https://kobbleston.com'
-export const TAGLINE = 'Make Something Nobody Else Has'
+export const TAGLINE = 'Pixels go brrr'
 
 export const pages = [
   {

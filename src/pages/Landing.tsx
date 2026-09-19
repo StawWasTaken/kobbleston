@@ -149,9 +149,13 @@ export default function Landing() {
           <div>
             <Wordmark to={null} className="h-9 sm:h-12" />
 
+            <p className="mt-5 font-display text-sm font-extrabold uppercase tracking-[0.3em] text-brand-bright">
+              Pixels go brrr
+            </p>
+
             {/* Sized so each line holds together instead of breaking after
                 "Make" once the form is beside it. */}
-            <h1 className="mt-8 font-display text-5xl font-extrabold leading-[0.86] sm:text-6xl xl:text-7xl">
+            <h1 className="mt-4 font-display text-5xl font-extrabold leading-[0.86] sm:text-6xl xl:text-7xl">
               <span className="block whitespace-nowrap">Make Something</span>
               <span className="block whitespace-nowrap">Nobody Else Has</span>
             </h1>

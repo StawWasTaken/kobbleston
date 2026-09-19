@@ -90,7 +90,7 @@ export function StoryPage({
           </h1>
           <p className="mt-5 max-w-2xl text-lg leading-relaxed text-white/60">{intro}</p>
           <p className="mt-8 font-display text-sm font-extrabold uppercase tracking-[0.18em] text-brand-bright">
-            Make Something Nobody Else Has
+            Pixels go brrr
           </p>
         </section>
 
