@@ -8,6 +8,7 @@ import { Page } from '@/components/layout/AppShell'
 import { BackLink } from '@/components/ui/BackLink'
 import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
+import { Choices } from '@/components/ui/Choices'
 import { EmptyState, ErrorState, Skeleton } from '@/components/ui/States'
 import { GuestGate } from '@/components/ui/GuestGate'
 import { useToast } from '@/components/ui/Toast'
@@ -28,7 +29,6 @@ import {
 import type { StyleItem as Item } from '@/lib/api'
 import { avatarOf, defaultAvatars } from '@/lib/avatars'
 import { formatCount } from '@/lib/format'
-import { cn } from '@/lib/cn'
 
 const slotWords: Record<Item['slot'], string> = {
   hat: 'Hat', hair: 'Hair', face: 'Face', accessory: 'Accessory', frame: 'Frame',
@@ -152,24 +152,17 @@ export default function StyleItemPage() {
               className="w-full max-w-[16rem]"
             />
 
-            <div className="absolute bottom-3 right-3 flex overflow-hidden rounded-xl border border-ink-line bg-ink-card/85 backdrop-blur">
-              {[
-                { on: true, label: 'On you' },
-                { on: false, label: 'On a face' },
-              ].map((one) => (
-                <button
-                  key={one.label}
-                  onClick={() => setOnMe(one.on)}
-                  aria-pressed={onMe === one.on}
-                  className={cn(
-                    'px-3 py-1.5 text-xs font-bold transition-colors',
-                    onMe === one.on ? 'bg-brand text-onbrand' : 'text-white/60 hover:text-white',
-                  )}
-                >
-                  {one.label}
-                </button>
-              ))}
-            </div>
+            <Choices
+              size="sm"
+              className="absolute bottom-3 right-3 rounded-xl bg-ink-card/85 p-1 backdrop-blur"
+              label="Whose face to try it on"
+              value={onMe ? 'me' : 'face'}
+              options={[
+                { value: 'me', label: 'On you' },
+                { value: 'face', label: 'On a face' },
+              ]}
+              onChange={(next) => setOnMe(next === 'me')}
+            />
           </div>
 
           <div className="flex items-center gap-4 px-1">

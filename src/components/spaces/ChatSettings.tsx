@@ -1,10 +1,10 @@
 import { useEffect, useState } from 'react'
 import { Button } from '@/components/ui/Button'
+import { Choices } from '@/components/ui/Choices'
 import { Card } from '@/components/ui/Card'
 import { Input } from '@/components/ui/Input'
 import { useToast } from '@/components/ui/Toast'
 import { updateSpaceChatSettings } from '@/lib/api'
-import { cn } from '@/lib/cn'
 import type { Space } from '@/types/db'
 
 const slowmodes = [0, 3, 10, 30, 60]
@@ -71,24 +71,15 @@ export function ChatSettings({ space, onSaved }: { space: Space; onSaved: () => 
 
       <fieldset>
         <legend className="mb-2 text-xs font-bold uppercase tracking-wide text-muted">Slow mode</legend>
-        <div className="flex flex-wrap gap-2">
-          {slowmodes.map((seconds) => (
-            <button
-              key={seconds}
-              type="button"
-              aria-pressed={slowmode === seconds}
-              onClick={() => setSlowmode(seconds)}
-              className={cn(
-                'h-9 rounded-lg border px-3.5 text-sm font-bold transition-colors',
-                slowmode === seconds
-                  ? 'border-brand-bright bg-brand text-white'
-                  : 'border-ink-line bg-ink-raised text-white/60 hover:bg-ink-hover hover:text-white',
-              )}
-            >
-              {seconds === 0 ? 'Off' : `${seconds}s`}
-            </button>
-          ))}
-        </div>
+        <Choices
+          label="How long between messages"
+          value={String(slowmode)}
+          options={slowmodes.map((seconds) => ({
+            value: String(seconds),
+            label: seconds === 0 ? 'Off' : `${seconds}s`,
+          }))}
+          onChange={(next) => setSlowmode(Number(next))}
+        />
       </fieldset>
 
       <p className="text-xs leading-relaxed text-muted">
