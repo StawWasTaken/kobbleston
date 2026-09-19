@@ -1,0 +1,220 @@
+import * as THREE from 'three'
+import { GRAVITY, K6_HEIGHT, K6_RADIUS } from './units'
+import type { Intent } from './input'
+
+/**
+ * Moving K6 around a world made of boxes.
+ *
+ * This is deliberately not a physics engine. An avatar is an upright box that
+ * slides along walls, stands on top of things and falls off them, which is
+ * every movement a Kobblon experience needs before it needs ragdolls. A real
+ * solver can replace this later behind the same shape of call.
+ */
+
+export type Solid = {
+  /** In world stons, already accounting for the object's own transform. */
+  box: THREE.Box3
+}
+
+export type ControllerState = {
+  position: THREE.Vector3
+  velocity: THREE.Vector3
+  /** Which way the body is facing, in radians. */
+  facing: number
+  grounded: boolean
+  speed: number
+  rising: boolean
+}
+
+const WALK = 11
+const RUN = 22
+const JUMP = 26
+/** How fast the body swings round to face where it is going. */
+const TURN = 12
+const ACCELERATE = 90
+const FRICTION = 14
+/** A step this size is walked up rather than bumped into. */
+const STEP = 1.4
+/**
+ * Boxes that only touch are not overlapping. Without this, standing on a
+ * block counts as being inside it, and a step exactly as tall as the step
+ * height becomes a wall.
+ */
+const SKIN = 0.02
+
+export class Controller {
+  readonly state: ControllerState = {
+    position: new THREE.Vector3(),
+    velocity: new THREE.Vector3(),
+    facing: 0,
+    grounded: false,
+    speed: 0,
+    rising: false,
+  }
+
+  /** Whether the jump key has been let go since the last jump. */
+  private jumpReady = true
+  private box = new THREE.Box3()
+
+  constructor(private solids: Solid[] = []) {}
+
+  setSolids(solids: Solid[]) {
+    this.solids = solids
+  }
+
+  placeAt(x: number, y: number, z: number, facing = 0) {
+    this.state.position.set(x, y, z)
+    this.state.velocity.set(0, 0, 0)
+    this.state.facing = facing
+  }
+
+  /** The avatar's box at a given foot position. */
+  private boxAt(at: THREE.Vector3, into = this.box) {
+    return into.set(
+      new THREE.Vector3(at.x - K6_RADIUS, at.y, at.z - K6_RADIUS),
+      new THREE.Vector3(at.x + K6_RADIUS, at.y + K6_HEIGHT, at.z + K6_RADIUS),
+    )
+  }
+
+  private hits(at: THREE.Vector3) {
+    const box = this.boxAt(at, new THREE.Box3())
+    box.min.addScalar(SKIN)
+    box.max.subScalar(SKIN)
+    return this.solids.filter((solid) => solid.box.intersectsBox(box))
+  }
+
+  /**
+   * One step of the world. `cameraYaw` is where the camera is looking, so
+   * that forward means forward from where the player is sitting.
+   */
+  step(intent: Intent, cameraYaw: number, dt: number) {
+    const { position, velocity } = this.state
+
+    /*
+     * What the player asked for, turned into a direction in the world.
+     *
+     * Kobblon's forward is +Z: K6 is modelled facing that way, so a facing of
+     * zero, a yaw of zero and a press of forward all mean the same direction.
+     * Get this wrong and the avatar walks towards the camera.
+     */
+    const wanted = new THREE.Vector3(-intent.x, 0, intent.z)
+    if (wanted.lengthSq() > 0) {
+      wanted.normalize().applyAxisAngle(new THREE.Vector3(0, 1, 0), cameraYaw)
+    }
+
+    const top = intent.run ? RUN : WALK
+    const target = wanted.multiplyScalar(top)
+
+    // -- accelerate towards it on the floor, drift in the air
+    const grip = this.state.grounded ? 1 : 0.28
+    const flat = new THREE.Vector3(velocity.x, 0, velocity.z)
+    const push = target.clone().sub(flat)
+    const change = Math.min(ACCELERATE * grip * dt, push.length())
+    if (push.lengthSq() > 0) flat.addScaledVector(push.normalize(), change)
+
+    if (target.lengthSq() === 0 && this.state.grounded) {
+      const slow = Math.max(0, 1 - FRICTION * dt)
+      flat.multiplyScalar(slow)
+    }
+
+    velocity.x = flat.x
+    velocity.z = flat.z
+
+    // -- jumping, once per press, only with something underfoot
+    if (intent.jump && this.state.grounded && this.jumpReady) {
+      velocity.y = JUMP
+      this.state.grounded = false
+      this.jumpReady = false
+    }
+    if (!intent.jump) this.jumpReady = true
+
+    velocity.y -= GRAVITY * dt
+
+    // -- move one axis at a time so a wall stops one direction, not all three
+    this.slide(position, new THREE.Vector3(velocity.x * dt, 0, 0), 'x')
+    this.slide(position, new THREE.Vector3(0, 0, velocity.z * dt), 'z')
+    this.fall(position, velocity.y * dt)
+
+    // -- face the way we are going, without snapping
+    const moving = new THREE.Vector2(velocity.x, velocity.z)
+    this.state.speed = moving.length()
+    if (this.state.speed > 0.5) {
+      const want = Math.atan2(velocity.x, velocity.z)
+      let turn = want - this.state.facing
+      while (turn > Math.PI) turn -= Math.PI * 2
+      while (turn < -Math.PI) turn += Math.PI * 2
+      this.state.facing += turn * Math.min(1, TURN * dt)
+    }
+
+    this.state.rising = velocity.y > 0
+    return this.state
+  }
+
+  /** Moves along one axis, and steps up over anything short enough. */
+  private slide(position: THREE.Vector3, by: THREE.Vector3, axis: 'x' | 'z') {
+    if (by[axis] === 0) return
+    const next = position.clone().add(by)
+    const blocked = this.hits(next)
+    if (!blocked.length) { position.copy(next); return }
+
+    // Try again from a step higher: a kerb should not stop somebody walking.
+    const stepped = next.clone()
+    stepped.y += STEP
+    if (!this.hits(stepped).length) {
+      const top = Math.max(...blocked.map((solid) => solid.box.max.y))
+      if (top - position.y <= STEP) {
+        position.copy(next)
+        position.y = top
+        return
+      }
+    }
+
+    this.state.velocity[axis] = 0
+  }
+
+  /** Moves up or down, landing on whatever is underneath. */
+  private fall(position: THREE.Vector3, by: number) {
+    if (by === 0) return
+    const next = position.clone()
+    next.y += by
+
+    const blocked = this.hits(next)
+    if (!blocked.length) {
+      // Going down and about to touch: settle onto it rather than hovering a
+      // skin's width above it and falling that width again next frame.
+      if (by < 0) {
+        const probe = next.clone()
+        probe.y -= SKIN * 3
+        const under = this.hits(probe)
+        if (under.length) {
+          position.copy(next)
+          position.y = Math.max(...under.map((solid) => solid.box.max.y))
+          this.state.velocity.y = 0
+          this.state.grounded = true
+          return
+        }
+      }
+
+      position.copy(next)
+      this.state.grounded = false
+      if (position.y < -200) this.respawn()
+      return
+    }
+
+    if (by < 0) {
+      // landing: stand on the highest thing we went through
+      position.y = Math.max(...blocked.map((solid) => solid.box.max.y))
+      this.state.grounded = true
+    } else {
+      // a ceiling: stop rising, keep the feet where they are
+      position.y = Math.min(...blocked.map((solid) => solid.box.min.y)) - K6_HEIGHT
+    }
+    this.state.velocity.y = 0
+  }
+
+  /** Falling out of the world is a bug in a scene, not a death. */
+  private respawn() {
+    this.state.position.set(0, 20, 0)
+    this.state.velocity.set(0, 0, 0)
+  }
+}

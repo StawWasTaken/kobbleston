@@ -181,3 +181,14 @@ no top bar either.
 account menu in one pass and decide where each thing lives, rather than adding
 to whichever one is nearest. Not urgent, and not worth doing piecemeal: the
 point of doing it at all is that it comes out coherent.
+
+## 13. A Space can only ever be a website (superseded by the engine)
+
+Item 2 said `spaces` has no notion of what kind of thing it is. That is still
+true, and it is now the next thing in the way: the engine in `src/engine` runs
+experiences that the `spaces` table cannot describe.
+
+**What to do, when Creator lands:** one column, `kind`, defaulting to the
+website we have, plus somewhere for an experience manifest to live. Not
+before: an experience today is a file, and it should stay a file until Creator
+is writing them.
