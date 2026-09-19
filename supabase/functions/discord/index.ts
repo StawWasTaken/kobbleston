@@ -134,12 +134,14 @@ Deno.serve(async (request) => {
     if (!me.ok) return sendTo('/settings?discord=failed')
 
     const account = await me.json()
-    const name = account.global_name || account.username || ''
 
     const { error } = await admin.rpc('link_discord', {
       who,
       discord: String(account.id),
-      discord_name: name,
+      // What they call themselves, and how you find them. The first is shown
+      // on their profile; the second is theirs to give out.
+      shown: account.global_name || account.username || '',
+      handle: account.username || '',
     })
     if (error) return sendTo('/settings?discord=failed')
 

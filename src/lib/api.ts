@@ -185,6 +185,18 @@ export async function unlinkDiscord() {
   unwrap(await supabase.rpc('unlink_discord'))
 }
 
+/** Who may see your Discord handle. Your display name is on your profile either way. */
+export type DiscordVisibility = 'everyone' | 'friends' | 'nobody'
+
+export async function setDiscordVisibility(whoSees: DiscordVisibility) {
+  unwrap(await supabase.rpc('set_discord_visibility', { who_sees: whoSees }))
+}
+
+/** Somebody's handle, when they have said you may have it. */
+export async function discordHandleOf(userId: string): Promise<string | null> {
+  return (unwrap(await supabase.rpc('discord_handle_of', { target: userId })) as string | null) ?? null
+}
+
 /** The Kobblon account a Discord id belongs to, if it belongs to one. */
 export async function profileByDiscord(
   discord: string,

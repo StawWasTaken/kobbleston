@@ -21,6 +21,7 @@ import { AssetTile } from '@/components/create/AssetTile'
 import { useChatDock } from '@/components/chat/ChatDock'
 import { faDiscord } from '@fortawesome/free-brands-svg-icons'
 import { Menu } from '@/components/ui/Menu'
+import { Tooltip } from '@/components/ui/Tooltip'
 import { Emblem } from '@/components/community/Emblem'
 import { usePersonActions } from '@/components/social/personActions'
 import { Dialog } from '@/components/ui/Dialog'
@@ -32,7 +33,7 @@ import { useAsync } from '@/hooks/useAsync'
 import { useCanonicalPath } from '@/hooks/useCanonicalPath'
 import { useTitle, useSocialCard } from '@/hooks/useTitle'
 import {
-  addressNow, getProfileByUsername, getProfileOverview, isFollowing, listEarnedBadges, peopleList,
+  addressNow, discordHandleOf, getProfileByUsername, getProfileOverview, isFollowing, listEarnedBadges, peopleList,
   listMemberCommunities, listSpacesByOwner, sendFriendRequest, setFollowing, standingWith,
   startConversation,
   usernameHistory, usernameById, listAssetsByCreator, updateProfile, uploadAvatar,
@@ -154,6 +155,11 @@ export default function Profile() {
   )
   const made = useAsync(async () => (user ? listAssetsByCreator(user.id) : []), [user?.id])
   const badges = useAsync(async () => (user ? listEarnedBadges(user.id) : []), [user?.id])
+  // Their handle, if they have said you may have it. The database decides.
+  const handle = useAsync(
+    async () => (user?.discord_display ? discordHandleOf(user.id) : null),
+    [user?.id, user?.discord_display],
+  )
   const communities = useAsync(async () => (user ? listMemberCommunities(user.id) : []), [user?.id])
   const names = useAsync(async () => (user ? usernameHistory(user.id) : []), [user?.id])
 
@@ -427,11 +433,22 @@ export default function Profile() {
 
             {/* Somebody's Discord, when they have said which one is theirs
                 and Discord has agreed. */}
-            {user.discord_username && (
-              <p className="mt-3 inline-flex items-center gap-2 rounded-lg border border-ink-line bg-ink-raised px-2.5 py-1.5 text-xs font-bold">
-                <FontAwesomeIcon icon={faDiscord} className="text-[#5865F2]" />
-                {user.discord_username}
-              </p>
+            {user.discord_display && (
+              <Tooltip
+                label={
+                  handle.data
+                    ? `@${handle.data} on Discord`
+                    : isMe
+                      ? 'Only you can see your handle. Change that in Settings.'
+                      : 'Their Discord handle is not shown to you.'
+                }
+                side="top"
+              >
+                <p className="mt-3 inline-flex cursor-default items-center gap-2 rounded-lg border border-ink-line bg-ink-raised px-2.5 py-1.5 text-xs font-bold">
+                  <FontAwesomeIcon icon={faDiscord} className="text-[#5865F2]" />
+                  {user.discord_display}
+                </p>
+              </Tooltip>
             )}
 
             {/* A line or two of the bio, with the rest behind About, the way

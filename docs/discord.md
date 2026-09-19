@@ -80,8 +80,21 @@ it is not deployed. 503 means the secrets are not there.
 Only `identify` is asked for, which is the id, the name and the picture.
 Nothing is asked about servers, friends or messages.
 
-## What is stored
+## What is stored, and who sees which part
 
-`discord_id`, `discord_username` and when it happened. One Discord account
-belongs to one Kobblon account: tying it somewhere new lets go of it where it
-was. Unlinking is the person's own to do and leaves nothing behind.
+Discord hands back two names and they are not the same thing. The display
+name is what somebody calls themselves; the handle is how you find them,
+which is closer to a phone number.
+
+- `profiles.discord_id` and `profiles.discord_display` sit on the row
+  everybody can read. The display name is on the profile for anybody.
+- The handle lives in `discord_handles`, and who may read a row of it is
+  decided by a policy: yours, a moderator's, or whoever the person chose,
+  which is everyone, friends or nobody. A page cannot leak it by forgetting
+  to check, because a page that asks for it without the right gets nothing.
+- The profile shows the display name and puts the handle in the tooltip, for
+  whoever is allowed it.
+
+One Discord account belongs to one Kobblon account: tying it somewhere new
+lets go of it where it was. Unlinking is the person's own to do and takes
+both names with it.

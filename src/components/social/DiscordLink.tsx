@@ -5,10 +5,12 @@ import { faDiscord } from '@fortawesome/free-brands-svg-icons'
 import { faLink, faLinkSlash, faCopy } from '@fortawesome/free-solid-svg-icons'
 import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
+import { Choices } from '@/components/ui/Choices'
 import { Confirm } from '@/components/ui/Confirm'
 import { useToast } from '@/components/ui/Toast'
 import { useAuth } from '@/hooks/useAuth'
-import { startDiscordLink, unlinkDiscord } from '@/lib/api'
+import { setDiscordVisibility, startDiscordLink, unlinkDiscord } from '@/lib/api'
+import type { DiscordVisibility } from '@/lib/api'
 import { profileLink } from '@/lib/links'
 
 const troubles: Record<string, string> = {
@@ -30,6 +32,23 @@ export function DiscordLink() {
   const [params, setParams] = useSearchParams()
   const [busy, setBusy] = useState(false)
   const [letting, setLetting] = useState(false)
+  const [seen, setSeen] = useState<DiscordVisibility>(profile?.discord_visibility ?? 'friends')
+
+  useEffect(() => {
+    setSeen(profile?.discord_visibility ?? 'friends')
+  }, [profile?.discord_visibility])
+
+  const choose = async (next: DiscordVisibility) => {
+    const was = seen
+    setSeen(next)
+    try {
+      await setDiscordVisibility(next)
+      await refreshProfile()
+    } catch (err) {
+      setSeen(was)
+      toast(err instanceof Error ? err.message : 'That did not save.', 'error')
+    }
+  }
 
   const said = params.get('discord')
 
@@ -69,7 +88,7 @@ export function DiscordLink() {
           <h3 className="font-display text-lg font-extrabold">Discord</h3>
           <p className="text-sm text-muted">
             {linked
-              ? <>Tied to <span className="font-bold text-white">{profile?.discord_username ?? 'your Discord'}</span>.</>
+              ? <>Tied to <span className="font-bold text-white">{profile?.discord_display ?? 'your Discord'}</span>.</>
               : 'Tie your Discord account to this one, so people can find you either way.'}
           </p>
         </div>
@@ -84,6 +103,30 @@ export function DiscordLink() {
           </Button>
         )}
       </div>
+
+      {linked && (
+        <div className="rounded-xl border border-ink-line bg-ink-raised p-3">
+          <p className="text-xs font-bold uppercase tracking-wide text-muted">
+            Who can see your Discord handle
+          </p>
+          <p className="mt-1 text-xs text-muted">
+            Your Discord name is on your profile for anybody. The handle, the one people
+            search for, is yours to give out.
+          </p>
+          <Choices
+            className="mt-2"
+            size="sm"
+            label="Who can see your Discord handle"
+            value={seen}
+            options={[
+              { value: 'everyone', label: 'Everyone' },
+              { value: 'friends', label: 'Friends' },
+              { value: 'nobody', label: 'Nobody' },
+            ]}
+            onChange={(next) => void choose(next as DiscordVisibility)}
+          />
+        </div>
+      )}
 
       {linked && (
         <div className="rounded-xl border border-ink-line bg-ink-raised p-3">

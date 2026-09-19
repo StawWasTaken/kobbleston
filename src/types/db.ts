@@ -26,7 +26,9 @@ export type Profile = {
   style?: WornStyle[] | null
   /** The Discord account tied to this one, once Discord has vouched for it. */
   discord_id?: string | null
-  discord_username?: string | null
+  /** What they call themselves on Discord, which their profile shows. */
+  discord_display?: string | null
+  discord_visibility?: 'everyone' | 'friends' | 'nobody'
   discord_linked_at?: string | null
   created_at: string
 }
