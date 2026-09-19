@@ -22,6 +22,7 @@ import { useChatDock } from '@/components/chat/ChatDock'
 import { faDiscord } from '@fortawesome/free-brands-svg-icons'
 import { Menu } from '@/components/ui/Menu'
 import { Tooltip } from '@/components/ui/Tooltip'
+import { Tabs } from '@/components/ui/Tabs'
 import { Emblem } from '@/components/community/Emblem'
 import { usePersonActions } from '@/components/social/personActions'
 import { Dialog } from '@/components/ui/Dialog'
@@ -39,7 +40,6 @@ import {
   usernameHistory, usernameById, listAssetsByCreator, updateProfile, uploadAvatar,
 } from '@/lib/api'
 import { formatCount } from '@/lib/format'
-import { cn } from '@/lib/cn'
 import { communityLink, profileLink } from '@/lib/links'
 import { avatarOf } from '@/lib/avatars'
 import { Verified } from '@/components/brand/Verified'
@@ -569,23 +569,17 @@ export default function Profile() {
       </section>
 
       {/* ---------------------------------------------------------- the two */}
-      <div className="flex border-b border-ink-line" role="tablist">
-        {(['About', 'Creations'] as const).map((name) => (
-          <button
-            key={name}
-            role="tab"
-            aria-selected={tab === name}
-            onClick={() => setTab(name)}
-            className={cn(
-              'flex-1 border-b-2 px-6 py-3 text-sm font-bold transition-colors sm:flex-none sm:px-10',
-              tab === name ? 'text-white' : 'border-transparent text-white/50 hover:text-white',
-            )}
-            style={tab === name ? { borderColor: accent } : undefined}
-          >
-            {name}
-          </button>
-        ))}
-      </div>
+      <Tabs
+        look="line"
+        accent={accent}
+        label="About them, or what they made"
+        value={tab}
+        onChange={setTab}
+        options={[
+          { value: 'About', label: 'About' },
+          { value: 'Creations', label: 'Creations' },
+        ]}
+      />
 
       {tab === 'Creations' ? (
         <div className="space-y-10">

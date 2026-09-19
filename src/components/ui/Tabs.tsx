@@ -11,20 +11,64 @@ export type Tab<T extends string> = {
 }
 
 /**
- * Two or three ways of looking at the same page, in a tray.
+ * Two or three ways of looking at the same page.
  *
  * Not the same thing as Choices: a tab changes what the page is, a choice
  * narrows what it shows. Keeping them apart keeps the site readable.
+ *
+ * Two shapes, for two jobs. A tray sits beside other controls, in a toolbar
+ * or a card header. A line runs across the width of a page and divides what
+ * is above it from what is below, which is what a profile, a Community and an
+ * item page all want.
  */
 export function Tabs<T extends string>({
-  value, options, onChange, className, label,
+  value, options, onChange, className, label, look = 'tray', accent,
 }: {
   value: T
   options: Tab<T>[]
   onChange: (next: T) => void
   className?: string
   label?: string
+  look?: 'tray' | 'line'
+  /** A colour for the line under the chosen one, where a page has its own. */
+  accent?: string
 }) {
+  if (look === 'line') {
+    return (
+      <div
+        role="tablist"
+        aria-label={label}
+        className={cn('flex overflow-x-auto border-b border-ink-line kob-scroll', className)}
+      >
+        {options.map((option) => {
+          const active = option.value === value
+          return (
+            <button
+              key={option.value}
+              type="button"
+              role="tab"
+              aria-selected={active}
+              onClick={() => onChange(option.value)}
+              className={cn(
+                'flex-1 shrink-0 border-b-2 px-6 py-3 text-sm font-bold transition-colors sm:flex-none sm:px-10',
+                active
+                  ? 'border-white text-white'
+                  : 'border-transparent text-white/50 hover:text-white',
+              )}
+              style={active && accent ? { borderColor: accent } : undefined}
+            >
+              {option.icon && <FontAwesomeIcon icon={option.icon} className="mr-2 text-xs" />}
+              {option.label}
+              {typeof option.count === 'number' && (
+                <span className="ml-2 text-xs text-white/40 tabular-nums">{option.count}</span>
+              )}
+            </button>
+          )
+        })}
+      </div>
+    )
+  }
+
   return (
     <div
       role="tablist"

@@ -6,6 +6,7 @@ import {
 } from '@fortawesome/free-solid-svg-icons'
 import { Page } from '@/components/layout/AppShell'
 import { Button } from '@/components/ui/Button'
+import { Tabs } from '@/components/ui/Tabs'
 import { Card } from '@/components/ui/Card'
 import { Badge } from '@/components/ui/Badge'
 import { EmptyState, ErrorState, Skeleton } from '@/components/ui/States'
@@ -294,24 +295,14 @@ export default function SpacePage() {
           </div>
         </div>
 
-        <div className="mt-8 flex overflow-hidden rounded-lg bg-ink-raised" role="tablist">
-          {tabs.map((name) => (
-            <button
-              key={name}
-              role="tab"
-              aria-selected={tab === name}
-              onClick={() => setTab(name)}
-              className={cn(
-                'flex-1 border-b-2 py-3 text-sm font-semibold transition-colors',
-                tab === name
-                  ? 'border-white bg-ink-hover text-white'
-                  : 'border-transparent text-white/55 hover:text-white',
-              )}
-            >
-              {name}
-            </button>
-          ))}
-        </div>
+        <Tabs
+          look="line"
+          className="mt-8"
+          label="Which part of this Space"
+          value={tab}
+          onChange={setTab}
+          options={tabs.map((name) => ({ value: name, label: name }))}
+        />
 
         {tab === 'About' && (
           <div className="mt-6">

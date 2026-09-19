@@ -26,10 +26,10 @@ import {
   setEventAttendance,
 } from '@/lib/api'
 import { supabase } from '@/lib/supabase'
-import { cn } from '@/lib/cn'
 import { communityLink } from '@/lib/links'
 import { AdBanner } from '@/components/ads/AdBanner'
 import { LiveEventBar } from '@/components/community/LiveEventBar'
+import { Tabs } from '@/components/ui/Tabs'
 
 const tabs = ['About', 'Events', 'Members', 'Affiliates'] as const
 type Tab = (typeof tabs)[number]
@@ -166,24 +166,13 @@ export default function CommunityPage() {
       />
 
       <Page width="narrow" className="pt-6">
-        <div className="flex overflow-x-auto border-b border-ink-line kob-scroll" role="tablist">
-          {tabs.map((name) => (
-            <button
-              key={name}
-              role="tab"
-              aria-selected={tab === name}
-              onClick={() => setTab(name)}
-              className={cn(
-                'flex-1 shrink-0 border-b-2 px-6 py-3 text-sm font-bold transition-colors',
-                tab === name
-                  ? 'border-white text-white'
-                  : 'border-transparent text-white/50 hover:text-white',
-              )}
-            >
-              {name}
-            </button>
-          ))}
-        </div>
+        <Tabs
+          look="line"
+          label="Which part of this Community"
+          value={tab}
+          onChange={setTab}
+          options={tabs.map((name) => ({ value: name, label: name }))}
+        />
 
         {tab === 'About' && (
           <div className="mt-6 grid gap-8 xl:grid-cols-[minmax(0,1fr)_160px] xl:items-start">

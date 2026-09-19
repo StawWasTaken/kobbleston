@@ -10,6 +10,7 @@ import { Page } from '@/components/layout/AppShell'
 import { Button } from '@/components/ui/Button'
 import { Badge } from '@/components/ui/Badge'
 import { Card } from '@/components/ui/Card'
+import { Tabs } from '@/components/ui/Tabs'
 import { Dialog } from '@/components/ui/Dialog'
 import { Input, Textarea } from '@/components/ui/Input'
 import { Avatar } from '@/components/ui/Avatar'
@@ -525,22 +526,16 @@ function MembersSection({
 
   return (
     <div className="space-y-5">
-      <div className="flex border-b border-ink-line" role="tablist">
-        {(['Members', 'Banned'] as const).map((name) => (
-          <button
-            key={name}
-            role="tab"
-            aria-selected={tab === name}
-            onClick={() => setTab(name)}
-            className={cn(
-              'border-b-2 px-6 py-2.5 text-sm font-bold transition-colors',
-              tab === name ? 'border-white text-white' : 'border-transparent text-white/50 hover:text-white',
-            )}
-          >
-            {name}
-          </button>
-        ))}
-      </div>
+      <Tabs
+        look="line"
+        label="Who is in, or who is out"
+        value={tab}
+        onChange={setTab}
+        options={[
+          { value: 'Members' as const, label: 'Members' },
+          { value: 'Banned' as const, label: 'Banned' },
+        ]}
+      />
 
       {tab === 'Members' && (
         <CommunityMembers
@@ -634,27 +629,22 @@ function AffiliatesSection({ communityId }: { communityId: string }) {
 
   return (
     <div className="space-y-5">
-      <div className="flex items-center gap-1 border-b border-ink-line" role="tablist">
-        {(['Allies', 'Enemies', 'Requests'] as const).map((name) => (
-          <button
-            key={name}
-            role="tab"
-            aria-selected={tab === name}
-            onClick={() => setTab(name)}
-            className={cn(
-              'border-b-2 px-5 py-2.5 text-sm font-bold transition-colors',
-              tab === name ? 'border-white text-white' : 'border-transparent text-white/50 hover:text-white',
-            )}
-          >
-            {name}
-            {name === 'Requests' && !!requests.data?.filter((r) => r.incoming).length && (
-              <span className="ml-1.5 text-link">
-                ({requests.data.filter((r) => r.incoming).length})
-              </span>
-            )}
-          </button>
-        ))}
-        <Button size="sm" className="ml-auto mb-1.5" icon={faPlus} onClick={() => setFinding((v) => !v)}>
+      <div className="flex items-end gap-3">
+        <Tabs
+          look="line"
+          className="flex-1"
+          label="Which affiliates"
+          value={tab}
+          onChange={setTab}
+          options={(['Allies', 'Enemies', 'Requests'] as const).map((name) => ({
+            value: name,
+            label: name,
+            count: name === 'Requests'
+              ? requests.data?.filter((r) => r.incoming).length || null
+              : null,
+          }))}
+        />
+        <Button size="sm" className="mb-1.5" icon={faPlus} onClick={() => setFinding((v) => !v)}>
           {tab === 'Enemies' ? 'Declare Enemy' : 'Send Ally Request'}
         </Button>
       </div>

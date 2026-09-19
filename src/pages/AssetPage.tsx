@@ -8,6 +8,7 @@ import {
 } from '@fortawesome/free-solid-svg-icons'
 import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
+import { Tabs } from '@/components/ui/Tabs'
 import { Avatar } from '@/components/ui/Avatar'
 import { Input, Textarea } from '@/components/ui/Input'
 import { Dialog } from '@/components/ui/Dialog'
@@ -640,27 +641,17 @@ export default function AssetPage() {
           </div>
 
           <div>
-            <div className="flex border-b border-ink-line" role="tablist">
-              {(['Description', 'Reviews', ...(mine ? ['Numbers'] as const : [])] as const).map((name) => (
-                <button
-                  key={name}
-                  role="tab"
-                  aria-selected={panel === name}
-                  onClick={() => setPanel(name)}
-                  className={cn(
-                    'border-b-2 px-5 py-2.5 text-sm font-bold transition-colors',
-                    panel === name
-                      ? 'border-white text-white'
-                      : 'border-transparent text-white/50 hover:text-white',
-                  )}
-                >
-                  {name}
-                  {name === 'Reviews' && !!asset.review_count && (
-                    <span className="ml-1.5 text-muted">({asset.review_count})</span>
-                  )}
-                </button>
-              ))}
-            </div>
+            <Tabs
+              look="line"
+              label="What to read about this"
+              value={panel}
+              onChange={setPanel}
+              options={[
+                { value: 'Description' as const, label: 'Description' },
+                { value: 'Reviews' as const, label: 'Reviews', count: asset.review_count || null },
+                ...(mine ? [{ value: 'Numbers' as const, label: 'Numbers' }] : []),
+              ]}
+            />
 
             {panel === 'Description' && (
               <div className="pt-4">
