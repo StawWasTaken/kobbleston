@@ -8,7 +8,8 @@ import { Select } from '@/components/ui/Select'
 import { Avatar } from '@/components/ui/Avatar'
 import { Skeleton } from '@/components/ui/States'
 import { useToast } from '@/components/ui/Toast'
-import { Kube } from '@/components/brand/Kube'
+import { CurrencyMark } from '@/components/brand/Currency'
+import { Balance } from '@/components/money/Balance'
 import { useAsync } from '@/hooks/useAsync'
 import { grantCommunityKubes, listCommunityMoney, listCommunityRoster } from '@/lib/api'
 import { currency } from '@/lib/currency'
@@ -67,10 +68,7 @@ export function FundsPanel({
           </p>
         </div>
 
-        <p className="flex items-center gap-2 font-display text-3xl font-extrabold tabular-nums">
-          <Kube />
-          {formatCount(group.funds ?? 0)}
-        </p>
+        <Balance amount={group.funds ?? 0} size="lg" label={false} />
 
         <Button
           icon={faHandHoldingDollar}
@@ -118,7 +116,7 @@ export function FundsPanel({
                 )}
               >
                 {row.amount > 0 ? '+' : ''}{row.amount}
-                <Kube className="text-xs" />
+                <CurrencyMark className="text-xs" />
               </span>
             </li>
           ))}

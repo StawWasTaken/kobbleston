@@ -1,9 +1,8 @@
 import { Link } from 'react-router-dom'
-import { Kube } from '@/components/brand/Kube'
+import { Price } from '@/components/brand/Currency'
 import { FaceStage } from '@/components/style/FaceStage'
 import { asWorn, styleTag } from '@/lib/api'
 import type { StyleItem } from '@/lib/api'
-import { formatCount } from '@/lib/format'
 import { defaultAvatars } from '@/lib/avatars'
 
 /**
@@ -35,14 +34,7 @@ export function StyleRow({
           </span>
           <span className="block border-t border-ink-line p-2.5">
             <span className="block truncate text-xs font-bold">{item.name}</span>
-            <span className="mt-0.5 flex items-center gap-1 text-xs font-extrabold text-muted">
-              {item.price > 0 ? (
-                <>
-                  <Kube className="h-3 w-3" />
-                  {formatCount(item.price)}
-                </>
-              ) : 'Free'}
-            </span>
+            <Price amount={item.price} className="mt-0.5 text-xs font-extrabold text-muted" />
           </span>
         </Link>
       ))}

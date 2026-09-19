@@ -7,6 +7,8 @@ import {
 import type { IconDefinition } from '@fortawesome/fontawesome-svg-core'
 import { Page } from '@/components/layout/AppShell'
 import { Button } from '@/components/ui/Button'
+import { Balance } from '@/components/money/Balance'
+import { Transactions } from '@/components/money/Transactions'
 import { Card } from '@/components/ui/Card'
 import { Input } from '@/components/ui/Input'
 import { Dialog } from '@/components/ui/Dialog'
@@ -21,22 +23,25 @@ import {
 } from '@/lib/api'
 import { supabase } from '@/lib/supabase'
 import { currency } from '@/lib/currency'
-import { formatCount, timeAgo } from '@/lib/format'
 import { cn } from '@/lib/cn'
 import { useTitle } from '@/hooks/useTitle'
-import { Kube } from '@/components/brand/Kube'
 import { Avatar } from '@/components/ui/Avatar'
 import { avatarOf } from '@/lib/avatars'
 import { profileLink } from '@/lib/links'
 
-type Section = 'Account info' | 'Security' | 'Appearance' | 'Kubes' | 'Safety'
+/*
+ * The money section is keyed rather than named, because what the currency is
+ * called is not settled and is read from one place. The rest are named for
+ * what they are, which does not change.
+ */
+type Section = 'Account info' | 'Security' | 'Appearance' | 'money' | 'Safety'
 
-const sections: { name: Section; icon: IconDefinition }[] = [
-  { name: 'Account info', icon: faUser },
-  { name: 'Security', icon: faLock },
-  { name: 'Appearance', icon: faPalette },
-  { name: 'Kubes', icon: faCube },
-  { name: 'Safety', icon: faShieldHalved },
+const sections: { name: Section; label: string; icon: IconDefinition }[] = [
+  { name: 'Account info', label: 'Account info', icon: faUser },
+  { name: 'Security', label: 'Security', icon: faLock },
+  { name: 'Appearance', label: 'Appearance', icon: faPalette },
+  { name: 'money', label: currency.plural, icon: faCube },
+  { name: 'Safety', label: 'Safety', icon: faShieldHalved },
 ]
 
 /** A labelled line with whatever it takes to change it on the right. */
@@ -322,9 +327,9 @@ function Appearance() {
   )
 }
 
-/* ----------------------------------------------------------------- pixels */
+/* --------------------------------------------------------------- currency */
 
-function Kubes() {
+function Money() {
   const { profile } = useAuth()
   const ledger = useAsync(
     async () => (profile ? listPixelTransactions(profile.id) : []),
@@ -333,47 +338,11 @@ function Kubes() {
 
   return (
     <Card className="overflow-hidden">
-      <div className="flex items-center gap-3 border-b border-ink-line px-5 py-4">
-        <Kube className="text-lg" />
-        <p className="font-display text-2xl font-extrabold tabular-nums">
-          {formatCount(profile?.pixels ?? 0)}
-        </p>
-        <p className="text-sm text-muted">{currency.plural}</p>
+      <div className="border-b border-ink-line px-5 py-4">
+        <Balance amount={profile?.pixels ?? 0} size="lg" />
       </div>
 
-      {ledger.loading && (
-        <div className="space-y-2 p-4">
-          {[0, 1].map((i) => <Skeleton key={i} className="h-10" />)}
-        </div>
-      )}
-
-      {!ledger.loading && !ledger.data?.length && (
-        <p className="px-5 py-6 text-center text-sm text-muted">Nothing has moved yet.</p>
-      )}
-
-      {!!ledger.data?.length && (
-        <ul>
-          {ledger.data.map((entry) => (
-            <li
-              key={entry.id}
-              className="flex items-center gap-3 border-b border-ink-line/70 px-5 py-3 last:border-0"
-            >
-              <span className="min-w-0 flex-1">
-                <span className="block truncate text-sm">{entry.note ?? entry.kind}</span>
-                <span className="block text-xs text-muted">{timeAgo(entry.created_at)}</span>
-              </span>
-              <span
-                className={cn(
-                  'font-display text-sm font-extrabold tabular-nums',
-                  entry.amount > 0 ? 'text-space-bright' : 'text-white/60',
-                )}
-              >
-                {entry.amount > 0 ? '+' : ''}{entry.amount}
-              </span>
-            </li>
-          ))}
-        </ul>
-      )}
+      <Transactions rows={ledger.data} loading={ledger.loading} />
     </Card>
   )
 }
@@ -422,9 +391,8 @@ export default function Settings() {
         </div>
         {!!profile && (
           <div className="flex flex-wrap items-center gap-2">
-            <span className="inline-flex items-center gap-1.5 rounded-xl border border-ink-line bg-ink-raised px-3 py-2 text-sm font-bold">
-              <Kube />
-              {formatCount(profile.pixels)}
+            <span className="inline-flex items-center rounded-xl border border-ink-line bg-ink-raised px-3 py-2">
+              <Balance amount={profile.pixels} size="sm" label={false} />
             </span>
             <Button size="sm" variant="subtle" to={profileLink(profile)}>Your profile</Button>
           </div>
@@ -449,7 +417,7 @@ export default function Settings() {
               )}
             >
               <FontAwesomeIcon icon={item.icon} className="w-4 text-xs opacity-70" />
-              {item.name}
+              {item.label}
             </button>
           ))}
         </nav>
@@ -458,7 +426,7 @@ export default function Settings() {
           {section === 'Account info' && <AccountInfo />}
           {section === 'Security' && <Security />}
           {section === 'Appearance' && <Appearance />}
-          {section === 'Kubes' && <Kubes />}
+          {section === 'money' && <Money />}
           {section === 'Safety' && <Safety />}
         </div>
       </div>

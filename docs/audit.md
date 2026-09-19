@@ -5,16 +5,22 @@ says what is there now, why it matters later, and what I would do about it.
 Nothing here is a reason to stop and rebuild: most of it is a seam to put in
 before it is needed, not a rewrite.
 
-## 1. The currency is named in fifty places (started)
+## 1. The currency is named in fifty places (done on the web side)
 
 **Was:** the word "Kubes" was written into pages, labels, toasts and policy
 text; the mark was a component called `Kube`; the balance column is
 `profiles.pixels`, from the name before that.
 
-**Now:** `src/lib/currency.ts` holds the name, the plural, the short code and
-how an amount reads in a sentence, and `src/components/brand/Currency.tsx`
-holds the mark and a price. Pages read from those. Renaming what people see
-is now a few lines.
+**Now:** `src/lib/currency.ts` holds the name, the plural, the short code, how
+an amount reads in a sentence, and what each kind of movement reads as.
+`src/components/brand/Currency.tsx` holds the mark and a price;
+`src/components/money/` holds a balance and a list of movements. Nothing else
+on the site draws its own. Renaming what people see, or replacing the mark
+with a shape of our own, is a change to those files and nothing else.
+
+The settings section is keyed rather than named for the same reason, so the
+menu reads whatever the currency is called rather than a word baked into a
+type.
 
 **Still to do:** the database keeps the oldest name of all. `profiles.pixels`,
 `move_pixels`, `grant_community_kubes`, `burn_kubes` and friends are a

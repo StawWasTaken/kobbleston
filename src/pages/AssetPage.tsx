@@ -35,7 +35,7 @@ import { formatCount } from '@/lib/format'
 import { cn } from '@/lib/cn'
 import type { AssetDay, AssetPageItem } from '@/types/db'
 import { timeAgo } from '@/lib/format'
-import { Kube } from '@/components/brand/Kube'
+import { CurrencyMark } from '@/components/brand/Currency'
 import { Verified } from '@/components/brand/Verified'
 import { BackLink } from '@/components/ui/BackLink'
 
@@ -224,7 +224,7 @@ function UsePanel({ asset, onChanged }: { asset: AssetPageItem; onChanged: () =>
         }}
       >
         {paid ? (
-          <>Buy for <Kube className="mx-0.5" />{formatCount(asset.price)}</>
+          <>Buy for <CurrencyMark className="mx-0.5" />{formatCount(asset.price)}</>
         ) : 'Get'}
       </Button>
       <p className="text-xs leading-relaxed text-muted">
@@ -354,7 +354,7 @@ export default function AssetPage() {
 
       /*
        * The price is not an ordinary field: putting something up for sale
-       * costs Kubes and taking it down hands a quarter of that back, so it
+       * costs something and taking it down hands a quarter of that back, so it
        * goes through its own doors rather than being written to the row.
        */
       if (asked !== asset.price) {
@@ -628,7 +628,7 @@ export default function AssetPage() {
               {
                 label: 'Price',
                 value: asset.price > 0
-                  ? <span className="inline-flex items-center gap-1.5"><Kube />{formatCount(asset.price)}</span>
+                  ? <span className="inline-flex items-center gap-1.5"><CurrencyMark />{formatCount(asset.price)}</span>
                   : 'Free',
               },
             ].map((fact) => (

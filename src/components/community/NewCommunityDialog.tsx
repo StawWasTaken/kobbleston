@@ -10,7 +10,7 @@ import { useAuth } from '@/hooks/useAuth'
 import { createCommunityFull, uploadCommunityImage } from '@/lib/api'
 import { slugify } from '@/lib/format'
 import { cn } from '@/lib/cn'
-import { Kube } from '@/components/brand/Kube'
+import { CurrencyMark } from '@/components/brand/Currency'
 
 export const COMMUNITY_COST = 100
 
@@ -100,7 +100,7 @@ export function NewCommunityDialog({ open, onClose }: { open: boolean; onClose: 
         <>
           {!affordable && (
             <p className="mr-auto text-sm text-danger">
-              You need <Kube /> {COMMUNITY_COST}. You have {profile?.pixels ?? 0}.
+              You need <CurrencyMark /> {COMMUNITY_COST}. You have {profile?.pixels ?? 0}.
             </p>
           )}
           <Button variant="ghost" onClick={close} disabled={pending}>Cancel</Button>
@@ -110,7 +110,7 @@ export function NewCommunityDialog({ open, onClose }: { open: boolean; onClose: 
             loading={pending}
             disabled={!affordable}
           >
-            <Kube />
+            <CurrencyMark />
             {COMMUNITY_COST}
           </Button>
         </>

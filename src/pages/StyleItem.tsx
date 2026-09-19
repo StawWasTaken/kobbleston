@@ -12,7 +12,7 @@ import { EmptyState, ErrorState, Skeleton } from '@/components/ui/States'
 import { GuestGate } from '@/components/ui/GuestGate'
 import { useToast } from '@/components/ui/Toast'
 import { Confirm } from '@/components/ui/Confirm'
-import { Kube } from '@/components/brand/Kube'
+import { Price } from '@/components/brand/Currency'
 import { Verified } from '@/components/brand/Verified'
 import { Avatar } from '@/components/ui/Avatar'
 import { FaceStage } from '@/components/style/FaceStage'
@@ -216,14 +216,11 @@ export default function StyleItemPage() {
 
           <div className="rounded-2xl border border-ink-line bg-ink-card p-4">
             <div className="flex flex-wrap items-center justify-between gap-3">
-              <span className="flex items-center gap-2 font-display text-2xl font-extrabold">
-                {thing.price > 0 ? (
-                  <>
-                    <Kube className="h-5 w-5" />
-                    {formatCount(thing.price)}
-                  </>
-                ) : 'Free'}
-              </span>
+              <Price
+                amount={thing.price}
+                className="font-display text-2xl font-extrabold"
+                markClassName="h-5 w-5"
+              />
 
               <div className="flex flex-wrap gap-2">
                 {thing.owned ? (

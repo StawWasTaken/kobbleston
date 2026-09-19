@@ -9,7 +9,7 @@ import { formatCount } from '@/lib/format'
 import { currency } from '@/lib/currency'
 import type { AssetKind, MarketAsset } from '@/types/db'
 import { Tooltip } from '@/components/ui/Tooltip'
-import { Kube } from '@/components/brand/Kube'
+import { CurrencyMark } from '@/components/brand/Currency'
 import { overlayChip } from '@/lib/overlay'
 import { cn } from '@/lib/cn'
 
@@ -99,7 +99,7 @@ export function AssetTile({ item, owned }: { item: MarketAsset; owned?: boolean 
           )}
           {item.price ? (
             <span className="inline-flex items-center gap-1 font-bold text-link">
-              <Kube />
+              <CurrencyMark />
               {formatCount(item.price)}
             </span>
           ) : (

@@ -14,7 +14,8 @@ import { Confirm } from '@/components/ui/Confirm'
 import { EmptyState, ErrorState, Skeleton } from '@/components/ui/States'
 import { useToast } from '@/components/ui/Toast'
 import { GuestGate } from '@/components/ui/GuestGate'
-import { Kube } from '@/components/brand/Kube'
+import { Price } from '@/components/brand/Currency'
+import { Balance } from '@/components/money/Balance'
 import { Kobby } from '@/components/brand/Kobby'
 import { Verified } from '@/components/brand/Verified'
 import { FaceStage } from '@/components/style/FaceStage'
@@ -28,7 +29,6 @@ import {
 } from '@/lib/api'
 import type { Placement, StyleItem } from '@/lib/api'
 import { avatarOf } from '@/lib/avatars'
-import { formatCount } from '@/lib/format'
 import { cn } from '@/lib/cn'
 
 const slotNames: Record<StyleItem['slot'], string> = {
@@ -98,14 +98,7 @@ function ItemTile({
       </Link>
 
       <div className="flex items-center justify-between gap-2 px-3 pb-3">
-        <span className="flex items-center gap-1 text-sm font-extrabold">
-          {item.price > 0 ? (
-            <>
-              <Kube className="h-3.5 w-3.5" />
-              {formatCount(item.price)}
-            </>
-          ) : 'Free'}
-        </span>
+        <Price amount={item.price} className="text-sm font-extrabold" />
 
         {item.owned ? (
           <Button
@@ -291,9 +284,8 @@ export default function Style() {
                   {wearing.length} on your picture
                 </Button>
               )}
-              <span className="inline-flex items-center gap-1.5 rounded-xl border border-ink-line bg-ink-raised px-3 py-2 text-sm font-bold">
-                <Kube className="h-4 w-4" />
-                {formatCount(profile?.pixels ?? 0)}
+              <span className="inline-flex items-center rounded-xl border border-ink-line bg-ink-raised px-3 py-2">
+                <Balance amount={profile?.pixels ?? 0} size="sm" label={false} />
               </span>
             </div>
           </div>

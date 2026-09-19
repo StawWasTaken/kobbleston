@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faImage, faMusic, faVideo, faFont, faCube } from '@fortawesome/free-solid-svg-icons'
 import type { IconDefinition } from '@fortawesome/fontawesome-svg-core'
-import { Kube } from '@/components/brand/Kube'
+import { CurrencyMark } from '@/components/brand/Currency'
 import { Verified, isVerified } from '@/components/brand/Verified'
 import { useSignedUrl } from '@/hooks/useSignedUrl'
 import { useReducedMotion } from '@/hooks/useReducedMotion'
@@ -212,7 +212,7 @@ export function Piece({ item, width = 'w-[17rem] sm:w-[19rem]' }: {
           {item.name}
         </span>
         <span className="inline-flex shrink-0 items-center gap-1.5 text-sm font-extrabold tabular-nums">
-          {item.price ? <><Kube />{item.price}</> : <span className="text-space-bright">Free</span>}
+          {item.price ? <><CurrencyMark />{item.price}</> : <span className="text-space-bright">Free</span>}
         </span>
       </span>
 

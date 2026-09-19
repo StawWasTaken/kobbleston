@@ -32,7 +32,7 @@ import { formatCount, timeAgo } from '@/lib/format'
 import { cn } from '@/lib/cn'
 import { avatarOf } from '@/lib/avatars'
 import { profileLink } from '@/lib/links'
-import { Kube } from '@/components/brand/Kube'
+import { CurrencyMark } from '@/components/brand/Currency'
 import { BackLink } from '@/components/ui/BackLink'
 
 type Section = 'Information' | 'Settings' | 'Events' | 'Members' | 'Roles' | 'Affiliates' | 'Audit Log'
@@ -118,7 +118,7 @@ export default function ConfigureCommunity() {
           <p className="mt-0.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted">
             <span>{formatCount(group.member_count)} members</span>
             <span className="inline-flex items-center gap-1.5">
-              <Kube />
+              <CurrencyMark />
               {formatCount(group.funds ?? 0)} in funds
             </span>
             {group.is_removed && <Badge tone="warm">Closed</Badge>}

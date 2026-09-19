@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Dialog } from '@/components/ui/Dialog'
 import { Button } from '@/components/ui/Button'
-import { Kube } from '@/components/brand/Kube'
+import { CurrencyMark } from '@/components/brand/Currency'
 import { useToast } from '@/components/ui/Toast'
 import { useAuth } from '@/hooks/useAuth'
 import {
@@ -50,7 +50,7 @@ const escapeForAttribute = (value: string) => value.replace(/"/g, '&quot;')
 const BRIDGE = `
 (function () {
   /* Donating and ad presses are Kobbleston's business, so they are only ever
-     reported outwards: this page cannot move anybody's Kubes by itself. */
+     reported outwards: this page cannot move anybody's currency by itself. */
   document.addEventListener('click', function (event) {
     var donate = event.target.closest('[data-kob-donate]')
     if (donate) {
@@ -389,7 +389,7 @@ export function SiteFrame({
         <>
           <Button variant="ghost" onClick={() => setGiving(null)}>Cancel</Button>
           <Button loading={sending} onClick={give}>
-            <Kube />
+            <CurrencyMark />
             Give {giving}
           </Button>
         </>

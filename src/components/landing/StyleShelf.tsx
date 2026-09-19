@@ -1,11 +1,10 @@
 import { Skeleton } from '@/components/ui/States'
 import { StyleLayer } from '@/components/style/StyleLayer'
-import { Kube } from '@/components/brand/Kube'
+import { Price } from '@/components/brand/Currency'
 import { defaultAvatars } from '@/lib/avatars'
 import { useReducedMotion } from '@/hooks/useReducedMotion'
 import { asWorn } from '@/lib/api'
 import type { StyleItem } from '@/lib/api'
-import { formatCount } from '@/lib/format'
 import { cn } from '@/lib/cn'
 
 /**
@@ -98,14 +97,7 @@ function Card({ item, face }: { item: StyleItem; face: number }) {
       <div className="border-t border-white/10 p-3">
         <p className="truncate text-sm font-bold">{item.name}</p>
         <p className="truncate text-xs text-white/45">By @{item.creator_username}</p>
-        <p className="mt-1 flex items-center gap-1 text-sm font-extrabold">
-          {item.price > 0 ? (
-            <>
-              <Kube className="h-3.5 w-3.5" />
-              {formatCount(item.price)}
-            </>
-          ) : 'Free'}
-        </p>
+        <Price amount={item.price} className="mt-1 text-sm font-extrabold" />
       </div>
     </article>
   )

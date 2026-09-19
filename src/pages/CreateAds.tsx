@@ -11,7 +11,7 @@ import { Dialog } from '@/components/ui/Dialog'
 import { Input } from '@/components/ui/Input'
 import { EmptyState, ErrorState, Skeleton } from '@/components/ui/States'
 import { useToast } from '@/components/ui/Toast'
-import { Kube } from '@/components/brand/Kube'
+import { CurrencyMark } from '@/components/brand/Currency'
 import { AdEditor, targetLook } from '@/components/create/AdEditor'
 import { useAuth } from '@/hooks/useAuth'
 import { useAsync } from '@/hooks/useAsync'
@@ -40,7 +40,7 @@ function timeLeft(ends: string | null) {
   return `${days} ${days === 1 ? 'day' : 'days'} left`
 }
 
-/** What a number of Kubes buys, in both of the ways it runs out. */
+/** What a budget buys, in both of the ways it runs out. */
 const runsFor = (kubes: number) => {
   const days = adDays(kubes)
   return `${kubes} views, or ${days} ${days === 1 ? 'day' : 'days'}, whichever goes first`
@@ -176,7 +176,7 @@ function CampaignCard({ campaign, onChanged, onRenew, onRemove, onRename, onCloc
 
           <div className="mt-1.5 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs font-bold">
             <span className="inline-flex items-center gap-1.5">
-              <Kube />
+              <CurrencyMark />
               {formatCount(left)} left of {formatCount(campaign.budget - campaign.refunded)}
             </span>
             {remaining && (
@@ -455,11 +455,11 @@ export default function CreateAds() {
         footer={
           <>
             <span className="mr-auto inline-flex items-center gap-1.5 text-sm text-muted">
-              You have <Kube /> {formatCount(profile?.pixels ?? 0)}
+              You have <CurrencyMark /> {formatCount(profile?.pixels ?? 0)}
             </span>
             <Button variant="ghost" onClick={() => setStarting(false)}>Cancel</Button>
             <Button loading={pending} onClick={start}>
-              <Kube />
+              <CurrencyMark />
               {budget}
             </Button>
           </>
@@ -495,7 +495,7 @@ export default function CreateAds() {
                 aria-label={`${currency.plural} behind this campaign`}
               />
               <span className="inline-flex shrink-0 items-center gap-1.5 font-display text-lg font-extrabold tabular-nums">
-                <Kube />
+                <CurrencyMark />
                 {budget}
               </span>
             </div>
@@ -541,7 +541,7 @@ export default function CreateAds() {
         footer={
           <>
             <span className="mr-auto inline-flex items-center gap-1.5 text-sm text-muted">
-              You have <Kube /> {formatCount(profile?.pixels ?? 0)}
+              You have <CurrencyMark /> {formatCount(profile?.pixels ?? 0)}
             </span>
             <Button variant="ghost" onClick={() => setClocking(null)}>Cancel</Button>
             <Button loading={pending} onClick={setClock}>
@@ -550,7 +550,7 @@ export default function CreateAds() {
                   0,
                   adKubesFor(days) - ((clocking?.budget ?? 0) - (clocking?.refunded ?? 0)),
                 )
-                return owed > 0 ? <><Kube />{owed}</> : 'Set it'
+                return owed > 0 ? <><CurrencyMark />{owed}</> : 'Set it'
               })()}
             </Button>
           </>
@@ -591,11 +591,11 @@ export default function CreateAds() {
         footer={
           <>
             <span className="mr-auto inline-flex items-center gap-1.5 text-sm text-muted">
-              You have <Kube /> {formatCount(profile?.pixels ?? 0)}
+              You have <CurrencyMark /> {formatCount(profile?.pixels ?? 0)}
             </span>
             <Button variant="ghost" onClick={() => setRenewing(null)}>Cancel</Button>
             <Button loading={pending} onClick={renew}>
-              <Kube />
+              <CurrencyMark />
               {again}
             </Button>
           </>
@@ -614,7 +614,7 @@ export default function CreateAds() {
               aria-label={`${currency.plural} behind this renewal`}
             />
             <span className="inline-flex shrink-0 items-center gap-1.5 font-display text-lg font-extrabold tabular-nums">
-              <Kube />
+              <CurrencyMark />
               {again}
             </span>
           </div>

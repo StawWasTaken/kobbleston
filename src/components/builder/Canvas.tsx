@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faRectangleAd, faMusic, faLock, faVolumeHigh } from '@fortawesome/free-solid-svg-icons'
 import { AD_SIZES, GRID, fontStack, snap } from '@/lib/blocks'
-import { Kube } from '@/components/brand/Kube'
+import { CurrencyMark } from '@/components/brand/Currency'
 import type { Block, Page } from '@/lib/blocks'
 import { RefImage } from '@/components/create/RefImage'
 import { cn } from '@/lib/cn'
@@ -94,7 +94,7 @@ function Preview({ block }: { block: Block }) {
           className="grid h-full w-full place-items-center font-bold"
         >
           <span className="inline-flex items-center gap-2">
-            {block.kind === 'donate' && p.icon !== false && <Kube />}
+            {block.kind === 'donate' && p.icon !== false && <CurrencyMark />}
             {String(p.label)}
           </span>
         </span>
