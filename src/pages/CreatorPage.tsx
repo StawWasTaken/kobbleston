@@ -3,6 +3,7 @@ import { useParams } from 'react-router-dom'
 import { faMagnifyingGlass, faUser } from '@fortawesome/free-solid-svg-icons'
 import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
+import { Choices } from '@/components/ui/Choices'
 import { Input } from '@/components/ui/Input'
 import { Avatar } from '@/components/ui/Avatar'
 import { EmptyState, ErrorState, Skeleton } from '@/components/ui/States'
@@ -13,7 +14,6 @@ import { getCreatorPage, listAssets } from '@/lib/api'
 import { avatarOf } from '@/lib/avatars'
 import { formatCount, timeAgo } from '@/lib/format'
 import { profileLink } from '@/lib/links'
-import { cn } from '@/lib/cn'
 import type { AssetKind } from '@/types/db'
 import { Verified } from '@/components/brand/Verified'
 import { BackLink } from '@/components/ui/BackLink'
@@ -103,23 +103,15 @@ export default function CreatorPage() {
           aria-label={`Search work by ${person.display_name}`}
         />
 
-        <div className="flex gap-2 overflow-x-auto pb-1 kob-scroll">
-          {kinds.map((k) => (
-            <button
-              key={k}
-              onClick={() => setKind(k)}
-              aria-pressed={kind === k}
-              className={cn(
-                'h-9 shrink-0 rounded-lg border px-3.5 text-sm font-bold transition-colors',
-                kind === k
-                  ? 'border-brand-bright bg-brand text-onbrand'
-                  : 'border-ink-line bg-ink-card text-white/60 hover:bg-ink-hover hover:text-white',
-              )}
-            >
-              {k === 'all' ? 'Everything' : kindLabels[k]}
-            </button>
-          ))}
-        </div>
+        <Choices
+          label="What kind of content"
+          value={kind}
+          options={kinds.map((k) => ({
+            value: k,
+            label: k === 'all' ? 'Everything' : kindLabels[k],
+          }))}
+          onChange={(next) => setKind(next)}
+        />
       </div>
 
       {items.loading && (

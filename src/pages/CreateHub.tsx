@@ -10,6 +10,7 @@ import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
 import { Select } from '@/components/ui/Select'
 import { Choices } from '@/components/ui/Choices'
+import { PageHeader } from '@/components/ui/PageHeader'
 import { SectionHeader } from '@/components/ui/SectionHeader'
 import { EmptyState, ErrorState, Skeleton } from '@/components/ui/States'
 import { GuestGate } from '@/components/ui/GuestGate'
@@ -236,15 +237,11 @@ export function CreateSpaces() {
 
   return (
     <div className="space-y-5">
-      <header className="flex flex-wrap items-end justify-between gap-4">
-        <div>
-          <h1 className="font-display text-2xl font-extrabold sm:text-3xl">
-            {target ? `${target.name}'s Spaces` : 'My Spaces'}
-          </h1>
-          <p className="mt-1 text-sm text-muted">Yours to build, and the ones you were invited onto.</p>
-        </div>
-        <Button icon={faPlus} to="/spaces/new">New Space</Button>
-      </header>
+      <PageHeader
+        title={target ? `${target.name}'s Spaces` : 'My Spaces'}
+        lead="Yours to build, and the ones you were invited onto."
+        aside={<Button icon={faPlus} to="/spaces/new">New Space</Button>}
+      />
 
       {spaces.loading && <Skeleton className="h-32" />}
 
@@ -572,13 +569,11 @@ export function CreateInventory() {
 
   return (
     <div className="space-y-5">
-      <header>
-        <h1 className="font-display text-2xl font-extrabold sm:text-3xl">Inventory</h1>
-        <p className="mt-1 text-sm text-muted">
-          Your own work and everything you have taken from the marketplace, Kobblon's
-          included. Copy an id and paste it into a Space.
-        </p>
-      </header>
+      <PageHeader
+        title="Inventory"
+        lead={"Your own work and everything you have taken from the marketplace, Kobblon's "
+          + 'included. Copy an id and paste it into a Space.'}
+      />
 
       <Choices
         label="What kind of content"
@@ -631,12 +626,10 @@ export function CreateAnalytics() {
 
   return (
     <div className="space-y-5">
-      <header>
-        <h1 className="font-display text-2xl font-extrabold sm:text-3xl">Analytics</h1>
-        <p className="mt-1 text-sm text-muted">
-          Counted as they happen, not as unique people. Open an item for its last thirty days.
-        </p>
-      </header>
+      <PageHeader
+        title="Analytics"
+        lead="Counted as they happen, not as unique people. Open an item for its last thirty days."
+      />
 
       {rows.loading && <Skeleton className="h-40" />}
 

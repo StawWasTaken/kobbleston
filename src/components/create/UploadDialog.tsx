@@ -3,13 +3,13 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faUpload, faShieldHalved } from '@fortawesome/free-solid-svg-icons'
 import { Dialog } from '@/components/ui/Dialog'
 import { Button } from '@/components/ui/Button'
+import { Choices } from '@/components/ui/Choices'
 import { Input, Textarea } from '@/components/ui/Input'
 import { useToast } from '@/components/ui/Toast'
 import { useAuth } from '@/hooks/useAuth'
 import { useWorkingAs, WorkingAsNote } from '@/components/create/WorkingAs'
 import { uploadAsset } from '@/lib/api'
 import { kindLabels, kindIcons } from './AssetTile'
-import { cn } from '@/lib/cn'
 import type { AssetKind, OwnAsset } from '@/types/db'
 
 const MAX_BYTES = 25 * 1024 * 1024
@@ -115,25 +115,16 @@ export function UploadDialog({
 
       <fieldset className="mb-4">
         <legend className="mb-2 text-xs font-bold uppercase tracking-wide text-muted">Type</legend>
-        <div className="flex flex-wrap gap-2">
-          {(only ? [only] : kinds).map((k) => (
-            <button
-              key={k}
-              type="button"
-              aria-pressed={kind === k}
-              onClick={() => { setKind(k); setFile(null) }}
-              className={cn(
-                'inline-flex h-9 items-center gap-2 rounded-lg border px-3 text-sm font-semibold transition-colors',
-                kind === k
-                  ? 'border-brand-bright bg-brand text-white'
-                  : 'border-ink-line bg-ink-raised text-white/60 hover:bg-ink-hover hover:text-white',
-              )}
-            >
-              <FontAwesomeIcon icon={kindIcons[k]} />
-              {kindLabels[k]}
-            </button>
-          ))}
-        </div>
+        <Choices
+          label="Type"
+          value={kind}
+          options={(only ? [only] : kinds).map((k) => ({
+            value: k,
+            label: kindLabels[k],
+            icon: kindIcons[k],
+          }))}
+          onChange={(next) => { setKind(next); setFile(null) }}
+        />
       </fieldset>
 
       <button

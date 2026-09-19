@@ -7,6 +7,7 @@ import {
 import type { IconDefinition } from '@fortawesome/fontawesome-svg-core'
 import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
+import { Choices } from '@/components/ui/Choices'
 import { Input } from '@/components/ui/Input'
 import { EmptyState, ErrorState, Skeleton } from '@/components/ui/States'
 import { GuestGate } from '@/components/ui/GuestGate'
@@ -43,28 +44,6 @@ function Tally({ icon, label, value, tone }: {
       </p>
       <p className="mt-1 font-display text-2xl font-extrabold tabular-nums">{value}</p>
     </div>
-  )
-}
-
-function Chip({ on, onClick, children }: {
-  on: boolean
-  onClick: () => void
-  children: React.ReactNode
-}) {
-  return (
-    <button
-      type="button"
-      aria-pressed={on}
-      onClick={onClick}
-      className={cn(
-        'h-8 shrink-0 rounded-full border px-3.5 text-xs font-bold transition-colors',
-        on
-          ? 'border-brand-bright bg-brand text-onbrand'
-          : 'border-ink-line bg-ink-raised text-white/60 hover:bg-ink-hover hover:text-white',
-      )}
-    >
-      {children}
-    </button>
   )
 }
 
@@ -170,18 +149,29 @@ export default function CreateUploads() {
             </div>
           </div>
 
-          <div className="flex gap-2 overflow-x-auto pb-1 kob-scroll">
-            {kinds.map((one) => (
-              <Chip key={one} on={kind === one} onClick={() => setKind(one)}>
-                {one === 'all' ? 'Everything' : `${kindLabels[one]}s`}
-              </Chip>
-            ))}
-            <span className="mx-1 w-px shrink-0 bg-ink-line" />
-            {states.map((one) => (
-              <Chip key={one} on={state === one} onClick={() => setState(one)}>
-                {one === 'all' ? 'Any state' : statusLook[one].label}
-              </Chip>
-            ))}
+          <div className="flex flex-wrap items-center gap-2">
+            <Choices
+              size="sm"
+              label="What kind of content"
+              value={kind}
+              options={kinds.map((one) => ({
+                value: one,
+                label: one === 'all' ? 'Everything' : `${kindLabels[one]}s`,
+              }))}
+              onChange={(next) => setKind(next)}
+            />
+            <span className="mx-1 hidden h-5 w-px bg-ink-line sm:block" />
+            <Choices
+              size="sm"
+              tone="soft"
+              label="Which state"
+              value={state}
+              options={states.map((one) => ({
+                value: one,
+                label: one === 'all' ? 'Any state' : statusLook[one].label,
+              }))}
+              onChange={(next) => setState(next)}
+            />
           </div>
         </div>
       )}
