@@ -41,6 +41,33 @@ If `kobbleston.com` is still owned, point it at the new one with a
 redirect at the registrar rather than a second custom domain: Pages answers
 for one domain at a time.
 
+### When Pages says a domain is improperly configured
+
+`InvalidDNSError` means GitHub asked DNS for the record and did not get the
+answer it wanted. It is almost never the repository: `CNAME` here says
+`kobblon.com` and that half is done.
+
+- **The complaint names `www`.** With the apex as the custom domain, GitHub
+  checks `www` as well and warns while that record is missing. Add
+  `CNAME www stawwastaken.github.io` and the warning clears.
+- **The host field.** Registrars differ: some want `www`, some want the whole
+  `www.kobblon.com`. Typing the whole thing into a field that appends the
+  domain gives `www.kobblon.com.kobblon.com`, which resolves to nothing.
+- **Something is already on that name.** A parking record, a forwarding rule
+  or an old A record on `www` answers first. Delete it, then add the CNAME.
+- **The nameservers.** Records only count if they are at whoever the domain's
+  nameservers point to. If they are not Spaceship's, the records belong
+  wherever they are.
+- **Time.** Give it a few minutes, then press Save again on the custom domain
+  to make GitHub look afresh.
+
+Checking it yourself, from a terminal anywhere:
+
+```
+nslookup kobblon.com          # expect the four 185.199.x.153 addresses
+nslookup www.kobblon.com      # expect stawwastaken.github.io
+```
+
 ## Migrations
 
 Everything in `supabase/migrations`, in order, applied in the SQL editor on
