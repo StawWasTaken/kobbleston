@@ -11,7 +11,7 @@ import { presenceOf } from '@/components/ui/StatusDot'
  * why the same person could be Building in the sidebar and Online on their
  * profile and neither would move.
  *
- * So presence stops coming from rows. Everybody with Kobbleston open joins one
+ * So presence stops coming from rows. Everybody with Kobblon open joins one
  * channel and says what they are doing; everybody subscribed hears it the
  * moment it changes. A row is only the fallback, for people who are not here
  * to speak for themselves.
@@ -86,7 +86,7 @@ export function usePresenceChannel(
   useEffect(() => {
     if (!me) return
 
-    const mine = supabase.channel('kobbleston:here', {
+    const mine = supabase.channel('kobblon:here', {
       config: { presence: { key: me } },
     })
     channel.current = mine

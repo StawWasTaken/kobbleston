@@ -171,7 +171,7 @@ export default function Brix() {
           </div>
 
           <p className="mt-5 border-t border-ink-line pt-4 text-xs leading-relaxed text-muted">
-            {currency.plural} are a number on your account for use inside Kobbleston. They are
+            {currency.plural} are a number on your account for use inside Kobblon. They are
             not money, and they cannot be cashed out.
           </p>
         </Card>

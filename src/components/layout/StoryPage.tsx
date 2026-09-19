@@ -29,7 +29,7 @@ const toneWord: Record<string, string> = {
 }
 
 /**
- * The pages that speak for Kobbleston rather than being part of using it:
+ * The pages that speak for Kobblon rather than being part of using it:
  * the terms, the guidelines, what is coming. They are written for one look,
  * so they hold dark whatever the rest of the site is set to, and they carry
  * their own contents rail rather than a wall of text.
@@ -90,7 +90,7 @@ export function StoryPage({
           </h1>
           <p className="mt-5 max-w-2xl text-lg leading-relaxed text-white/60">{intro}</p>
           <p className="mt-8 font-display text-sm font-extrabold uppercase tracking-[0.18em] text-brand-bright">
-            Pixels go brrr
+            Make Something Nobody Else Has
           </p>
         </section>
 

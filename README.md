@@ -1,8 +1,8 @@
-# Kobbleston
+# Kobblon
 
 > Pixels go brrr
 
-Kobbleston is a social platform for making little corners of the internet.
+Kobblon is a social platform for making little corners of the internet.
 People build **Spaces**, publish them, and visit each other's.
 
 Built by Staw.
@@ -33,7 +33,7 @@ Because the built `index.html` lives at the root, the document Vite builds
 is the same document again: Pages has no rewrites, so it is what hands a deep
 link like `/discover` to the router.
 
-Pages serves the repo from `/kobbleston/`, so `vite.config.ts` sets that as
+Pages serves the repo from `/kobblon/`, so `vite.config.ts` sets that as
 the base path, the router picks it up through `import.meta.env.BASE_URL`, and
 files in `public/` are referenced through the `asset()` helper rather than a
 leading slash. Deploying to a domain root instead is one change: build with
@@ -79,19 +79,19 @@ supabase/          schema, policies, functions, realtime
   not decoration.
 - Everything animated respects `prefers-reduced-motion`.
 
-## Kobbleston Create
+## Kobblon Create
 
 The creator marketplace at `/create`. People upload images, audio, video,
 fonts and models; everything enters a review queue and stays private to its
-uploader until it is approved. Uploads by the Kobbleston account carry a
+uploader until it is approved. Uploads by the Kobblon account carry a
 verified mark. See [`supabase/README.md`](supabase/README.md) for how review
 is wired and what still needs deploying.
 
-## Kobbleston Create
+## Kobblon Create
 
 The creator marketplace at `/create`. People upload images, audio, video,
 fonts and models; everything enters a review queue and stays private to its
-uploader until it is approved. Uploads by the Kobbleston account carry a
+uploader until it is approved. Uploads by the Kobblon account carry a
 verified mark. See [`supabase/README.md`](supabase/README.md) for how review
 is wired and what still needs deploying.
 
@@ -99,7 +99,7 @@ is wired and what still needs deploying.
 
 - **Spaces** with badges their owner designs, favourites, likes and visits.
 - **Communities** people create and join.
-- **Kobbleston Create**, the reviewed marketplace of uploads.
+- **Kobblon Create**, the reviewed marketplace of uploads.
 - **Pixels**, the platform currency, with a ledger behind every balance.
 - **Guest mode**, a throwaway account for looking around.
 - **Chat** as a dock in the corner, a chat inside every Space that its owner
@@ -119,7 +119,7 @@ else's markup cannot reach a signed in session.
 
 ## Not built yet
 
-The Kobbleston editor (building the inside of a Space) is deliberately out of
+The Kobblon editor (building the inside of a Space) is deliberately out of
 scope for now, and the UI says so where it would otherwise be a dead end
 rather than pretending it exists.
 

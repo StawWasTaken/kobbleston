@@ -41,7 +41,7 @@ const policyFor = (nonce: string) => [
 const escapeForAttribute = (value: string) => value.replace(/"/g, '&quot;')
 
 /*
- * The one narrow way a Space may speak to Kobbleston.
+ * The one narrow way a Space may speak to Kobblon.
  *
  * It cannot call the API: it has no session, no cookies and no network. All
  * it can do is say that somebody pressed a donate button or an ad, and this
@@ -49,7 +49,7 @@ const escapeForAttribute = (value: string) => value.replace(/"/g, '&quot;')
  */
 const BRIDGE = `
 (function () {
-  /* Donating and ad presses are Kobbleston's business, so they are only ever
+  /* Donating and ad presses are Kobblon's business, so they are only ever
      reported outwards: this page cannot move anybody's currency by itself. */
   document.addEventListener('click', function (event) {
     var donate = event.target.closest('[data-kob-donate]')

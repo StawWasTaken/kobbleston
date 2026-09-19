@@ -160,7 +160,7 @@ export default function People() {
         <div className="relative">
           <h1 className="font-display text-3xl font-extrabold sm:text-4xl">People</h1>
           <p className="mt-1.5 max-w-xl text-sm text-muted">
-            Everybody on Kobbleston, yourself included. Search a name, a username or the words
+            Everybody on Kobblon, yourself included. Search a name, a username or the words
             somebody wrote about themselves.
           </p>
 

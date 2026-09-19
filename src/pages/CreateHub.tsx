@@ -23,7 +23,7 @@ import { useAsync } from '@/hooks/useAsync'
 import { CREATE_ICON, useFavicon, useTitle } from '@/hooks/useTitle'
 
 /** Everything under Create names itself inside Create, not inside the site. */
-const CREATE = 'Kobbleston Create'
+const CREATE = 'Kobblon Create'
 import {
   communityAnalytics, creatorAnalytics, listAssets, listCommunitySpacesManaged,
   listCommunityUploads, listInventory, listOwnAssets, listSharedSpaces, listSpacesByOwner,
@@ -43,7 +43,7 @@ export const useHub = () => useOutletContext<HubContext>()
 /* ------------------------------------------------------------------ shell */
 
 export default function CreateHub() {
-  // The mark on the tab says which half of Kobbleston you are in.
+  // The mark on the tab says which half of Kobblon you are in.
   useFavicon(CREATE_ICON)
 
   const { profile } = useAuth()
@@ -66,7 +66,7 @@ export default function CreateHub() {
       <UploadDialog
         open={uploading}
         onClose={() => setUploading(false)}
-        onUploaded={() => window.dispatchEvent(new CustomEvent('kobbleston:uploaded'))}
+        onUploaded={() => window.dispatchEvent(new CustomEvent('kobblon:uploaded'))}
       />
     </div>
     </WorkingAsProvider>
@@ -119,8 +119,8 @@ export function CreateOverview() {
 
   useEffect(() => {
     const reload = () => mine.reload()
-    window.addEventListener('kobbleston:uploaded', reload)
-    return () => window.removeEventListener('kobbleston:uploaded', reload)
+    window.addEventListener('kobblon:uploaded', reload)
+    return () => window.removeEventListener('kobblon:uploaded', reload)
   }, [mine])
 
   const visits = (spaces.data ?? []).reduce((sum, space) => sum + (space.visit_count ?? 0), 0)
@@ -132,7 +132,7 @@ export function CreateOverview() {
       <header className="flex flex-wrap items-end justify-between gap-4">
         <div>
           <h1 className="font-display text-3xl font-extrabold sm:text-4xl">
-            {target ? target.name : 'Kobbleston Create'}
+            {target ? target.name : 'Kobblon Create'}
           </h1>
           <p className="mt-1.5 text-muted">
             {target
@@ -290,7 +290,7 @@ export function CreateMarketplace() {
   const [sort, setSort] = useState<AssetSort>('new')
   const [term, setTerm] = useState(params.get('q') ?? '')
   const [debounced, setDebounced] = useState(term)
-  // Who made it is a filter of its own: anybody by name, or Kobbleston in
+  // Who made it is a filter of its own: anybody by name, or Kobblon in
   // one click, because the official shelf is the one people want most.
   const [maker, setMaker] = useState(params.get('by') ?? '')
   const [makerDraft, setMakerDraft] = useState(params.get('by') ?? '')
@@ -329,7 +329,7 @@ export function CreateMarketplace() {
   // The official shelf leads the page when nothing has been asked for.
   const official = useAsync(
     async () => (!debounced && !maker && kind === 'all'
-      ? listAssets({ creator: 'kobbleston', limit: 12, sort: 'used' })
+      ? listAssets({ creator: 'kobblon', limit: 12, sort: 'used' })
       : []),
     [debounced, maker, kind],
   )
@@ -407,17 +407,17 @@ export function CreateMarketplace() {
             </button>
 
             <button
-              onClick={() => { setMaker('kobbleston'); setMakerDraft('kobbleston') }}
-              aria-pressed={maker.toLowerCase() === 'kobbleston'}
+              onClick={() => { setMaker('kobblon'); setMakerDraft('kobblon') }}
+              aria-pressed={maker.toLowerCase() === 'kobblon'}
               className={cn(
                 'inline-flex h-8 items-center gap-1.5 rounded-lg px-3 text-xs font-bold transition-colors',
-                maker.toLowerCase() === 'kobbleston'
+                maker.toLowerCase() === 'kobblon'
                   ? 'bg-brand text-onbrand'
                   : 'bg-ink-hover text-white/65 hover:text-white',
               )}
             >
               <FontAwesomeIcon icon={faCircleCheck} className="text-[#4d68ff]" />
-              Kobbleston
+              Kobblon
             </button>
 
             <form
@@ -485,12 +485,12 @@ export function CreateMarketplace() {
         </div>
       )}
 
-      {/* Kobbleston's own shelf, when nothing has been asked for */}
+      {/* Kobblon's own shelf, when nothing has been asked for */}
       {!filtering && !!official.data?.length && (
         <section>
-          <SectionHeader title="Made by Kobbleston" icon={faCircleCheck}>
+          <SectionHeader title="Made by Kobblon" icon={faCircleCheck}>
             <button
-              onClick={() => { setMaker('kobbleston'); setMakerDraft('kobbleston') }}
+              onClick={() => { setMaker('kobblon'); setMakerDraft('kobblon') }}
               className="text-xs font-bold text-link hover:underline"
             >
               See all
@@ -575,7 +575,7 @@ export function CreateInventory() {
       <header>
         <h1 className="font-display text-2xl font-extrabold sm:text-3xl">Inventory</h1>
         <p className="mt-1 text-sm text-muted">
-          Your own work and everything you have taken from the marketplace, Kobbleston's
+          Your own work and everything you have taken from the marketplace, Kobblon's
           included. Copy an id and paste it into a Space.
         </p>
       </header>

@@ -469,7 +469,7 @@ export async function submitReport(input: {
   }).select('id').single())
 }
 
-// ------------------------------------------------------- Kobbleston Create
+// ------------------------------------------------------- Kobblon Create
 
 export const assetBucket = 'uploads'
 
@@ -488,7 +488,7 @@ export function previewUrl(path?: string | null): string | null {
 
 /**
  * Draws a preview for a piece of content and hangs it on the row, so a link
- * to it pasted anywhere shows the work rather than a Kobbleston banner.
+ * to it pasted anywhere shows the work rather than a Kobblon banner.
  *
  * Nothing depends on this working: a browser that cannot decode the file, or
  * a network that drops, leaves the content without a picture and everything
@@ -1786,7 +1786,7 @@ export type AdDetails = {
   assetId: string
   kind: AdTarget
   targetId?: string | null
-  /** Only Kobbleston's own account may point an ad off the site. */
+  /** Only Kobblon's own account may point an ad off the site. */
   outward?: string | null
 }
 
@@ -1834,7 +1834,7 @@ export async function pauseAd(adId: string, resting: boolean) {
 export const listingFee = (price: number) =>
   Math.max(5, Math.min(250, Math.round((Number(price) || 0) * 0.1)))
 
-/** The share of a sale Kobbleston keeps; the rest reaches the creator. */
+/** The share of a sale Kobblon keeps; the rest reaches the creator. */
 export const PLATFORM_SHARE = 35
 
 /** The event happening in a community right now, if there is one. */

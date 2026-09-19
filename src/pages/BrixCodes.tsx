@@ -52,7 +52,7 @@ export default function BrixCodes() {
         kicker={currency.plural}
         icon={faGift}
         title="Redeem a code"
-        lead={`Codes turn up in Kobbleston events, from the people who run them, and now and then for no reason at all. One go each.`}
+        lead={`Codes turn up in Kobblon events, from the people who run them, and now and then for no reason at all. One go each.`}
         aside={
           <div className="rounded-2xl border border-ink-line bg-ink-raised px-5 py-4 text-right">
             <p className="text-xs font-bold uppercase tracking-wide text-muted">Your balance</p>
@@ -117,8 +117,8 @@ export default function BrixCodes() {
           <div className="min-w-0 flex-1">
             <h2 className="font-display text-xl font-extrabold">Where codes come from</h2>
             <p className="mt-2 text-sm leading-relaxed text-muted">
-              Kobbleston hands them out at events, in announcements, and alongside things worth
-              celebrating. Nobody on Kobbleston will ever ask you for your password in exchange
+              Kobblon hands them out at events, in announcements, and alongside things worth
+              celebrating. Nobody on Kobblon will ever ask you for your password in exchange
               for one, and anybody who does is worth reporting.
             </p>
             <Button className="mt-4" variant="subtle" icon={faReceipt} to="/brix">

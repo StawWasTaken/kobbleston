@@ -61,11 +61,11 @@ export default function SpacePage() {
     [username, slug],
   )
 
-  useExactTitle(space ? `${space.name} - Visit on Kobbleston` : null)
+  useExactTitle(space ? `${space.name} - Visit on Kobblon` : null)
   useSocialCard({
-    title: space ? `${space.name} - Kobbleston` : null,
+    title: space ? `${space.name} - Kobblon` : null,
     description: space?.description
-      ?? (space?.owner ? `A Space on Kobbleston by ${space.owner.display_name}.` : null),
+      ?? (space?.owner ? `A Space on Kobblon by ${space.owner.display_name}.` : null),
     image: space?.cover_url ?? space?.emblem_url ?? null,
   })
 

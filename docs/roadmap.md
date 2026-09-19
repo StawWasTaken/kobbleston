@@ -3,7 +3,7 @@
 Kept here rather than in my head, so nothing quietly falls off. Order is
 roughly what I would do next, not a promise about dates.
 
-**Read `docs/direction.md` first.** Kobbleston is growing from a 2D Space
+**Read `docs/direction.md` first.** Kobblon is growing from a 2D Space
 platform into avatars, a Catalog, 3D worlds and games, with a player and a
 desktop creator beside the website. Nothing below is cancelled by that: the
 website and its builder are the first generation and stay. `docs/audit.md`
@@ -71,9 +71,9 @@ campaign is bought up front, costs a Kube a view, runs until its budget or
 its fortnight is out, and hands back what it did not spend when it is
 stopped. A finished campaign can be put back up rather than built again. An
 ad names the thing it advertises, and can only be bought by somebody allowed
-to advertise that thing; Kobbleston's own account is the only one that may
+to advertise that thing; Kobblon's own account is the only one that may
 point one off the site. Ads are shown in the blocks Spaces choose to keep and
-in Kobbleston's own slots, which are in the pages rather than beside them:
+in Kobblon's own slots, which are in the pages rather than beside them:
 Home, Discover, Communities, People, a Space page, a community page and a
 profile each carry one or two, and Library, Friends, Settings and Create
 carry none. Banners and tall ones are sold in roughly equal number; the
@@ -89,7 +89,7 @@ beyond showing pictures: guestbooks, pages, links between Spaces. Presence
 inside a Space is built; the Space itself is not.
 
 ### The logged-out page **(done)**
-Redone. It now says what Kobbleston is in three pillars, carries the real
+Redone. It now says what Kobblon is in three pillars, carries the real
 platform numbers, the Spaces being visited, what people have put on the
 marketplace and the Communities worth joining, and walks somebody through
 getting started. Everything on it is read from the database or it is not
@@ -154,7 +154,7 @@ only coloured by them.
 
 ### Presence **(done)**
 Presence is a channel now, not a column somebody fetched once. Everybody with
-Kobbleston open joins one channel and says what they are doing; everybody
+Kobblon open joins one channel and says what they are doing; everybody
 subscribed hears it as it changes, so a dot moves while you are looking at it
 and every dot for the same person says the same thing on every page. The row
 and its heartbeat are still written, as the answer for anybody who is not
@@ -188,7 +188,7 @@ creators to sell into it.
 
 ## Create
 
-Create is meant to be one of the most important parts of Kobbleston, so it
+Create is meant to be one of the most important parts of Kobblon, so it
 gets its own list:
 
 - Selling for Pixels **(built)**, with a ceiling per kind of content.

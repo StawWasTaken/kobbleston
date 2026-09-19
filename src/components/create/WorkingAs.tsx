@@ -9,7 +9,7 @@ import { avatarOf } from '@/lib/avatars'
 import { cn } from '@/lib/cn'
 import type { BuildTarget } from '@/types/db'
 
-const KEY = 'kobbleston.building-as'
+const KEY = 'kobblon.building-as'
 
 type Context = {
   /** null means you, personally. */

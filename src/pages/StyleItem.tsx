@@ -72,9 +72,9 @@ export default function StyleItemPage() {
 
   useTitle(thing?.name ?? 'Style')
   useSocialCard({
-    title: thing ? `${thing.name} - Kobbleston Style` : null,
+    title: thing ? `${thing.name} - Kobblon Style` : null,
     description: thing
-      ? `${slotWords[thing.slot]} by @${thing.creator_username} on Kobbleston.`
+      ? `${slotWords[thing.slot]} by @${thing.creator_username} on Kobblon.`
         + (thing.description ? ` ${thing.description}` : '')
       : null,
     image: thing ? styleImage(thing.image_path) : null,
@@ -147,7 +147,7 @@ export default function StyleItemPage() {
           <div className="relative grid aspect-square place-items-center overflow-hidden rounded-3xl border border-ink-line bg-ink-raised p-10">
             <FaceStage
               src={face}
-              name={profile?.display_name ?? 'Kobbleston'}
+              name={profile?.display_name ?? 'Kobblon'}
               items={worn}
               className="w-full max-w-[16rem]"
             />

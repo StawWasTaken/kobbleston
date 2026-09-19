@@ -6,7 +6,7 @@ import { cn } from '@/lib/cn'
 /**
  * Presence, in four states that never share a colour or a mark.
  *
- * Blue and the Kobbleston mark: on Kobbleston. Green and a house: inside a
+ * Blue and the Kobblon mark: on Kobblon. Green and a house: inside a
  * Space, which is the colour Spaces always get. Orange and a hammer: building
  * something. Grey and a dash: not here.
  *

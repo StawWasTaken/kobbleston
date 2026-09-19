@@ -6,7 +6,7 @@ import { faXmark } from '@fortawesome/free-solid-svg-icons'
 import { cn } from '@/lib/cn'
 
 /**
- * The popup card that most Kobbleston interactions live in: focus is trapped
+ * The popup card that most Kobblon interactions live in: focus is trapped
  * while it is open, Escape closes it, and the page behind it stops scrolling.
  */
 export function Dialog({

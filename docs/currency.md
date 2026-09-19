@@ -1,6 +1,6 @@
 # Brix
 
-Kobbleston's currency. It was Pixels, then Kubes, and it is Brix from here.
+Kobblon's currency. It was Pixels, then Kubes, and it is Brix from here.
 
 The word lives in `src/lib/currency.ts` and the mark in
 `src/components/brand/Currency.tsx`: a two stud brick, drawn as a path so it
@@ -19,23 +19,23 @@ own, with policies and functions hanging off it, and it is on the list in
 What follows is how the money moves, which did not change with the name.
 
 The currency, and where it goes. A closed circuit: Brix are made when
-somebody joins and when Kobbleston hands them out, and they only leave it by
+somebody joins and when Kobblon hands them out, and they only leave it by
 being burned.
 
 ## What costs Brix
 
 | Doing this | Costs | Where it goes |
 | --- | --- | --- |
-| Putting something up for sale | a tenth of the asking price, at least 5 and at most 250 | Kobbleston |
-| Taking it back off sale | nothing; a quarter of the listing fee comes back | from Kobbleston to the seller |
-| Buying somebody's work | the asking price | 35% Kobbleston, 65% the creator |
+| Putting something up for sale | a tenth of the asking price, at least 5 and at most 250 | Kobblon |
+| Taking it back off sale | nothing; a quarter of the listing fee comes back | from Kobblon to the seller |
+| Buying somebody's work | the asking price | 35% Kobblon, 65% the creator |
 | Starting an ad campaign | the budget, up front | spent a Brix a view, and it runs up to a month; a Space showing one of its ads keeps 15% of that. Two shapes are sold: the banner and the tall one |
 | Adding, changing or resting an ad inside a campaign | nothing | the campaign is already paid for |
-| Making a campaign run longer | the difference between what is behind it and what those days are worth | Kobbleston, as budget |
+| Making a campaign run longer | the difference between what is behind it and what those days are worth | Kobblon, as budget |
 | Making a campaign run shorter | nothing, and nothing comes back | the Brix stay behind it as views |
 | Stopping or removing a campaign | nothing; whatever it never spent comes back | from the campaign to the buyer |
 | Giving to a Space | what the visitor chose | all of it, to whoever made the Space |
-| Changing your username | what that has always cost | Kobbleston |
+| Changing your username | what that has always cost | Kobblon |
 
 A community costs Brix to make, which is what stops the name space filling
 with throwaways.
@@ -47,7 +47,7 @@ back, and it only ever returns what was never spent on views.
 
 ## The burn
 
-Brix are not destroyed during a sale. They are burned from Kobbleston's own
+Brix are not destroyed during a sale. They are burned from Kobblon's own
 account instead, in one act, meant to run once a month:
 
 ```sql

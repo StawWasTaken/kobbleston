@@ -21,7 +21,7 @@ const policies = [
 
 /**
  * Making a Community is a popup over wherever you are, the way everything
- * else on Kobbleston that asks a few questions is. You never lose the page
+ * else on Kobblon that asks a few questions is. You never lose the page
  * you were on, and the rail behind it still shows the ones you are in.
  */
 export function NewCommunityDialog({ open, onClose }: { open: boolean; onClose: () => void }) {
@@ -123,7 +123,7 @@ export function NewCommunityDialog({ open, onClose }: { open: boolean; onClose: 
           onChange={(e) => setName(e.target.value)}
           maxLength={50}
           required
-          hint={`${name.length}/50${slug ? ` · kobbleston.com/c/${slug}` : ''}`}
+          hint={`${name.length}/50${slug ? ` · kobblon.com/c/${slug}` : ''}`}
           error={error}
         />
 

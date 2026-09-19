@@ -149,19 +149,15 @@ export default function Landing() {
           <div>
             <Wordmark to={null} className="h-9 sm:h-12" />
 
-            <p className="mt-5 font-display text-sm font-extrabold uppercase tracking-[0.3em] text-brand-bright">
-              Pixels go brrr
-            </p>
-
             {/* Sized so each line holds together instead of breaking after
                 "Make" once the form is beside it. */}
-            <h1 className="mt-4 font-display text-5xl font-extrabold leading-[0.86] sm:text-6xl xl:text-7xl">
+            <h1 className="mt-8 font-display text-5xl font-extrabold leading-[0.86] sm:text-6xl xl:text-7xl">
               <span className="block whitespace-nowrap">Make Something</span>
               <span className="block whitespace-nowrap">Nobody Else Has</span>
             </h1>
 
             <p className="mt-6 max-w-lg text-lg leading-relaxed text-white/70">
-              Kobbleston is a place to build your own corner of the internet, fill it with
+              Kobblon is a place to build your own corner of the internet, fill it with
               whatever you want, and let people walk in.
             </p>
 
@@ -239,7 +235,7 @@ export default function Landing() {
         <div className="mx-auto max-w-6xl px-4 sm:px-8">
           <Opening
             number="02"
-            kicker="Kobbleston Create"
+            kicker="Kobblon Create"
             title="Built From"
             accent="Real Work"
             body={`Decals, sounds, video and fonts, made by people here and checked before anybody sees them. Take what you need, use it by its number, and sell what you make for ${currency.plural}.`}
@@ -319,7 +315,7 @@ export default function Landing() {
             </h2>
             <p className="mt-5 text-base leading-relaxed text-white/60">
               Hats, hair and whatever else people make, worn on your own picture. Put one on and
-              you wear it everywhere you turn up on Kobbleston.
+              you wear it everywhere you turn up on Kobblon.
             </p>
             <Button className="mt-7" to="/style" icon={faStore}>Open the shop</Button>
           </div>
@@ -345,7 +341,7 @@ export default function Landing() {
 
           <div className="space-y-6 text-white/60">
             <p className="leading-relaxed">
-              Kobbleston is for people aged 15 and over. Uploads are screened when they arrive and
+              Kobblon is for people aged 15 and over. Uploads are screened when they arrive and
               a person looks at anything the check is unsure about.
             </p>
             <p className="leading-relaxed">
@@ -361,7 +357,7 @@ export default function Landing() {
               <p className="text-sm text-white/45">Signed,</p>
               <Signature className="mt-1 w-fit" />
               <p className="mt-1 text-xs font-bold uppercase tracking-wide text-white/40">
-                CEO of Kobbleston
+                CEO of Kobblon
               </p>
             </div>
           </div>

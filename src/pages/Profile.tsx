@@ -183,8 +183,8 @@ export default function Profile() {
 
   useTitle(user ? `${user.display_name} (@${user.username})` : 'Profile')
   useSocialCard({
-    title: user ? `${user.display_name} (@${user.username}) - Kobbleston` : null,
-    description: user?.bio ?? (user ? `${user.display_name} on Kobbleston.` : null),
+    title: user ? `${user.display_name} (@${user.username}) - Kobblon` : null,
+    description: user?.bio ?? (user ? `${user.display_name} on Kobblon.` : null),
     image: user?.avatar_url ?? null,
   })
 
@@ -323,7 +323,7 @@ export default function Profile() {
           <EmptyState
             mood="noResults"
             title="Nobody here"
-            body={`There is no @${username} on Kobbleston.`}
+            body={`There is no @${username} on Kobblon.`}
             action={<Button to="/discover">Discover Spaces</Button>}
           />
         </Card>

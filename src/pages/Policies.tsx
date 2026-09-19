@@ -6,7 +6,7 @@ import { useTitle } from '@/hooks/useTitle'
 const terms: StorySection[] = [
   {
     id: 'who',
-    heading: 'Who can use Kobbleston',
+    heading: 'Who can use Kobblon',
     body: [
       'You need to be 15 or over. We ask for your birthday when you sign up and we act on the answer.',
       'One account per person. Do not share it, sell it, or hand it to someone under 15.',
@@ -17,7 +17,7 @@ const terms: StorySection[] = [
     id: 'yours',
     heading: 'What you make stays yours',
     body: [
-      'Your Spaces and your uploads belong to you. By putting them on Kobbleston you let us store them, show them to other people, and let others use what you publish to Create.',
+      'Your Spaces and your uploads belong to you. By putting them on Kobblon you let us store them, show them to other people, and let others use what you publish to Create.',
       'Take something down whenever you want. Copies other people already built with may stay in their Spaces.',
       'Content on the Creator Marketplace is used by its number rather than copied, so whoever made a thing stays attached to it wherever it turns up.',
     ],
@@ -26,7 +26,7 @@ const terms: StorySection[] = [
     id: 'brix',
     heading: `${currency.plural} and buying things`,
     body: [
-      `${currency.plural} are a number on your account for use inside Kobbleston. They are not money, they cannot be cashed out, and they have no value off the platform.`,
+      `${currency.plural} are a number on your account for use inside Kobblon. They are not money, they cannot be cashed out, and they have no value off the platform.`,
       'Getting something from the Creator Marketplace puts it in your inventory and lets you use its number in your Spaces. It does not give you the file to keep, and it is not a resale right.',
       `An account removed for breaking the rules loses whatever is on it. We do not refund ${currency.plural} spent before that.`,
     ],
@@ -37,14 +37,14 @@ const terms: StorySection[] = [
     body: [
       'We can remove anything that breaks the Community Guidelines, and suspend accounts that keep doing it.',
       'Uploads are screened automatically when they arrive, and a person looks at anything the check is unsure about. We can hold something back while that happens.',
-      'We can change how Kobbleston works. If something big changes, we will say so rather than hoping nobody notices.',
+      'We can change how Kobblon works. If something big changes, we will say so rather than hoping nobody notices.',
     ],
   },
   {
     id: 'limits',
     heading: 'What we cannot promise',
     body: [
-      'Kobbleston is free and small. Things will break sometimes and data can be lost. Keep your own copy of anything you would be upset to lose.',
+      'Kobblon is free and small. Things will break sometimes and data can be lost. Keep your own copy of anything you would be upset to lose.',
       'Nothing here is a promise that a feature will keep existing, that your Space will be visited, or that a number on the site will only go up.',
     ],
   },
@@ -52,7 +52,7 @@ const terms: StorySection[] = [
     id: 'leaving',
     heading: 'Leaving',
     body: [
-      'You can stop using Kobbleston whenever you like. Ask us and your account goes with everything on it.',
+      'You can stop using Kobblon whenever you like. Ask us and your account goes with everything on it.',
       'Some things survive on purpose: a Space somebody else built with your published upload keeps working, and moderation records of a removed account are kept so the same behaviour is not simply restarted.',
     ],
   },
@@ -80,7 +80,7 @@ const guidelines: StorySection[] = [
     id: 'spaces',
     heading: 'Spaces and what goes in them',
     body: [
-      'A Space is yours to build, and it is still on Kobbleston. Everything in this page applies inside one.',
+      'A Space is yours to build, and it is still on Kobblon. Everything in this page applies inside one.',
       'A Space cannot be used to collect passwords, pretend to be a login page, or push people somewhere that does. Every Space runs shut off from the rest of the site, and trying to get around that is a reason to lose the account rather than a clever trick.',
     ],
   },
@@ -117,7 +117,7 @@ export function Terms() {
     <StoryPage
       eyebrow="The deal"
       title="Terms of Service"
-      intro="The short version of the deal between you and Kobbleston, written so it can actually be read."
+      intro="The short version of the deal between you and Kobblon, written so it can actually be read."
       sections={terms}
       footnote="If something here and something a page on the site says disagree, this page is the one that counts."
     />

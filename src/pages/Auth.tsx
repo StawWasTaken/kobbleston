@@ -133,7 +133,7 @@ export default function Auth({ mode }: { mode: 'login' | 'signup' }) {
           {/* -------------------------------------------------- the pitch */}
           <section className="hidden lg:block">
             <p className="text-xs font-extrabold uppercase tracking-[0.2em] text-white/40">
-              {claiming ? 'You have been looking around' : 'Kobbleston'}
+              {claiming ? 'You have been looking around' : 'Kobblon'}
             </p>
             <h1 className="mt-4 font-display text-6xl font-extrabold leading-[0.88]">
               Make Something

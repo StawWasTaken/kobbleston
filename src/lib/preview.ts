@@ -3,7 +3,7 @@
  *
  * The file itself is not something a browser can link to: the uploads bucket
  * is private on purpose, so a decal cannot be hotlinked and a video cannot be
- * taken by address. That also means nothing outside Kobbleston can show what
+ * taken by address. That also means nothing outside Kobblon can show what
  * a piece of content looks like, which is why a link pasted into a chat used
  * to be a name and no picture.
  *

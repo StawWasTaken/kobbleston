@@ -5,7 +5,7 @@ import { Wordmark } from '@/components/brand/Wordmark'
 import { useAuth } from '@/hooks/useAuth'
 
 /**
- * The side of Kobbleston anyone can see without an account: the front page
+ * The side of Kobblon anyone can see without an account: the front page
  * and the policy pages. The signed-in side has its own layout.
  */
 function PublicTopbar() {

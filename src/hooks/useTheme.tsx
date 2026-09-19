@@ -2,7 +2,7 @@ import { createContext, useContext, useEffect, useMemo, useState } from 'react'
 
 export type Theme = 'dark' | 'light' | 'system'
 
-const KEY = 'kobbleston.theme'
+const KEY = 'kobblon.theme'
 
 const ThemeContext = createContext<{
   theme: Theme

@@ -70,7 +70,7 @@ export function SearchBar({ className }: { className?: string }) {
         role="search"
         onSubmit={(e) => { e.preventDefault(); go(searchScopes[active].tab) }}
       >
-        <label htmlFor="app-search" className="sr-only">Search Kobbleston</label>
+        <label htmlFor="app-search" className="sr-only">Search Kobblon</label>
         <FontAwesomeIcon
           icon={faMagnifyingGlass}
           className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-sm text-onbrand/50"

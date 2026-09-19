@@ -1,11 +1,11 @@
 # Link previews
 
-What a Kobbleston address looks like when it is pasted into Discord, Slack,
+What a Kobblon address looks like when it is pasted into Discord, Slack,
 iMessage or a search result.
 
 ## How this works
 
-Kobbleston is one document with a router inside it. The robot that builds a
+Kobblon is one document with a router inside it. The robot that builds a
 preview does not run the router, so whatever is in the HTML it is handed is
 the preview. That splits the problem in two.
 
@@ -14,7 +14,7 @@ the preview. That splits the problem in two.
 each one with its own title, description and picture: `/discover/index.html`,
 `/communities/index.html`, and so on. Adding a page to that list is all it
 takes. `404.html` carries the site's own card, so anything not on the list
-still previews as Kobbleston rather than as nothing.
+still previews as Kobblon rather than as nothing.
 
 **Addresses that point at something** are written the same way, from the
 database. `scripts/write-item-pages.mjs` asks for everything that is already
@@ -42,7 +42,7 @@ of its content.
 ## Doing it live instead
 
 The files above go stale for at most an hour. If that is too long, a proxy in
-front of kobbleston.com can send preview robots to the `og` function, which
+front of kobblon.com can send preview robots to the `og` function, which
 answers from the database there and then. GitHub Pages cannot do this itself:
 it serves files and cannot tell a robot from a person.
 
@@ -80,7 +80,7 @@ being up to an hour out of date is a problem.
 
 ## Checking it
 
-- `https://kobbleston.com/discover` should preview as Discover with the site
+- `https://kobblon.com/discover` should preview as Discover with the site
   picture, straight from the built file.
 - `npm run pages:items` writes the item cards into `dist/`. Check one with
   `grep og: dist/c/*/*/index.html`.
@@ -95,16 +95,16 @@ being up to an hour out of date is a problem.
 
 A card is one sentence about the thing, then whatever its owner wrote. The
 name is the title on its own: the site name is already shown above it by
-everything that renders these, so "Kobbleston - Kobbleston" was saying it
+everything that renders these, so "Kobblon - Kobblon" was saying it
 twice.
 
 | Address | Title | First line |
 | --- | --- | --- |
-| `/c/1016/name` | the community's name | "X is a community on Kobbleston, run by @owner, with N members." |
-| `/s/1042/name` | the Space's name | "A Space on Kobbleston by @owner. N visits, N% liked." |
-| `/u/1042/name` | "Name (@handle)" | "Name is on Kobbleston, here since Month Year. N Spaces." |
-| `/e/1016` | the event's title | "An event in X on Kobbleston, Saturday 19th September. N people going." |
-| `/create/IMG-1042` | the upload's name | "A decal by @creator on the Kobbleston Marketplace, IMG-1042. N uses." |
+| `/c/1016/name` | the community's name | "X is a community on Kobblon, run by @owner, with N members." |
+| `/s/1042/name` | the Space's name | "A Space on Kobblon by @owner. N visits, N% liked." |
+| `/u/1042/name` | "Name (@handle)" | "Name is on Kobblon, here since Month Year. N Spaces." |
+| `/e/1016` | the event's title | "An event in X on Kobblon, Saturday 19th September. N people going." |
+| `/create/IMG-1042` | the upload's name | "A decal by @creator on the Kobblon Marketplace, IMG-1042. N uses." |
 
 The picture is the widest one there is: a Space's cover, a community's banner,
 an event's cover. Those make the big card. Where there is only a square one,

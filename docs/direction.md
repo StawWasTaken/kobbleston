@@ -1,9 +1,9 @@
-# Where Kobbleston is going
+# Where Kobblon is going
 
 The product direction, kept here so the work has one place to point at. When
 this and anything else disagree, this wins.
 
-## What Kobbleston is
+## What Kobblon is
 
 A social creation platform: a place where people make things, share them,
 find each other's, and eventually go inside them together. Not a website
@@ -15,7 +15,7 @@ time a Space can be a 3D world, a game, a social environment, an interactive
 experience, or a mixture. The builder we have is the first creation format,
 not a draft to be thrown away.
 
-- Name: Kobbleston. The name should feel like a place.
+- Name: Kobblon. The name should feel like a place.
 - Tagline: Pixels go brrr.
 - Brand blue `#1B34E8`, background `#101012`, sidebar `#162382`, presence and
   Enter green `#1CAE71`, font BD Gravel-VF, mascot Kobby.
@@ -36,7 +36,7 @@ something added once it is big.
 
 ## Three doors, one platform
 
-Kobbleston Web, a future player, and a future desktop creator are clients of
+Kobblon Web, a future player, and a future desktop creator are clients of
 one platform, not three products. They share accounts, profiles, avatars,
 inventory, currency, friends, blocks, communities, chat, badges, events,
 notifications, moderation and publishing.
@@ -132,7 +132,7 @@ contrast and sensible touch targets.
 
 ## The order of work
 
-1. Keep today's Kobbleston working and coherent.
+1. Keep today's Kobblon working and coherent.
 2. Know what would make the rest awkward: `docs/audit.md`.
 3. One product: the shared component language, page by page.
 4. The currency as an abstraction, named once properly.

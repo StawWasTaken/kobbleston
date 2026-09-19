@@ -22,7 +22,7 @@ import { formatCount } from '@/lib/format'
 import { cn } from '@/lib/cn'
 import type { AssetKind, ModerationStatus } from '@/types/db'
 
-const CREATE = 'Kobbleston Create'
+const CREATE = 'Kobblon Create'
 
 const kinds: (AssetKind | 'all')[] = ['all', 'image', 'audio', 'video', 'font', 'model']
 const states: (ModerationStatus | 'all')[] = ['all', 'approved', 'pending', 'rejected']
@@ -86,8 +86,8 @@ export default function CreateUploads() {
 
   useEffect(() => {
     const reload = () => mine.reload()
-    window.addEventListener('kobbleston:uploaded', reload)
-    return () => window.removeEventListener('kobbleston:uploaded', reload)
+    window.addEventListener('kobblon:uploaded', reload)
+    return () => window.removeEventListener('kobblon:uploaded', reload)
   }, [mine])
 
   const all = mine.data ?? []

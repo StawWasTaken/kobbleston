@@ -89,9 +89,9 @@ export default function CommunityPage() {
 
   useTitle(group?.name ?? 'Community')
   useSocialCard({
-    title: group ? `${group.name} - Kobbleston` : null,
+    title: group ? `${group.name} - Kobblon` : null,
     description: group?.description
-      ?? (group ? `A Community on Kobbleston with ${group.member_count} members.` : null),
+      ?? (group ? `A Community on Kobblon with ${group.member_count} members.` : null),
     image: group?.icon_url ?? group?.banner_url ?? null,
   })
 

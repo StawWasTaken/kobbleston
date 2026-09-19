@@ -190,7 +190,7 @@ function UsePanel({ asset, onChanged }: { asset: AssetPageItem; onChanged: () =>
             {mine
               ? 'Yours, so you can use it anywhere.'
               : asset.creator_is_admin
-                ? 'In your inventory, and verified by Kobbleston.'
+                ? 'In your inventory, and verified by Kobblon.'
                 : 'In your inventory.'}
           </span>
         </p>
@@ -289,7 +289,7 @@ export default function AssetPage() {
       : null,
   )
 
-  useTitle(asset?.name, 'Kobbleston Create')
+  useTitle(asset?.name, 'Kobblon Create')
 
   // A view is recorded once the page has actually opened the item.
   useEffect(() => {
@@ -329,7 +329,7 @@ export default function AssetPage() {
             mood="noResults"
             title="Nothing carries that number"
             body={`There is no item at ${tag}. It may have been taken down, or it may not be listed.`}
-          action={<Button to="/create">Kobbleston Create</Button>}
+          action={<Button to="/create">Kobblon Create</Button>}
         />
       </Card>
     )
@@ -695,10 +695,10 @@ export default function AssetPage() {
                         return (
                           <p className="rounded-xl border border-ink-line bg-ink-raised p-3 text-xs leading-relaxed text-muted">
                             Putting this up for sale costs <span className="font-bold text-white">{fee}</span>{' '}
-                            {currency.plural}, paid to Kobbleston now. Taking it back off sale later hands a
+                            {currency.plural}, paid to Kobblon now. Taking it back off sale later hands a
                             quarter of that back. On each sale you keep{' '}
                             <span className="font-bold text-white">{keeps}</span> of the{' '}
-                            {asked}; the other {PLATFORM_SHARE}% is Kobbleston&rsquo;s share.
+                            {asked}; the other {PLATFORM_SHARE}% is Kobblon&rsquo;s share.
                           </p>
                         )
                       }

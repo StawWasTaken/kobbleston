@@ -7,7 +7,7 @@ import { Dialog } from '@/components/ui/Dialog'
 /**
  * Cut a picture to the shape it will be shown in, before it is uploaded.
  *
- * A Community emblem is drawn as a square everywhere on Kobbleston, so an
+ * A Community emblem is drawn as a square everywhere on Kobblon, so an
  * upload that is not square has to be cut somewhere. Doing it here means the
  * person choosing the picture decides which part survives, rather than the
  * page squashing it or lopping off the top.

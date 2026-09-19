@@ -35,8 +35,8 @@ export default function CreatorPage() {
   const creator = useAsync(() => getCreatorPage(username), [username])
   useExactTitle(
     creator.data
-      ? `${creator.data.display_name} on Kobbleston Create`
-      : 'Kobbleston Create',
+      ? `${creator.data.display_name} on Kobblon Create`
+      : 'Kobblon Create',
   )
   const items = useAsync(
     () => listAssets({ creator: username, kind, search: debounced, limit: 60 }),
@@ -52,7 +52,7 @@ export default function CreatorPage() {
         <EmptyState
           mood="noResults"
           title="Nobody here"
-          body={`There is no @${username} on Kobbleston.`}
+          body={`There is no @${username} on Kobblon.`}
           action={<Button to="/create/marketplace">Back to the marketplace</Button>}
         />
       </Card>

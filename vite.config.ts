@@ -6,8 +6,8 @@ import { dirname } from 'node:path'
 import { describe, pages } from './scripts/site-pages.mjs'
 import { fileURLToPath, URL } from 'node:url'
 
-// The site is served from kobbleston.com, so everything is addressed from the
-// root. Set VITE_BASE to '/kobbleston/' to build a copy for the old project
+// The site is served from kobblon.com, so everything is addressed from the
+// root. Set VITE_BASE to '/kobblon/' to build a copy for the old project
 // path on github.io instead.
 const base = process.env.VITE_BASE ?? '/'
 

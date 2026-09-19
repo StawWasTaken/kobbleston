@@ -265,7 +265,7 @@ export default function Friends() {
   const emptyFor: Record<Tab, { title: string; body: string }> = {
     Friends: {
       title: 'No friends yet',
-      body: 'People is everybody on Kobbleston. Send somebody a request and they turn up here.',
+      body: 'People is everybody on Kobblon. Send somebody a request and they turn up here.',
     },
     Requests: { title: 'Nothing waiting', body: 'Nobody has asked, and you have not asked anybody.' },
     Followers: { title: 'No followers yet', body: 'Publish something and people start following you.' },

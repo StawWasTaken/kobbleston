@@ -80,7 +80,7 @@ export function AssetTile({ item, owned }: { item: MarketAsset; owned?: boolean 
             <FontAwesomeIcon
               icon={faCircleCheck}
               className="shrink-0 text-[#4d68ff]"
-              title="Verified Kobbleston upload"
+              title="Verified Kobblon upload"
               aria-label="Verified"
             />
           )}

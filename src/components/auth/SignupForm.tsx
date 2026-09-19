@@ -72,7 +72,7 @@ export function SignupForm({
     const birthDate = birthdayToDate(birthday)
 
     if (!birthDate) found.birthday = 'Pick your birthday.'
-    else if (!isOldEnough(birthDate)) found.birthday = `You need to be ${MINIMUM_AGE} or over to use Kobbleston.`
+    else if (!isOldEnough(birthDate)) found.birthday = `You need to be ${MINIMUM_AGE} or over to use Kobblon.`
 
     if (!/^[a-zA-Z0-9_]{3,20}$/.test(username)) {
       found.username = 'Letters, numbers and underscores. 3 to 20 characters.'

@@ -43,9 +43,9 @@ export default function EventPage() {
     [event.data?.id],
   )
 
-  useExactTitle(event.data ? `${event.data.title} - Kobbleston` : null)
+  useExactTitle(event.data ? `${event.data.title} - Kobblon` : null)
   useSocialCard({
-    title: event.data ? `${event.data.title} - Kobbleston` : null,
+    title: event.data ? `${event.data.title} - Kobblon` : null,
     description: event.data?.subtitle ?? event.data?.description ?? null,
     image: event.data?.cover_url ?? null,
   })

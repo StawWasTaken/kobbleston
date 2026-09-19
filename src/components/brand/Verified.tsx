@@ -2,10 +2,10 @@ import { Tooltip } from '@/components/ui/Tooltip'
 import { cn } from '@/lib/cn'
 
 /**
- * The verified mark: an account Kobbleston vouches for, and the content it
+ * The verified mark: an account Kobblon vouches for, and the content it
  * publishes.
  *
- * Kobbleston's own shape, traced from the artwork into two paths: the badge,
+ * Kobblon's own shape, traced from the artwork into two paths: the badge,
  * and the tick cut out of it. The stepped edge is the artwork's, not a
  * tracing artefact, and it is kept because it matches the logo.
  *
@@ -40,7 +40,7 @@ export const isVerified = (person?: {
 } | null) => !!(person?.is_verified || person?.is_admin)
 
 export function Verified({
-  label = 'Verified by Kobbleston',
+  label = 'Verified by Kobblon',
   className,
 }: {
   label?: string

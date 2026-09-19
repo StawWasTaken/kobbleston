@@ -77,7 +77,7 @@ export function AdEditor({
     [profile?.id, open],
   )
 
-  const official = profile?.username?.toLowerCase() === 'kobbleston'
+  const official = profile?.username?.toLowerCase() === 'kobblon'
 
   const [size, setSize] = useState<AdSize>('banner')
   const [picked, setPicked] = useState<OwnAsset | null>(null)
@@ -273,7 +273,7 @@ export function AdEditor({
             <div className="mt-3">
               <Input
                 label="Or somewhere else entirely"
-                labelNote="Kobbleston only"
+                labelNote="Kobblon only"
                 value={outward}
                 onChange={(e) => { setOutward(e.target.value); if (e.target.value) setForWhat(null) }}
                 placeholder="https://"
@@ -283,7 +283,7 @@ export function AdEditor({
           ) : (
             <p className="mt-3 inline-flex items-center gap-1.5 text-[11px] text-muted">
               <FontAwesomeIcon icon={faLock} />
-              Ads cannot be pointed off Kobbleston.
+              Ads cannot be pointed off Kobblon.
             </p>
           )}
         </div>

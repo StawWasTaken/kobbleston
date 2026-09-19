@@ -35,7 +35,7 @@ const ChatContext = createContext<ChatValue>({ openConversation: () => {} })
 export const useChatDock = () => useContext(ChatContext)
 
 const MAX_OPEN = 3
-const LIST_STATE = 'kobbleston.chat.listOpen'
+const LIST_STATE = 'kobblon.chat.listOpen'
 
 /** The dock remembers whether it was left open, per device. */
 function useRemembered(key: string, fallback: boolean) {

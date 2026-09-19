@@ -1,7 +1,7 @@
 /*
  * The pages the build can describe on its own.
  *
- * Kobbleston is one document with a router inside it, and the robots that
+ * Kobblon is one document with a router inside it, and the robots that
  * make a link preview do not run the router: they read the HTML they are
  * given. So every address that is the same for everybody gets its own file
  * here, with its own title, description and picture written in. Addresses
@@ -10,59 +10,59 @@
  * the site's own card.
  */
 
-export const SITE = 'https://kobbleston.com'
-export const TAGLINE = 'Pixels go brrr'
+export const SITE = 'https://kobblon.com'
+export const TAGLINE = 'make something nobody else has'
 
 export const pages = [
   {
     path: '',
-    title: 'Kobbleston',
+    title: 'Kobblon',
     description: `${TAGLINE}. Build your own Space, fill it with whatever you want, and let people in.`,
   },
   {
     path: 'discover',
-    title: 'Discover Spaces on Kobbleston',
+    title: 'Discover Spaces on Kobblon',
     description: 'Spaces people are building and visiting right now. Walk into one and see what they did with it.',
   },
   {
     path: 'create',
-    title: 'Kobbleston Create',
+    title: 'Kobblon Create',
     description: 'Upload images, sounds, video and fonts, sell what you make, and build Spaces out of what other people made.',
   },
   {
     path: 'create/marketplace',
-    title: 'Creator Marketplace - Kobbleston Create',
-    description: 'Images, sounds, video and fonts made by people on Kobbleston, used by their number so the credit sticks.',
+    title: 'Creator Marketplace - Kobblon Create',
+    description: 'Images, sounds, video and fonts made by people on Kobblon, used by their number so the credit sticks.',
   },
   {
     path: 'communities',
-    title: 'Communities on Kobbleston',
+    title: 'Communities on Kobblon',
     description: 'Fan clubs, build teams and hobby corners, each with its own wall, its own ranks, its own events and its own Spaces.',
   },
   {
     path: 'people',
-    title: 'People on Kobbleston',
-    description: 'Everybody on Kobbleston. Search a name, a username, or the words somebody wrote about themselves.',
+    title: 'People on Kobblon',
+    description: 'Everybody on Kobblon. Search a name, a username, or the words somebody wrote about themselves.',
   },
   {
     path: 'login',
-    title: 'Log in to Kobbleston',
+    title: 'Log in to Kobblon',
     description: 'Log in with your username and carry on building.',
   },
   {
     path: 'signup',
-    title: 'Make a Kobbleston account',
+    title: 'Make a Kobblon account',
     description: `${TAGLINE}. Free, and it takes about a minute.`,
   },
   {
     path: 'terms',
-    title: 'Terms of Service - Kobbleston',
-    description: 'The short version of the deal between you and Kobbleston, written so it can actually be read.',
+    title: 'Terms of Service - Kobblon',
+    description: 'The short version of the deal between you and Kobblon, written so it can actually be read.',
   },
   {
     path: 'guidelines',
-    title: 'Community Guidelines - Kobbleston',
-    description: 'What is fine on Kobbleston, and what will get your things taken down.',
+    title: 'Community Guidelines - Kobblon',
+    description: 'What is fine on Kobblon, and what will get your things taken down.',
   },
 ]
 

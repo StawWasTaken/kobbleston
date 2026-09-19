@@ -7,7 +7,7 @@
  * signed in. Logging an account out drops its tokens, and a guest is never
  * stored at all.
  */
-const KEY = 'kobbleston.accounts'
+const KEY = 'kobblon.accounts'
 const LIMIT = 5
 
 export type RememberedAccount = {

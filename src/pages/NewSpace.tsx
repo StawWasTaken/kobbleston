@@ -95,7 +95,7 @@ export default function CreateSpace() {
               setSlug(slugify(e.target.value))
             }}
             maxLength={40}
-            hint={`kobbleston.com/u/${profile?.username ?? 'you'}/${effectiveSlug || '…'}`}
+            hint={`kobblon.com/u/${profile?.username ?? 'you'}/${effectiveSlug || '…'}`}
             error={error}
           />
 
@@ -138,7 +138,7 @@ export default function CreateSpace() {
         <Card className="flex flex-col items-center gap-4 p-5 sm:flex-row">
           <Kobby mood="construction" size="sm" />
           <p className="flex-1 text-sm text-muted">
-            The Kobbleston editor isn&apos;t built yet, so for now a Space is its page, its
+            The Kobblon editor isn&apos;t built yet, so for now a Space is its page, its
             address and its visitors. Building the inside comes next.
           </p>
           <Badge tone="warm">Coming</Badge>

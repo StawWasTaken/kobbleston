@@ -1,7 +1,7 @@
 import { useEffect } from 'react'
 import { asset } from '@/lib/asset'
 
-const DEFAULT_TITLE = 'Kobbleston'
+const DEFAULT_TITLE = 'Kobblon'
 const DEFAULT_ICON = asset('/brand/favicon.png')
 
 /** Create has a mark of its own, and every page of it wears it. */
@@ -9,9 +9,9 @@ export const CREATE_ICON = asset('/brand/favicon-create.png')
 
 /**
  * What the browser tab says. Every page names itself, and the name goes back
- * to plain Kobbleston when you leave. Parts of the site that have a name of
+ * to plain Kobblon when you leave. Parts of the site that have a name of
  * their own pass it as the second argument, so a page inside Create reads
- * "My Uploads - Kobbleston Create" rather than stacking both names.
+ * "My Uploads - Kobblon Create" rather than stacking both names.
  */
 export function useTitle(title?: string | null, site: string = DEFAULT_TITLE) {
   useEffect(() => {
@@ -61,8 +61,8 @@ function drawIcon() {
 
 /**
  * Wear a mark while this page is on screen: Create's own on every page of
- * Create, a Space's emblem inside that Space, and Kobbleston's everywhere
- * else. Passing nothing means the plain Kobbleston mark.
+ * Create, a Space's emblem inside that Space, and Kobblon's everywhere
+ * else. Passing nothing means the plain Kobblon mark.
  */
 export function useFavicon(url?: string | null) {
   useEffect(() => {

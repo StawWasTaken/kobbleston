@@ -3,19 +3,19 @@ import { cn } from '@/lib/cn'
 import { asset } from '@/lib/asset'
 
 /**
- * The wordmark and logomark ship as black artwork, so on the dark interface
- * they get the light treatment rather than a recoloured copy of the file.
+ * The wordmark is white artwork for the dark interface, flipped in light
+ * mode. The logomark is brand blue and reads on either.
  */
 export function Wordmark({ className, to = '/' }: { className?: string; to?: string | null }) {
   const img = (
     <img
       src={asset(('/brand/wordmark.png'))}
-      alt="Kobbleston"
-      className={cn('kob-mark-light h-5 w-auto select-none sm:h-6', className)}
+      alt="Kobblon"
+      className={cn('kob-wordmark h-5 w-auto select-none sm:h-6', className)}
     />
   )
   return to ? (
-    <Link to={to} className="inline-flex items-center" aria-label="Kobbleston home">
+    <Link to={to} className="inline-flex items-center" aria-label="Kobblon home">
       {img}
     </Link>
   ) : (
@@ -29,7 +29,7 @@ export function Logomark({ className }: { className?: string }) {
       src={asset(('/brand/logomark.png'))}
       alt=""
       aria-hidden="true"
-      className={cn('kob-mark-light h-7 w-auto select-none', className)}
+      className={cn('h-7 w-auto select-none', className)}
     />
   )
 }

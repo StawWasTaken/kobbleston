@@ -1,4 +1,4 @@
-# What would make the next Kobbleston awkward
+# What would make the next Kobblon awkward
 
 An honest look through the repository against `docs/direction.md`. Each entry
 says what is there now, why it matters later, and what I would do about it.
@@ -111,7 +111,7 @@ decision rather than an accident.
 ## 8. Notifications carry everything, including things that must not be lost
 
 One `notifications` table, one bell, one feed. The direction separates two
-kinds of message: ordinary activity, and communication from Kobbleston
+kinds of message: ordinary activity, and communication from Kobblon
 itself, which is moderation decisions, security notices, support replies,
 policy notices and announcements. The second kind cannot be allowed to scroll
 past behind six people liking a Space.

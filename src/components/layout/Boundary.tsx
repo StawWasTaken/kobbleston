@@ -21,7 +21,7 @@ export class Boundary extends Component<{ children: ReactNode }, { broke: Error 
   componentDidCatch(broke: Error, info: ErrorInfo) {
     // Left where somebody looking into it will find it, rather than sent
     // anywhere: this is a page that failed, not an event to collect.
-    console.error('Kobbleston could not draw this page.', broke, info.componentStack)
+    console.error('Kobblon could not draw this page.', broke, info.componentStack)
   }
 
   render() {
@@ -43,7 +43,7 @@ export class Boundary extends Component<{ children: ReactNode }, { broke: Error 
           <p className="mt-6 font-display text-6xl font-extrabold text-[#7f92ff]">Oops</p>
           <h1 className="mt-2 font-display text-3xl font-extrabold">This page would not draw</h1>
           <p className="mt-2 max-w-sm text-white/65">
-            Usually Kobbleston was updated while your tab was open, and the piece this page
+            Usually Kobblon was updated while your tab was open, and the piece this page
             asked for had already been replaced. Loading it again fetches the new one.
           </p>
 

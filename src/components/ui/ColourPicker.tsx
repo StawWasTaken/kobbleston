@@ -8,7 +8,7 @@ import { cn } from '@/lib/cn'
  * Colour, picked our way.
  *
  * The browser's own colour control is a different program wearing a small
- * square: it looks like the operating system, not like Kobbleston, and it
+ * square: it looks like the operating system, not like Kobblon, and it
  * cannot hold a colour that is partly see through, which is most of what a
  * page is actually built out of. So this is ours: a square for how strong and
  * how bright, a bar for which colour, a bar for how solid, the hex if you

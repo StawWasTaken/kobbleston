@@ -271,7 +271,7 @@ function Appearance() {
   const { theme, setTheme } = useTheme()
 
   const modes = [
-    { value: 'dark' as const, label: 'Dark', icon: faMoon, note: 'The way Kobbleston is built.' },
+    { value: 'dark' as const, label: 'Dark', icon: faMoon, note: 'The way Kobblon is built.' },
     { value: 'light' as const, label: 'Light', icon: faSun, note: 'The same interface in daylight.' },
     {
       value: 'system' as const,
@@ -353,7 +353,7 @@ function Safety() {
   return (
     <Card className="space-y-3 p-5 text-sm leading-relaxed text-white/65">
       <p>
-        Kobbleston is for people aged 15 and over. Report anything that should not be here
+        Kobblon is for people aged 15 and over. Report anything that should not be here
         using the flag on a profile or Space. Reports go straight to moderators, and the
         person you report is not told who reported them.
       </p>

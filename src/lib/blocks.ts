@@ -60,7 +60,7 @@ export const BUILT_IN_FONT_LABELS: Record<string, string> = {
   sans: 'Plain',
   serif: 'Serif',
   mono: 'Typewriter',
-  display: 'Kobbleston',
+  display: 'Kobblon',
 }
 
 /** The name a font of somebody's own goes by inside a built page. */
@@ -236,7 +236,7 @@ export const asReference = (tag: unknown) => {
   return /^[A-Z]{3}-\d+$/.test(clean) ? `kob://${clean}` : ''
 }
 
-/** An address inside Kobbleston, or an ordinary link somewhere else. */
+/** An address inside Kobblon, or an ordinary link somewhere else. */
 const asHref = (value: unknown) => {
   const raw = String(value ?? '').trim()
   if (!raw) return '#'
@@ -257,7 +257,7 @@ const asNumber = (value: unknown, fallback = 0) => {
 
 /**
  * An icon drawn straight from Font Awesome's own outlines, so a built page
- * carries the same marks as the rest of Kobbleston without asking anybody's
+ * carries the same marks as the rest of Kobblon without asking anybody's
  * server for them.
  */
 function icon(definition: IconDefinition, className = '') {

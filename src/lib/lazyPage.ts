@@ -16,7 +16,7 @@ import type { ComponentType } from 'react'
  * once per session and recorded, because a reload loop is worse than an
  * error message.
  */
-const RELOADED = 'kobbleston:reloaded-for-a-missing-piece'
+const RELOADED = 'kobblon:reloaded-for-a-missing-piece'
 
 const wait = (ms: number) => new Promise((done) => { window.setTimeout(done, ms) })
 

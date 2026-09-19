@@ -1,4 +1,4 @@
-/** Kobbleston is 15 and over, checked against the birthday given at signup. */
+/** Kobblon is 15 and over, checked against the birthday given at signup. */
 export const MINIMUM_AGE = 15
 
 export function ageOn(birthDate: string, now = new Date()) {

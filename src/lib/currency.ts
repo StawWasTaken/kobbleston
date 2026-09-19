@@ -1,5 +1,5 @@
 /*
- * What Kobbleston runs on: Brix.
+ * What Kobblon runs on: Brix.
  *
  * It was Pixels, then Kubes, and it says Brix today. That name is still
  * provisional: the currency has to work across the Catalog, Spaces, games,
@@ -54,7 +54,7 @@ export const movements: Record<Movement, string> = {
   purchase: 'Bought something',
   sale: 'Sold something',
   refund: 'Refund',
-  admin: 'From Kobbleston',
+  admin: 'From Kobblon',
   username_change: 'Changed your name',
   donation: 'Donation',
   ad_budget: 'Paid for a campaign',
@@ -62,7 +62,7 @@ export const movements: Record<Movement, string> = {
   ad_earning: 'Earned from ads',
   listing_fee: 'Put something up for sale',
   listing_refund: 'Taken off sale',
-  platform_fee: "Kobbleston's share",
+  platform_fee: "Kobblon's share",
   burn: 'Burned',
 }
 

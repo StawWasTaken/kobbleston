@@ -52,7 +52,7 @@ export function ReportDialog({
       open={open}
       onClose={onClose}
       title={`Report ${targetName}`}
-      description="Tell us what's wrong. Reports are private and go to Kobbleston moderators."
+      description="Tell us what's wrong. Reports are private and go to Kobblon moderators."
       footer={
         <>
           <Button variant="ghost" onClick={onClose}>Cancel</Button>

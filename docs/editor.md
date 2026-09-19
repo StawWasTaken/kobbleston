@@ -1,4 +1,4 @@
-# Kobbleston Workspace
+# Kobblon Workspace
 
 The plan for the editor that fills a Space. Nothing here is built yet; this is
 the shape to build toward, so the decisions are made before the code is.
@@ -11,7 +11,7 @@ the person who made it and can be as strange as they like.
 
 ## What a Space actually is
 
-A Space is a small static site plus the things Kobbleston knows about it
+A Space is a small static site plus the things Kobblon knows about it
 (visits, badges, chat, its place in Discover). The editor edits the site. The
 platform handles the rest.
 
@@ -77,13 +77,13 @@ A Space is somebody else's code running where people are signed in. That is
 the whole problem, and it decides the architecture.
 
 - **Spaces are served from a different origin.** Not a path on the main site,
-  a separate domain. Nothing a Space does can touch a Kobbleston session,
+  a separate domain. Nothing a Space does can touch a Kobblon session,
   because the browser will not let it.
 - **The page renders in a sandboxed iframe**, allow-scripts only, no
   allow-same-origin. Script can run; it cannot reach cookies, storage or the
   parent page.
 - **A strict content security policy** on the served page: assets only from
-  the Kobbleston asset domain, no third party scripts, no inline event
+  the Kobblon asset domain, no third party scripts, no inline event
   handlers, no remote fetches. A Space cannot phone home.
 - **Markup is sanitised on save, not on render**, so what is stored is already
   clean, and a sanitiser bug does not become a stored attack.
@@ -119,7 +119,7 @@ Space can be rolled back after a bad save.
    names the thing it advertises rather than an address: a Space, a
    community, an event, or something in the Marketplace, and only one the
    buyer made or has been given the run of. The address is worked out on the
-   database side from the thing itself. Kobbleston's own account is the only
+   database side from the thing itself. Kobblon's own account is the only
    one that may point an ad at another website.
 6. **The bridge (partly built).** A Space can say two things: somebody pressed
    a donate button, and somebody pressed an ad. Both are handled outside the
@@ -135,4 +135,4 @@ Space can be rolled back after a bad save.
   themselves.
 - **A serving domain of its own.** The frame already has an origin of null,
   which is what isolation needs; a separate domain would let a Space be
-  visited directly rather than only inside Kobbleston.
+  visited directly rather than only inside Kobblon.

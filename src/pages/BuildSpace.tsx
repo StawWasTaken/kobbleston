@@ -41,7 +41,7 @@ function startingPage(name: string): Page {
     ...text.props,
     text: 'This is my Space. It is mine, and it can be as strange as I like.',
   }
-  button.props = { ...button.props, label: 'Look around Kobbleston', href: '/discover' }
+  button.props = { ...button.props, label: 'Look around Kobblon', href: '/discover' }
 
   page.blocks = [heading, text, button]
   return page

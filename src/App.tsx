@@ -51,7 +51,7 @@ function Booting() {
   return (
     <div className="grid min-h-dvh place-items-center bg-ink">
       <Logomark className="h-10 animate-bob" />
-      <span className="sr-only">Loading Kobbleston</span>
+      <span className="sr-only">Loading Kobblon</span>
     </div>
   )
 }

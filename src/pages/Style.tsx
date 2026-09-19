@@ -254,7 +254,7 @@ export default function Style() {
           <div className="min-w-0">
             <p className="flex items-center gap-2 font-display text-xs font-extrabold uppercase tracking-[0.3em] text-white/40">
               <FontAwesomeIcon icon={faWandMagicSparkles} className="text-brand-bright" />
-              Kobbleston Style
+              Kobblon Style
             </p>
             <h1 className="mt-3 font-display text-4xl font-extrabold leading-[0.95] sm:text-5xl">
               Wear it
@@ -262,7 +262,7 @@ export default function Style() {
             </h1>
             <p className="mt-3 max-w-md text-sm leading-relaxed text-muted">
               Hats, hair and whatever else people make, worn on your own picture and shown
-              wherever you turn up on Kobbleston.
+              wherever you turn up on Kobblon.
             </p>
 
             <div className="mt-5 flex flex-wrap items-center gap-2">

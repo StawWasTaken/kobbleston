@@ -44,7 +44,7 @@ function Line({ event }: { event: ActivityEvent }) {
     case 'space_published': return <>{who} published {space}</>
     case 'space_updated': return <>{who} updated {space}</>
     case 'space_entered': return <>{who} entered {space}</>
-    default: return <>{who} joined Kobbleston</>
+    default: return <>{who} joined Kobblon</>
   }
 }
 
@@ -89,7 +89,7 @@ export function ActivityFeed({ limit = 10, className }: { limit?: number; classN
       <EmptyState
         mood="construction"
         title="Quiet out there"
-        body="Nothing has happened on Kobbleston yet. Be the reason this list fills up."
+        body="Nothing has happened on Kobblon yet. Be the reason this list fills up."
       />
     )
   }

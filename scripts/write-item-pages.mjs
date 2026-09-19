@@ -134,7 +134,7 @@ export async function writeItemPages(into = 'dist') {
       type: 'website',
       title: space.name,
       description: lines(
-        `A Space on Kobbleston by ${by}.`,
+        `A Space on Kobblon by ${by}.`,
         `${count(space.visit_count, 'visit')}${liked ? `, ${liked}` : ''}.`,
         shorten(space.description, 160),
       ),
@@ -156,7 +156,7 @@ export async function writeItemPages(into = 'dist') {
       type: 'website',
       title: group.name,
       description: lines(
-        `${group.name} is a community on Kobbleston, run by ${owner}, with ${count(group.member_count, 'member')}.`,
+        `${group.name} is a community on Kobblon, run by ${owner}, with ${count(group.member_count, 'member')}.`,
         shorten(group.description, 160),
       ),
       image: wide ?? picture(group.icon_url),
@@ -176,7 +176,7 @@ export async function writeItemPages(into = 'dist') {
       type: 'profile',
       title: `${person.display_name} (@${person.username})`,
       description: lines(
-        `${person.display_name} is on Kobbleston${since ? `, here since ${since}` : ''}.`,
+        `${person.display_name} is on Kobblon${since ? `, here since ${since}` : ''}.`,
         shorten(person.bio, 160),
       ),
       image: picture(person.avatar_url),
@@ -200,7 +200,7 @@ export async function writeItemPages(into = 'dist') {
       type: 'article',
       title: event.title,
       description: lines(
-        `An event in ${event.community?.name ?? 'a community'} on Kobbleston${when ? `, ${when}` : ''}.`,
+        `An event in ${event.community?.name ?? 'a community'} on Kobblon${when ? `, ${when}` : ''}.`,
         event.attending_count ? `${count(event.attending_count, 'person', 'people')} going.` : null,
         shorten(event.subtitle || event.description, 160),
       ),
@@ -226,7 +226,7 @@ export async function writeItemPages(into = 'dist') {
       type: 'website',
       title: asset.name,
       description: lines(
-        `${kindWords[asset.kind] ?? 'Something'} by ${by} on the Kobbleston Marketplace, ${tag}-${asset.content_id}${made ? `, up since ${made}` : ''}.`,
+        `${kindWords[asset.kind] ?? 'Something'} by ${by} on the Kobblon Marketplace, ${tag}-${asset.content_id}${made ? `, up since ${made}` : ''}.`,
         asset.download_count ? `${count(asset.download_count, 'use')}.` : null,
         shorten(asset.description, 160),
       ),
@@ -239,7 +239,7 @@ export async function writeItemPages(into = 'dist') {
       imageAlt: shot
         ? asset.name
         : asset.creator?.display_name
-          ? `${asset.creator.display_name} on Kobbleston`
+          ? `${asset.creator.display_name} on Kobblon`
           : asset.name,
     })
   }
