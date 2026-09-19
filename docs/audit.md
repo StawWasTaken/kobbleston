@@ -61,33 +61,34 @@ a future 3D asset are two kinds of the same Catalog item rather than two
 Catalogs. What exists keeps working throughout: a 2D placement stays a valid
 way to render an item.
 
-## 4. Two legal pages, no policy system
+## 4. Two legal pages, no policy system (done)
 
-`src/pages/Policies.tsx` carries Terms and Guidelines as arrays of headings and
-paragraphs. There is no hub, no per topic document, no versioning, no dates,
-and no way to point at one rule.
+**Was:** `src/pages/Policies.tsx` carried Terms and Guidelines as arrays of
+headings and paragraphs. No hub, no per topic document, no dates, and no way
+to point at one rule.
 
-**What to do:** a policy hub with a document per topic (Catalog and UGC,
-Creator Marketplace, currency, games and experiences, moderation, copyright),
-each with its own address and a last updated date, so support and moderation
-can link to the rule rather than the page. The wording needs proper review by
-somebody qualified. Nothing on the site should claim it has had that review
-until it has.
+**Now:** `src/content/policies.ts` holds nine documents, each with a slug, a
+last changed date and its own address under `/policies/:slug`: the terms, the
+guidelines, privacy, moderation and appeals, Catalog and uploads, selling,
+the currency, Spaces and experiences, and copyright. `/policies` is the hub.
+`/terms`, `/guidelines` and `/privacy` keep their old addresses because those
+are the ones people have linked to.
 
-## 5. The component language is half there
+**Still true:** the wording has not been reviewed by anybody qualified. The
+hub says so plainly, and that note comes off on the day it stops being true
+rather than before.
 
-`src/components/ui` has Button, Card, Input, Select, Dialog, Menu, Tooltip,
-Toast, States, Confirm, Avatar, PersonAvatar, StatusDot and Picker, and they
-are used everywhere. Good.
+## 5. The component language is half there (done)
 
-What is not there, and is therefore hand rolled per page, at last count in
-Friends, Style, People, Create, Communities and Settings: tabs, filter chips,
-page headers, section headers, stat tiles, the sticky toolbar, the money row.
-Each is written slightly differently, which is exactly how a site stops
-looking like one product.
+**Was:** tabs, filter chips, page headers, section headers, stat tiles and the
+sticky toolbar were hand rolled per page, each slightly different, which is
+exactly how a site stops looking like one product.
 
-**What to do:** promote those six into `ui`, then move pages onto them one at
-a time. This is Phase 2 and it is mostly deleting.
+**Now:** `Choices`, `Tabs` (a tray and a line), `PageHeader`, `SectionHeader`,
+`StatTile`, `Toolbar` and `Confirm` live in `ui`, and the pages use them.
+
+**Left:** the builder's Inspector still draws its own, deliberately: it is due
+a rewrite and is not worth migrating twice.
 
 ## 6. One way in to the backend, mostly
 
@@ -108,30 +109,39 @@ clients would want the row shapes on their own.
 **What to do:** split when the second client exists, not now. Noted so it is a
 decision rather than an accident.
 
-## 8. Notifications carry everything, including things that must not be lost
+## 8. Notifications carry everything, including things that must not be lost (done)
 
-One `notifications` table, one bell, one feed. The direction separates two
-kinds of message: ordinary activity, and communication from Kobblon
-itself, which is moderation decisions, security notices, support replies,
-policy notices and announcements. The second kind cannot be allowed to scroll
-past behind six people liking a Space.
+**Was:** one `notifications` table, one bell, one feed, carrying both ordinary
+activity and anything Kobblon itself needed to say.
 
-**What to do:** an official inbox as its own thing, with its own address, its
-own unread count and its own retention, feeding from moderation, support and
-announcements. The notifications table stays as it is for activity. This
-lands with the safety structure below rather than on its own.
+**Now:** `mail` is its own table with its own address at `/inbox`, its own
+unread count beside the bell rather than inside it, and its own realtime
+channel. Nothing in a browser can write to it: `send_mail` is revoked from
+`authenticated` and is called only by the moderation and support functions,
+which are the things allowed to speak for Kobblon. The notifications table is
+unchanged and still carries activity.
 
-## 9. There is no account standing, and nothing to appeal to
+## 9. There is no account standing, and nothing to appeal to (done)
 
-Reports exist and create real rows. What does not exist is the other half:
-what happened as a result, what somebody is currently restricted from doing,
-and a way to ask for that to be looked at again. Moderation today can only
-remove things.
+**Was:** reports created real rows and nothing recorded what happened as a
+result. Moderation could only remove things.
 
-**What to do:** violations as records against an account, an account status
-page that says plainly where somebody stands without exposing internal
-moderation notes, and appeals that create real rows a moderator sees. No
-decorative pages: if it is on screen, it is connected to something.
+**Now:** `violations` records one row per decision, in wording the account is
+allowed to read, with what it switched off and when it ends. `my_standing`
+works the level out on the server from the decisions still standing, so
+voiding one puts an account back where it was with nothing to keep in step,
+and `is_blocked_from` is what actually stops somebody posting rather than a
+hidden button. `/standing` shows all of it. `appeals` gives each decision one
+appeal, and upholding it voids the decision and lifts what it stopped in the
+same function. `support_tickets` and `support_messages` are the way to write
+to a person, at `/support`, and a staff reply also lands in the inbox.
+
+Recording a decision and writing the letter happen in one function, so an
+account is never restricted without being told why.
+
+**Still to do:** the moderator's side of all this is SQL rather than a screen.
+The functions enforce who may call them, so a moderation console is a view
+over what exists rather than new rules.
 
 ## 10. Addresses used to keep the name a thing had when it was made (done)
 

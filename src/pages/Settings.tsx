@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react'
+import { Link } from 'react-router-dom'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import {
   faCube, faRightFromBracket, faUser, faLock, faShieldHalved, faPen, faCheck, faPalette,
-  faMoon, faSun, faDesktop, faLink,
+  faMoon, faSun, faDesktop, faLink, faHeadset, faScroll, faCircleCheck, faTriangleExclamation,
 } from '@fortawesome/free-solid-svg-icons'
 import type { IconDefinition } from '@fortawesome/fontawesome-svg-core'
 import { Page } from '@/components/layout/AppShell'
@@ -19,7 +20,7 @@ import { useAuth } from '@/hooks/useAuth'
 import { useTheme } from '@/hooks/useTheme'
 import { useAsync } from '@/hooks/useAsync'
 import {
-  USERNAME_CHANGE_COST, changeUsername, listPixelTransactions, updateProfile,
+  USERNAME_CHANGE_COST, changeUsername, getStanding, listPixelTransactions, updateProfile,
    usernameHistory,
 } from '@/lib/api'
 import { supabase } from '@/lib/supabase'
@@ -352,18 +353,82 @@ function Money() {
 /* ----------------------------------------------------------------- safety */
 
 function Safety() {
+  const standing = useAsync(async () => getStanding(), [])
+  const level = standing.data?.level ?? 'clear'
+  const clear = level === 'clear'
+
   return (
-    <Card className="space-y-3 p-5 text-sm leading-relaxed text-white/65">
-      <p>
-        Kobblon is for people aged 15 and over. Report anything that should not be here
-        using the flag on a profile or Space. Reports go straight to moderators, and the
-        person you report is not told who reported them.
-      </p>
-      <p>
-        Harassment, threats, sexual content involving minors, spam and impersonation get
-        content removed and accounts suspended.
-      </p>
-    </Card>
+    <div className="space-y-4">
+      {/* Where this account stands, said here rather than only on its own
+          page, because this is where people come looking for it. */}
+      <Card className="p-5">
+        <div className="flex flex-wrap items-center gap-4">
+          <span
+            className={cn(
+              'grid h-11 w-11 shrink-0 place-items-center rounded-2xl border',
+              clear
+                ? 'border-space/40 bg-space/10 text-space-bright'
+                : 'border-amber-400/40 bg-amber-400/10 text-amber-300',
+            )}
+          >
+            <FontAwesomeIcon icon={clear ? faCircleCheck : faTriangleExclamation} />
+          </span>
+          <div className="min-w-0 flex-1">
+            <p className="font-display text-lg font-extrabold">Where you stand</p>
+            <p className="mt-0.5 text-sm leading-relaxed text-muted">
+              {standing.loading
+                ? 'Checking.'
+                : standing.data?.headline ?? 'Nothing on record. Carry on.'}
+            </p>
+          </div>
+          <Button size="sm" variant="subtle" to="/standing">Open</Button>
+        </div>
+      </Card>
+
+      <div className="grid gap-3 sm:grid-cols-2">
+        <Link
+          to="/support"
+          className="flex items-start gap-3 rounded-2xl border border-ink-line bg-ink-card p-5 transition-colors hover:bg-ink-hover"
+        >
+          <FontAwesomeIcon icon={faHeadset} className="mt-1 text-brand-bright" />
+          <span className="min-w-0">
+            <span className="block font-bold">Write to us</span>
+            <span className="mt-0.5 block text-sm leading-relaxed text-muted">
+              A ticket goes to a person, and the reply lands in your inbox.
+            </span>
+          </span>
+        </Link>
+        <Link
+          to="/policies"
+          className="flex items-start gap-3 rounded-2xl border border-ink-line bg-ink-card p-5 transition-colors hover:bg-ink-hover"
+        >
+          <FontAwesomeIcon icon={faScroll} className="mt-1 text-brand-bright" />
+          <span className="min-w-0">
+            <span className="block font-bold">The rules</span>
+            <span className="mt-0.5 block text-sm leading-relaxed text-muted">
+              Every policy, each with the day its wording last changed.
+            </span>
+          </span>
+        </Link>
+      </div>
+
+      <Card className="space-y-3 p-5 text-sm leading-relaxed text-white/65">
+        <p>
+          Kobblon is for people aged 15 and over. Report anything that should not be here
+          using the flag on a profile or Space. Reports go straight to moderators, and the
+          person you report is not told who reported them.
+        </p>
+        <p>
+          Harassment, threats, sexual content involving minors, spam and impersonation get
+          content removed and accounts suspended. What happens, and in what order, is set out
+          in{' '}
+          <Link to="/policies/moderation" className="font-bold text-link hover:underline">
+            moderation and appeals
+          </Link>
+          .
+        </p>
+      </Card>
+    </div>
   )
 }
 

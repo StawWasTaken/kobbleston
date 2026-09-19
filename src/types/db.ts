@@ -520,3 +520,76 @@ export type CommunityAuditEntry = {
   actor_display_name: string | null
   actor_avatar_url: string | null
 }
+
+// ------------------------------------------------------ standing and safety
+
+export type StandingLevel = 'clear' | 'warned' | 'limited' | 'suspended' | 'terminated'
+
+export type AccountStanding = {
+  level: StandingLevel
+  headline: string
+  live_count: number
+  warning_count: number
+  blocks: string[]
+  until: string | null
+}
+
+export type ViolationAction =
+  | 'warning' | 'content_removed' | 'feature_block' | 'suspension' | 'termination'
+
+export type Violation = {
+  id: number
+  rule: string
+  action: ViolationAction
+  reason: string
+  target_type: string | null
+  target_id: string | null
+  blocks: string[]
+  expires_at: string | null
+  is_void: boolean
+  void_reason: string | null
+  created_at: string
+}
+
+export type Appeal = {
+  id: number
+  violation_id: number
+  body: string
+  status: 'open' | 'upheld' | 'declined'
+  decision_note: string | null
+  decided_at: string | null
+  created_at: string
+}
+
+export type MailKind =
+  | 'moderation' | 'security' | 'support' | 'policy' | 'announcement' | 'money'
+
+export type Letter = {
+  id: number
+  kind: MailKind
+  subject: string
+  body: string
+  link: string | null
+  is_read: boolean
+  created_at: string
+}
+
+export type TicketTopic =
+  | 'account' | 'money' | 'safety' | 'bug' | 'creator' | 'privacy' | 'other'
+
+export type Ticket = {
+  id: number
+  topic: TicketTopic
+  subject: string
+  status: 'open' | 'answered' | 'closed'
+  updated_at: string
+  created_at: string
+}
+
+export type TicketMessage = {
+  id: number
+  sender_id: string | null
+  from_staff: boolean
+  body: string
+  created_at: string
+}

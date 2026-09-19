@@ -39,6 +39,12 @@ const ConfigureCommunity = lazyPage(() => import('@/pages/ConfigureCommunity'))
 const Terms = lazyPage(() => import('@/pages/Policies').then((m) => ({ default: m.Terms })))
 const Guidelines = lazyPage(() => import('@/pages/Policies').then((m) => ({ default: m.Guidelines })))
 const Privacy = lazyPage(() => import('@/pages/Policies').then((m) => ({ default: m.Privacy })))
+const PolicyHub = lazyPage(() => import('@/pages/Policies'))
+const PolicyPage = lazyPage(() => import('@/pages/Policies').then((m) => ({ default: m.PolicyPage })))
+const Standing = lazyPage(() => import('@/pages/Standing'))
+const Inbox = lazyPage(() => import('@/pages/Inbox'))
+const Support = lazyPage(() => import('@/pages/Support'))
+const SupportTicket = lazyPage(() => import('@/pages/SupportTicket'))
 const Friends = lazyPage(() => import('@/pages/Friends'))
 const Library = lazyPage(() => import('@/pages/Library'))
 const Style = lazyPage(() => import('@/pages/Style'))
@@ -91,6 +97,8 @@ export default function App() {
               <Route path="/terms" element={<Terms />} />
               <Route path="/guidelines" element={<Guidelines />} />
               <Route path="/privacy" element={<Privacy />} />
+              <Route path="/policies" element={<PolicyHub />} />
+              <Route path="/policies/:slug" element={<PolicyPage />} />
 
               <Route path="/login" element={<Auth mode="login" />} />
               <Route path="/signup" element={<Auth mode="signup" />} />
@@ -157,6 +165,10 @@ export default function App() {
                   <Route path="/brix/codes" element={<BrixCodes />} />
                   <Route path="/library" element={<Library />} />
                   <Route path="/settings" element={<Settings />} />
+                  <Route path="/standing" element={<Standing />} />
+                  <Route path="/inbox" element={<Inbox />} />
+                  <Route path="/support" element={<Support />} />
+                  <Route path="/support/:id" element={<SupportTicket />} />
                 </Route>
 
                 <Route path="*" element={<NotFound />} />

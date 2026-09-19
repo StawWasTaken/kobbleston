@@ -9,6 +9,7 @@ import type {
   AssetPageItem, AssetDay, CreatorAssetRow, Collaborator, UsernameRecord,
   AssetRequest, OwnedAsset, AssetReview, CreatorPage,
   CommunityEvent, EventPage, EventAttendee, BuildTarget, CommunityMoneyRow,
+  AccountStanding, Violation, Appeal, Letter, Ticket, TicketMessage, TicketTopic,
 } from '@/types/db'
 
 const SPACE_FIELDS =
@@ -2008,4 +2009,107 @@ export async function liftBan(communityId: string, targetId: string) {
 
 export async function listCommunityAudit(communityId: string): Promise<CommunityAuditEntry[]> {
   return unwrap(await supabase.rpc('community_audit_log', { community: communityId })) ?? []
+}
+
+// ------------------------------------------- standing, appeals and support
+
+export async function getStanding(): Promise<AccountStanding | null> {
+  const rows = unwrap(await supabase.rpc('my_standing')) as AccountStanding[] | null
+  return rows?.[0] ?? null
+}
+
+export async function listViolations(): Promise<Violation[]> {
+  const { data, error } = await supabase
+    .from('violations')
+    .select('id, rule, action, reason, target_type, target_id, blocks, expires_at, is_void, void_reason, created_at')
+    .order('created_at', { ascending: false })
+  if (error) throw new Error(error.message)
+  return (data ?? []) as Violation[]
+}
+
+export async function listAppeals(): Promise<Appeal[]> {
+  const { data, error } = await supabase
+    .from('appeals')
+    .select('id, violation_id, body, status, decision_note, decided_at, created_at')
+    .order('created_at', { ascending: false })
+  if (error) throw new Error(error.message)
+  return (data ?? []) as Appeal[]
+}
+
+export async function fileAppeal(violationId: number, body: string): Promise<number> {
+  return unwrap(await supabase.rpc('file_appeal', { violation: violationId, body })) as number
+}
+
+/** Whether something is switched off for this account, asked of the server. */
+export async function blockedFrom(what: string): Promise<boolean> {
+  return (unwrap(await supabase.rpc('is_blocked_from', { what })) as boolean) ?? false
+}
+
+// ------------------------------------------------------------ the inbox
+
+export async function listMail(): Promise<Letter[]> {
+  const { data, error } = await supabase
+    .from('mail')
+    .select('id, kind, subject, body, link, is_read, created_at')
+    .order('created_at', { ascending: false })
+    .limit(200)
+  if (error) throw new Error(error.message)
+  return (data ?? []) as Letter[]
+}
+
+export async function unreadMail(): Promise<number> {
+  return (unwrap(await supabase.rpc('unread_mail')) as number) ?? 0
+}
+
+export async function readLetter(id: number) {
+  unwrap(await supabase.rpc('read_mail', { letter: id }))
+}
+
+export async function readAllMail() {
+  unwrap(await supabase.rpc('read_all_mail'))
+}
+
+// ---------------------------------------------------------------- support
+
+export async function listTickets(): Promise<Ticket[]> {
+  const { data, error } = await supabase
+    .from('support_tickets')
+    .select('id, topic, subject, status, updated_at, created_at')
+    .order('updated_at', { ascending: false })
+  if (error) throw new Error(error.message)
+  return (data ?? []) as Ticket[]
+}
+
+export async function getTicket(id: number): Promise<Ticket | null> {
+  const { data, error } = await supabase
+    .from('support_tickets')
+    .select('id, topic, subject, status, updated_at, created_at')
+    .eq('id', id)
+    .maybeSingle()
+  if (error) throw new Error(error.message)
+  return (data as Ticket | null) ?? null
+}
+
+export async function listTicketMessages(id: number): Promise<TicketMessage[]> {
+  const { data, error } = await supabase
+    .from('support_messages')
+    .select('id, sender_id, from_staff, body, created_at')
+    .eq('ticket_id', id)
+    .order('created_at')
+  if (error) throw new Error(error.message)
+  return (data ?? []) as TicketMessage[]
+}
+
+export async function openTicket(
+  topic: TicketTopic, subject: string, body: string,
+): Promise<number> {
+  return unwrap(await supabase.rpc('open_ticket', { topic, subject, body })) as number
+}
+
+export async function replyTicket(id: number, body: string) {
+  unwrap(await supabase.rpc('reply_ticket', { ticket: id, body }))
+}
+
+export async function closeTicket(id: number) {
+  unwrap(await supabase.rpc('close_ticket', { ticket: id }))
 }

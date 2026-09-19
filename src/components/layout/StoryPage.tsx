@@ -35,13 +35,16 @@ const toneWord: Record<string, string> = {
  * their own contents rail rather than a wall of text.
  */
 export function StoryPage({
-  eyebrow, title, intro, sections, footnote,
+  eyebrow, title, intro, sections, footnote, updated, tagline = true,
 }: {
   eyebrow: string
   title: string
   intro: string
   sections: StorySection[]
   footnote?: string
+  /** The day the wording last changed, for a page that is a rule. */
+  updated?: string
+  tagline?: boolean
 }) {
   useForceDark()
   const [active, setActive] = useState(sections[0]?.id ?? '')
@@ -75,7 +78,7 @@ export function StoryPage({
         <header className="flex items-center justify-between py-6">
           <Wordmark to="/" className="h-6" />
           <nav className="flex items-center gap-5 text-sm font-semibold text-white/50">
-            <Link to="/terms" className="hover:text-white">Terms</Link>
+            <Link to="/policies" className="hover:text-white">All policies</Link>
             <Link to="/guidelines" className="hover:text-white">Guidelines</Link>
             <Link to="/privacy" className="hover:text-white">Privacy</Link>
           </nav>
@@ -90,9 +93,20 @@ export function StoryPage({
             {title}
           </h1>
           <p className="mt-5 max-w-2xl text-lg leading-relaxed text-white/60">{intro}</p>
-          <p className="mt-8 font-display text-sm font-extrabold uppercase tracking-[0.18em] text-brand-bright">
-            Make Something Nobody Else Has
-          </p>
+          {updated && (
+            <p className="mt-6 text-sm font-semibold text-white/40">
+              Last changed{' '}
+              {new Date(updated).toLocaleDateString(undefined, {
+                day: 'numeric', month: 'long', year: 'numeric',
+              })}
+            </p>
+          )}
+
+          {tagline && (
+            <p className="mt-8 font-display text-sm font-extrabold uppercase tracking-[0.18em] text-brand-bright">
+              Make Something Nobody Else Has
+            </p>
+          )}
         </section>
 
         <div className="grid gap-10 lg:grid-cols-[15rem_1fr] lg:gap-14">

@@ -69,6 +69,16 @@ export const pages = [
     title: 'Community Guidelines - Kobblon',
     description: 'What is fine on Kobblon, and what will get your things taken down.',
   },
+  {
+    path: 'policies',
+    title: 'Policies - Kobblon',
+    description: 'Every rule Kobblon has, split by subject, each with the day its wording last changed.',
+  },
+  {
+    path: 'support',
+    title: 'Support - Kobblon',
+    description: 'Write to a person at Kobblon. Everything you send and everything we say back stays in one place.',
+  },
 ]
 
 /** Top level names the publish step has to copy and clear out. */

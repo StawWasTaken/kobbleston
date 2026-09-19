@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import {
   faGear, faShieldHalved, faRightFromBracket, faUser, faScroll, faRightLeft, faUserPlus,
+  faEnvelope, faHeadset,
 } from '@fortawesome/free-solid-svg-icons'
 import type { IconDefinition } from '@fortawesome/fontawesome-svg-core'
 import { SwitchAccounts } from './SwitchAccounts'
@@ -39,8 +40,14 @@ export function UserMenu() {
       : []),
     ...(profile ? [{ to: profileLink(profile), label: 'My Profile', icon: faUser }] : []),
     { to: '/settings', label: 'Settings', icon: faGear },
-    { to: '/guidelines', label: 'Help & Safety', icon: faShieldHalved },
-    { to: '/terms', label: 'Terms', icon: faScroll },
+    ...(profile
+      ? [
+          { to: '/inbox', label: 'Inbox', icon: faEnvelope },
+          { to: '/standing', label: 'Where you stand', icon: faShieldHalved },
+          { to: '/support', label: 'Support', icon: faHeadset },
+        ]
+      : []),
+    { to: '/policies', label: 'Policies', icon: faScroll },
     ...(profile
       ? [
           { label: 'Switch Accounts', icon: faRightLeft, onSelect: () => setSwitching(true) },

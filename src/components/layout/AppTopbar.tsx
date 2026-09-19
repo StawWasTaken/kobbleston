@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link, NavLink } from 'react-router-dom'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faBars, faBell } from '@fortawesome/free-solid-svg-icons'
+import { faBars, faBell, faEnvelope } from '@fortawesome/free-solid-svg-icons'
 import { Wordmark } from '@/components/brand/Wordmark'
 import { Avatar } from '@/components/ui/Avatar'
 import { Button } from '@/components/ui/Button'
@@ -12,6 +12,7 @@ import { CurrencyBalance } from './CurrencyBalance'
 import { topNav } from './nav'
 import { useAuth } from '@/hooks/useAuth'
 import { supabase } from '@/lib/supabase'
+import { unreadMail } from '@/lib/api'
 import { asset } from '@/lib/asset'
 import { cn } from '@/lib/cn'
 import { avatarOf } from '@/lib/avatars'
@@ -22,6 +23,7 @@ export function AppTopbar({ onOpenNav }: { onOpenNav: () => void }) {
   const { profile } = useAuth()
   const [notificationsOpen, setNotificationsOpen] = useState(false)
   const [unread, setUnread] = useState(0)
+  const [post, setPost] = useState(0)
 
   useEffect(() => {
     if (!profile) return
@@ -46,6 +48,37 @@ export function AppTopbar({ onOpenNav }: { onOpenNav: () => void }) {
 
     return () => {
       active = false
+      supabase.removeChannel(channel)
+    }
+  }, [profile])
+
+  /*
+   * Post from Kobblon is counted separately from the bell on purpose. A
+   * moderation decision is not an activity notification and must not queue
+   * behind one.
+   */
+  useEffect(() => {
+    if (!profile) return
+    let active = true
+
+    const count = async () => {
+      const waiting = await unreadMail().catch(() => 0)
+      if (active) setPost(waiting)
+    }
+    count()
+
+    const channel = supabase
+      .channel(`mail:${profile.id}`)
+      .on('postgres_changes',
+        { event: '*', schema: 'public', table: 'mail', filter: `user_id=eq.${profile.id}` },
+        count)
+      .subscribe()
+
+    window.addEventListener('kobblon:mail', count)
+
+    return () => {
+      active = false
+      window.removeEventListener('kobblon:mail', count)
       supabase.removeChannel(channel)
     }
   }, [profile])
@@ -106,6 +139,21 @@ export function AppTopbar({ onOpenNav }: { onOpenNav: () => void }) {
                   <span className="max-w-24 truncate text-sm font-bold text-onbrand">
                     {profile.display_name}
                   </span>
+                </Link>
+              </Tooltip>
+
+              <Tooltip label={post ? `${post} unread from Kobblon` : 'Your inbox'} side="bottom">
+                <Link
+                  to="/inbox"
+                  aria-label={post ? `Inbox, ${post} unread` : 'Inbox'}
+                  className="relative grid h-9 w-9 place-items-center rounded-lg text-onbrand/85 transition-colors hover:bg-onbrand/15"
+                >
+                  <FontAwesomeIcon icon={faEnvelope} />
+                  {post > 0 && (
+                    <span className="absolute right-0.5 top-0.5 grid h-4 min-w-[1rem] place-items-center rounded-full bg-space px-1 text-[10px] font-bold text-onbrand">
+                      {post > 9 ? '9+' : post}
+                    </span>
+                  )}
                 </Link>
               </Tooltip>
 
