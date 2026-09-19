@@ -444,7 +444,7 @@ export async function markNotificationsRead(userId: string) {
 
 export async function submitReport(input: {
   reporterId: string
-  targetType: 'profile' | 'space' | 'message' | 'ad' | 'asset' | 'community'
+  targetType: 'profile' | 'space' | 'message' | 'ad' | 'asset' | 'community' | 'style'
   targetId: string
   reason: string
   details: string
@@ -1458,6 +1458,7 @@ export const uploadSpaceImage = uploadCommunityImage
 /** One thing in the shop, or one thing you own. */
 export type StyleItem = {
   id: string
+  creator_avatar?: string | null
   content_id: number | null
   name: string
   description?: string | null
@@ -1555,6 +1556,19 @@ export async function styleShop(
 
 export async function myStyle(): Promise<StyleItem[]> {
   return (unwrap(await supabase.rpc('my_style')) as StyleItem[]) ?? []
+}
+
+/** The number in a thing's address: STY-1042. */
+export const styleTag = (contentId?: number | null) => `STY-${contentId ?? 0}`
+
+export async function styleItem(contentId: number): Promise<StyleItem | null> {
+  const rows = unwrap(await supabase.rpc('style_item', { target_content: contentId }))
+  const row = (Array.isArray(rows) ? rows[0] : rows) as StyleItem | undefined
+  return row ?? null
+}
+
+export async function similarStyle(id: string, limit = 12): Promise<StyleItem[]> {
+  return (unwrap(await supabase.rpc('similar_style', { target: id, wanted: limit })) as StyleItem[]) ?? []
 }
 
 /** Turns a shop row into the shape a picture is drawn from. */

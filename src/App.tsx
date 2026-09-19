@@ -41,6 +41,7 @@ const Guidelines = lazyPage(() => import('@/pages/Policies').then((m) => ({ defa
 const Friends = lazyPage(() => import('@/pages/Friends'))
 const Library = lazyPage(() => import('@/pages/Library'))
 const Style = lazyPage(() => import('@/pages/Style'))
+const StyleItem = lazyPage(() => import('@/pages/StyleItem'))
 const Profile = lazyPage(() => import('@/pages/Profile'))
 const Settings = lazyPage(() => import('@/pages/Settings'))
 
@@ -113,6 +114,7 @@ export default function App() {
                 </Route>
                 <Route path="/people" element={<People />} />
                 <Route path="/style" element={<Style />} />
+                <Route path="/style/:tag" element={<StyleItem />} />
                 <Route element={<CommunityShell />}>
                   <Route path="/communities" element={<Communities />} />
                   <Route

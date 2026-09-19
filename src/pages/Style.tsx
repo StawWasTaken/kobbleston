@@ -1,7 +1,9 @@
 import { useEffect, useRef, useState } from 'react'
-import { useSearchParams } from 'react-router-dom'
+import { Link, useSearchParams } from 'react-router-dom'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import {
-  faMagnifyingGlass, faPlus, faCheck, faShirt, faUpload, faXmark, faEyeSlash, faStore,
+  faMagnifyingGlass, faPlus, faCheck, faShirt, faUpload, faXmark, faEyeSlash,
+  faStore, faWandMagicSparkles, faArrowRight,
 } from '@fortawesome/free-solid-svg-icons'
 import { Page } from '@/components/layout/AppShell'
 import { Button } from '@/components/ui/Button'
@@ -13,16 +15,16 @@ import { EmptyState, ErrorState, Skeleton } from '@/components/ui/States'
 import { useToast } from '@/components/ui/Toast'
 import { GuestGate } from '@/components/ui/GuestGate'
 import { Kube } from '@/components/brand/Kube'
+import { Kobby } from '@/components/brand/Kobby'
 import { Verified } from '@/components/brand/Verified'
-import { StyleLayer } from '@/components/style/StyleLayer'
+import { FaceStage } from '@/components/style/FaceStage'
 import { StyleStudio, StyleDetails, startingPlace } from '@/components/style/StyleStudio'
-import { Avatar } from '@/components/ui/Avatar'
 import { useAuth } from '@/hooks/useAuth'
 import { useAsync } from '@/hooks/useAsync'
 import { useTitle } from '@/hooks/useTitle'
 import {
-  asWorn, buyStyleItem, myStyle, placeStyleItem, publishStyleItem, retireStyleItem,
-  styleImage, styleShop, uploadStyleImage, wearStyleItem,
+  asWorn, buyStyleItem, myStyle, publishStyleItem, retireStyleItem,
+  styleShop, styleTag, uploadStyleImage, wearStyleItem,
 } from '@/lib/api'
 import type { Placement, StyleItem } from '@/lib/api'
 import { avatarOf } from '@/lib/avatars'
@@ -43,10 +45,14 @@ const filters: { value: StyleItem['slot'] | null; label: string }[] = [
 ]
 
 /**
- * One thing in the shop, shown the only way worth showing it: on a face,
- * exactly where it will sit when you wear it.
+ * One thing in the shop.
+ *
+ * The whole tile is the way in to its page, and the only preview worth
+ * showing is the thing already on a face: yours, so what you are looking at
+ * is what you would get. The buttons sit over the tile rather than in it, so
+ * the picture is the card and nothing competes with it.
  */
-function ItemCard({
+function ItemTile({
   item, face, name, busy, onGet, onWear,
 }: {
   item: StyleItem
@@ -57,57 +63,67 @@ function ItemCard({
   onWear: () => void
 }) {
   return (
-    <article className="flex flex-col overflow-hidden rounded-2xl border border-ink-line bg-ink-card transition-colors hover:border-brand/60">
-      <div className="relative grid aspect-square place-items-center bg-ink-raised p-6">
-        <span className="relative block h-full w-full max-w-[9rem]">
-          <StyleLayer items={[asWorn(item)]} layer={0} />
-          <span className="relative block h-full w-full">
-            <Avatar src={face} name={name} size="md" className="h-full w-full rounded-full" />
-          </span>
-          <StyleLayer items={[asWorn(item)]} layer={1} />
-        </span>
+    <article className="group relative overflow-hidden rounded-2xl border border-ink-line bg-ink-card transition-all duration-200 hover:-translate-y-0.5 hover:border-brand/70 hover:shadow-pop">
+      <Link to={`/style/${styleTag(item.content_id)}`} className="block">
+        <span className="relative grid aspect-square place-items-center bg-gradient-to-b from-ink-raised to-ink p-7">
+          <span
+            aria-hidden="true"
+            className="pointer-events-none absolute inset-x-6 bottom-4 h-16 rounded-full bg-brand/10 blur-2xl transition-opacity duration-200 group-hover:bg-brand/25"
+          />
+          <FaceStage
+            src={face}
+            name={name}
+            items={[asWorn(item)]}
+            className="w-full max-w-[9rem] transition-transform duration-200 group-hover:scale-[1.05]"
+          />
 
-        <span className="absolute left-2.5 top-2.5 rounded-md bg-ink-card/80 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-muted ring-1 ring-ink-line backdrop-blur">
-          {slotNames[item.slot]}
-        </span>
-      </div>
-
-      <div className="flex flex-1 flex-col gap-2 border-t border-ink-line p-3">
-        <div className="min-w-0">
-          <p className="truncate text-sm font-bold">{item.name}</p>
-          <p className="truncate text-xs text-muted">
-            By @{item.creator_username} <Verified className="ml-0.5 text-[10px]" />
-          </p>
-        </div>
-
-        <div className="mt-auto flex items-center justify-between gap-2">
-          <span className="flex items-center gap-1 text-sm font-extrabold">
-            {item.price > 0 ? (
-              <>
-                <Kube className="h-3.5 w-3.5" />
-                {formatCount(item.price)}
-              </>
-            ) : 'Free'}
+          <span className="absolute left-2.5 top-2.5 max-w-[60%] truncate rounded-md bg-ink-card/80 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-muted ring-1 ring-ink-line backdrop-blur">
+            {slotNames[item.slot]}
           </span>
 
-          {item.owned ? (
-            <Button
-              size="sm"
-              variant={item.worn ? 'primary' : 'subtle'}
-              icon={item.worn ? faCheck : faShirt}
-              disabled={busy}
-              onClick={onWear}
-            >
-              {item.worn ? 'Worn' : 'Wear'}
-            </Button>
-          ) : (
-            <GuestGate action="buy things">
-              <Button size="sm" disabled={busy} onClick={onGet}>
-                {item.price > 0 ? 'Get' : 'Take'}
-              </Button>
-            </GuestGate>
+          {item.worn && (
+            <span className="absolute right-2.5 top-2.5 rounded-md bg-brand px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-onbrand">
+              Worn
+            </span>
           )}
-        </div>
+        </span>
+
+        <span className="block border-t border-ink-line px-3 pb-2 pt-2.5">
+          <span className="block truncate text-sm font-bold">{item.name}</span>
+          <span className="flex items-center gap-1 truncate text-xs text-muted">
+            @{item.creator_username}
+            <Verified className="text-[9px]" />
+          </span>
+        </span>
+      </Link>
+
+      <div className="flex items-center justify-between gap-2 px-3 pb-3">
+        <span className="flex items-center gap-1 text-sm font-extrabold">
+          {item.price > 0 ? (
+            <>
+              <Kube className="h-3.5 w-3.5" />
+              {formatCount(item.price)}
+            </>
+          ) : 'Free'}
+        </span>
+
+        {item.owned ? (
+          <Button
+            size="sm"
+            variant={item.worn ? 'primary' : 'subtle'}
+            icon={item.worn ? faCheck : faShirt}
+            disabled={busy}
+            onClick={onWear}
+          >
+            {item.worn ? 'Worn' : 'Wear'}
+          </Button>
+        ) : (
+          <GuestGate action="buy things">
+            <Button size="sm" disabled={busy} onClick={onGet}>
+              {item.price > 0 ? 'Get' : 'Take'}
+            </Button>
+          </GuestGate>
+        )}
       </div>
     </article>
   )
@@ -144,6 +160,7 @@ export default function Style() {
 
   const canMake = Boolean(profile?.is_verified || profile?.is_admin)
   const face = avatarOf(profile)
+  const wearing = profile?.style ?? []
 
   /* ------------------------------------------------------------ making one */
 
@@ -220,10 +237,10 @@ export default function Style() {
     }
   }
 
-  const wear = async (item: StyleItem) => {
+  const wear = async (item: StyleItem, on = !item.worn) => {
     setBusy(item.id)
     try {
-      await wearStyleItem(item.id, !item.worn)
+      await wearStyleItem(item.id, on)
       await refreshProfile()
       shop.reload()
       mine.reload()
@@ -234,119 +251,142 @@ export default function Style() {
     }
   }
 
-  const moveOwn = async (item: StyleItem, next: Placement) => {
-    try {
-      await placeStyleItem(item.id, next)
-      toast('Moved. Everybody wearing it sees it there now.', 'success')
-      shop.reload()
-      mine.reload()
-      await refreshProfile()
-    } catch (err) {
-      toast(err instanceof Error ? err.message : 'That did not move.', 'error')
-    }
-  }
-
-  const shown = tab === 'shop' ? shop.data ?? [] : mine.data ?? []
+  const source = tab === 'shop' ? shop : mine
+  const shown = source.data ?? []
 
   return (
     <Page className="space-y-6">
-      <header className="relative overflow-hidden rounded-3xl border border-ink-line bg-ink-card px-5 py-7 sm:px-8">
+      {/* ----------------------------------------------------------- hero */}
+      <header className="relative overflow-hidden rounded-3xl border border-ink-line bg-ink-card">
         <span
           aria-hidden="true"
-          className="pointer-events-none absolute -right-24 -top-24 h-64 w-64 rounded-full bg-brand/20 blur-3xl"
+          className="pointer-events-none absolute -right-28 -top-28 h-72 w-72 rounded-full bg-brand/25 blur-3xl"
         />
-        <div className="relative flex flex-wrap items-end justify-between gap-4">
-          <div>
-            <h1 className="font-display text-3xl font-extrabold sm:text-4xl">Style</h1>
-            <p className="mt-1.5 max-w-xl text-sm text-muted">
+        <span
+          aria-hidden="true"
+          className="pointer-events-none absolute -bottom-24 left-1/3 h-56 w-56 rounded-full bg-space/10 blur-3xl"
+        />
+
+        <div className="relative grid gap-6 p-5 sm:p-8 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-center">
+          <div className="min-w-0">
+            <p className="flex items-center gap-2 font-display text-xs font-extrabold uppercase tracking-[0.3em] text-white/40">
+              <FontAwesomeIcon icon={faWandMagicSparkles} className="text-brand-bright" />
+              Kobbleston Style
+            </p>
+            <h1 className="mt-3 font-display text-4xl font-extrabold leading-[0.95] sm:text-5xl">
+              Wear it
+              <span className="block text-brand-bright">everywhere</span>
+            </h1>
+            <p className="mt-3 max-w-md text-sm leading-relaxed text-muted">
               Hats, hair and whatever else people make, worn on your own picture and shown
               wherever you turn up on Kobbleston.
             </p>
+
+            <div className="mt-5 flex flex-wrap items-center gap-2">
+              {canMake && (
+                <Button icon={faPlus} onClick={() => setMaking(true)}>Make something</Button>
+              )}
+              {!!wearing.length && (
+                <Button variant="subtle" icon={faShirt} onClick={() => setTab('mine')}>
+                  {wearing.length} on your picture
+                </Button>
+              )}
+              <span className="inline-flex items-center gap-1.5 rounded-xl border border-ink-line bg-ink-raised px-3 py-2 text-sm font-bold">
+                <Kube className="h-4 w-4" />
+                {formatCount(profile?.pixels ?? 0)}
+              </span>
+            </div>
           </div>
 
-          <div className="flex items-center gap-2">
-            {/* Your own face, wearing what you have on right now. */}
-            <span className="relative hidden h-16 w-16 sm:block">
-              <StyleLayer items={profile?.style} layer={0} />
-              <span className="relative block h-full w-full">
-                <Avatar
-                  src={face}
-                  name={profile?.display_name ?? 'You'}
-                  size="md"
-                  className="h-full w-full rounded-full"
-                />
-              </span>
-              <StyleLayer items={profile?.style} layer={1} />
-            </span>
+          {/* Your own face, wearing what you have on right now, big enough to
+              judge by. Taking something off is done from here. */}
+          <div className="flex flex-col items-center gap-3">
+            <div className="relative grid h-48 w-48 place-items-center rounded-3xl border border-ink-line bg-ink-raised p-6 sm:h-56 sm:w-56">
+              <FaceStage
+                src={face}
+                name={profile?.display_name ?? 'You'}
+                items={wearing}
+                className="w-full"
+              />
+            </div>
 
-            {canMake && (
-              <Button icon={faPlus} onClick={() => setMaking(true)}>Make something</Button>
+            {!!wearing.length && (
+              <div className="flex max-w-[16rem] flex-wrap justify-center gap-1.5">
+                {wearing.map((one) => (
+                  <button
+                    key={one.id}
+                    onClick={() => wear({ id: one.id } as StyleItem, false)}
+                    className="inline-flex items-center gap-1.5 rounded-lg border border-ink-line bg-ink-card px-2 py-1 text-xs font-bold text-white/70 transition-colors hover:border-danger/50 hover:text-white"
+                  >
+                    {one.name ?? 'Worn'}
+                    <FontAwesomeIcon icon={faXmark} className="text-[10px]" />
+                  </button>
+                ))}
+              </div>
             )}
           </div>
         </div>
       </header>
 
-      <div className="flex flex-wrap items-center gap-2">
-        <div className="flex rounded-xl border border-ink-line bg-ink-card p-1">
-          {(['shop', 'mine'] as const).map((one) => (
-            <button
-              key={one}
-              onClick={() => setTab(one)}
-              className={cn(
-                'rounded-lg px-3 py-1.5 text-sm font-bold transition-colors',
-                tab === one ? 'bg-brand text-onbrand' : 'text-white/60 hover:text-white',
-              )}
-            >
-              {one === 'shop' ? 'The shop' : 'Mine'}
-            </button>
-          ))}
-        </div>
+      {/* --------------------------------------------------------- filters */}
+      <div className="sticky top-[3.25rem] z-20 -mx-4 space-y-2.5 border-b border-ink-line bg-ink/85 px-4 py-3 backdrop-blur sm:-mx-6 sm:px-6">
+        <div className="flex flex-wrap items-center gap-2">
+          <div className="flex rounded-xl border border-ink-line bg-ink-card p-1">
+            {(['shop', 'mine'] as const).map((one) => (
+              <button
+                key={one}
+                onClick={() => setTab(one)}
+                className={cn(
+                  'rounded-lg px-3 py-1.5 text-sm font-bold transition-colors',
+                  tab === one ? 'bg-brand text-onbrand' : 'text-white/60 hover:text-white',
+                )}
+              >
+                {one === 'shop' ? 'The shop' : 'Yours'}
+              </button>
+            ))}
+          </div>
 
-        {tab === 'shop' && (
-          <>
+          {tab === 'shop' && (
             <Input
               icon={faMagnifyingGlass}
               value={term}
               onChange={(e) => setTerm(e.target.value)}
               placeholder="Search the shop"
               aria-label="Search the shop"
-              className="min-w-[12rem] flex-1"
+              className="min-w-[10rem] flex-1"
             />
-            <div className="flex flex-wrap gap-1.5">
-              {filters.map((one) => (
-                <button
-                  key={one.label}
-                  onClick={() => setSlot(one.value)}
-                  className={cn(
-                    'rounded-lg border px-2.5 py-1.5 text-xs font-bold transition-colors',
-                    slot === one.value
-                      ? 'border-brand-bright bg-brand/15 text-white'
-                      : 'border-ink-line bg-ink-card text-white/60 hover:text-white',
-                  )}
-                >
-                  {one.label}
-                </button>
-              ))}
-            </div>
-          </>
+          )}
+        </div>
+
+        {tab === 'shop' && (
+          <div className="flex flex-wrap gap-1.5">
+            {filters.map((one) => (
+              <button
+                key={one.label}
+                onClick={() => setSlot(one.value)}
+                className={cn(
+                  'rounded-lg border px-2.5 py-1.5 text-xs font-bold transition-colors',
+                  slot === one.value
+                    ? 'border-brand-bright bg-brand/15 text-white'
+                    : 'border-ink-line bg-ink-card text-white/60 hover:text-white',
+                )}
+              >
+                {one.label}
+              </button>
+            ))}
+          </div>
         )}
       </div>
 
-      {(tab === 'shop' ? shop.error : mine.error) && (
-        <ErrorState
-          message={(tab === 'shop' ? shop.error : mine.error) as string}
-          onRetry={tab === 'shop' ? shop.reload : mine.reload}
-        />
-      )}
+      {source.error && <ErrorState message={source.error} onRetry={source.reload} />}
 
-      {(tab === 'shop' ? shop.loading : mine.loading) && (
-        <div className="grid gap-3 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
+      {source.loading && (
+        <div className="grid gap-3 grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
           {[0, 1, 2, 3, 4].map((i) => <Skeleton key={i} className="aspect-[3/4] rounded-2xl" />)}
         </div>
       )}
 
-      {!shown.length && !(tab === 'shop' ? shop.loading : mine.loading)
-        && !(tab === 'shop' ? shop.error : mine.error) && (
+      {!shown.length && !source.loading && !source.error && (
         <Card>
           <EmptyState
             mood={search ? 'noResults' : 'emptyBox'}
@@ -358,16 +398,22 @@ export default function Style() {
                   ? 'Try fewer letters.'
                   : 'Verified accounts put things here. There will be more soon.'
             }
-            action={tab === 'mine' ? <Button icon={faStore} onClick={() => setTab('shop')}>Open the shop</Button> : undefined}
+            action={
+              tab === 'mine'
+                ? <Button icon={faStore} onClick={() => setTab('shop')}>Open the shop</Button>
+                : search
+                  ? <Button variant="subtle" onClick={() => setTerm('')}>Clear the search</Button>
+                  : undefined
+            }
           />
         </Card>
       )}
 
       {!!shown.length && (
-        <div className="grid gap-3 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
+        <div className="grid gap-3 grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
           {shown.map((item) => (
             <div key={item.id} className="space-y-1.5">
-              <ItemCard
+              <ItemTile
                 item={item}
                 face={face}
                 name={profile?.display_name ?? 'You'}
@@ -376,44 +422,39 @@ export default function Style() {
                 onWear={() => wear(item)}
               />
 
-              {/* Whoever made it can move it after the fact, and take it
-                  back out of the shop. */}
-              {tab === 'mine' && item.mine && (
-                <div className="flex gap-1.5">
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    icon={faUpload}
-                    onClick={() => {
-                      setImage(styleImage(item.image_path))
-                      setPlace({
-                        x: item.x, y: item.y, width: item.width,
-                        rotation: item.rotation, flipped: item.flipped, layer: item.layer,
-                      })
-                      setDetails({
-                        name: item.name, description: '', slot: item.slot,
-                        price: String(item.price),
-                      })
-                      setMaking(true)
-                    }}
-                  >
-                    Copy its placing
-                  </Button>
-                  {item.is_public && (
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      icon={faEyeSlash}
-                      onClick={() => setRetiring(item)}
-                    >
-                      Take down
-                    </Button>
-                  )}
-                </div>
+              {tab === 'mine' && item.mine && item.is_public && (
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  icon={faEyeSlash}
+                  className="w-full"
+                  onClick={() => setRetiring(item)}
+                >
+                  Take it down
+                </Button>
               )}
             </div>
           ))}
         </div>
+      )}
+
+      {/* Somewhere to go on from, rather than a page that simply stops. */}
+      {tab === 'shop' && !!shown.length && (
+        <Link
+          to="/create/marketplace"
+          className="flex items-center gap-4 rounded-2xl border border-ink-line bg-ink-card p-4 transition-colors hover:border-brand/60"
+        >
+          <Kobby mood="style" size="sm" bob={false} />
+          <span className="min-w-0 flex-1">
+            <span className="block font-display text-lg font-extrabold">
+              Make things people use
+            </span>
+            <span className="block text-sm text-muted">
+              Decals, sounds, video and fonts live in the Creator Marketplace.
+            </span>
+          </span>
+          <FontAwesomeIcon icon={faArrowRight} className="text-muted" />
+        </Link>
       )}
 
       {/* ------------------------------------------------------ the studio */}
@@ -497,73 +538,6 @@ export default function Style() {
         confirmText="Take it down"
         icon={faEyeSlash}
       />
-
-      {/* Moving your own thing about once it is up, without leaving the page. */}
-      {tab === 'mine' && (
-        <MineStudio items={mine.data ?? []} face={face} onMove={moveOwn} />
-      )}
     </Page>
-  )
-}
-
-/**
- * The placement of something you made, changed after the fact. Everybody
- * wearing it moves with it, which is the point of keeping the placement on
- * the thing rather than on each person.
- */
-function MineStudio({
-  items, face, onMove,
-}: {
-  items: StyleItem[]
-  face: string | null
-  onMove: (item: StyleItem, place: Placement) => void
-}) {
-  const own = items.filter((one) => one.mine)
-  const [editing, setEditing] = useState<StyleItem | null>(null)
-  const [place, setPlace] = useState<Placement>({ ...startingPlace })
-
-  if (!own.length) return null
-
-  return (
-    <section className="rounded-2xl border border-ink-line bg-ink-card p-4">
-      <h2 className="font-display text-lg font-extrabold">Things you made</h2>
-      <p className="mt-1 text-sm text-muted">
-        Move one and it moves on everybody wearing it.
-      </p>
-
-      <div className="mt-3 flex flex-wrap gap-2">
-        {own.map((item) => (
-          <Button
-            key={item.id}
-            size="sm"
-            variant={editing?.id === item.id ? 'primary' : 'subtle'}
-            onClick={() => {
-              setEditing(item)
-              setPlace({
-                x: item.x, y: item.y, width: item.width,
-                rotation: item.rotation, flipped: item.flipped, layer: item.layer,
-              })
-            }}
-          >
-            {item.name}
-          </Button>
-        ))}
-      </div>
-
-      {editing && (
-        <div className="mt-4 space-y-4">
-          <StyleStudio
-            image={styleImage(editing.image_path)}
-            place={place}
-            onPlace={setPlace}
-            face={face}
-          />
-          <div className="flex gap-2">
-            <Button onClick={() => onMove(editing, place)}>Save where it sits</Button>
-            <Button variant="ghost" onClick={() => setEditing(null)}>Done</Button>
-          </div>
-        </div>
-      )}
-    </section>
   )
 }
