@@ -6,7 +6,7 @@ import { pageRoots } from './site-pages.mjs'
 
 // The addresses that point at something get their own files too, written
 // by write-item-pages.mjs before this runs.
-const itemRoots = ['s', 'c', 'u', 'e']
+const itemRoots = ['s', 'c', 'u', 'e', 'style']
 
 /** Roots that hold item cards as well as pages written from site-pages.mjs. */
 const itemBearing = [...itemRoots, 'create']

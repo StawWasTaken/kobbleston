@@ -75,7 +75,7 @@ export default function SpacePage() {
   }, [id, space?.content_id, navigate])
 
   // A Space that has been renamed carries its new name in the address.
-  useCanonicalPath(id && space ? spaceLink(space) : null)
+  useCanonicalPath(id && space?.content_id === Number(id) ? spaceLink(space) : null)
 
   // An address from before a rename still lands, rather than in a 404.
   useEffect(() => {

@@ -11,6 +11,7 @@ import { useAsync } from '@/hooks/useAsync'
 import { listMemberCommunities } from '@/lib/api'
 import { formatCount } from '@/lib/format'
 import { cn } from '@/lib/cn'
+import { Emblem } from '@/components/community/Emblem'
 import { communityLink } from '@/lib/links'
 
 /** A row in the rail: emblem, name, how many are in it. */
@@ -33,9 +34,7 @@ function RailRow({
         active ? 'bg-brand/20' : 'hover:bg-ink-hover',
       )}
     >
-      <span className="grid h-10 w-10 shrink-0 place-items-center overflow-hidden rounded-lg bg-brand-deep text-xs font-extrabold">
-        {icon ? <img src={icon} alt="" className="h-full w-full object-cover" /> : name.slice(0, 2).toUpperCase()}
-      </span>
+      <Emblem src={icon} name={name} className="h-10 w-10 text-xs" />
       <span className="min-w-0 flex-1">
         <span className="block truncate text-sm font-bold text-link">{name}</span>
         <span className="block text-xs text-muted">

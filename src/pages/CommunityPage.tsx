@@ -51,7 +51,7 @@ export default function CommunityPage() {
 
   // The address says what the Community is called now, not what it was
   // called when somebody sent the link.
-  useCanonicalPath(id && group ? communityLink(group) : null)
+  useCanonicalPath(id && group?.content_id === Number(id) ? communityLink(group) : null)
 
   useEffect(() => {
     if (id || community.loading || group || !slug) return

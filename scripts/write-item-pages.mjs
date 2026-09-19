@@ -42,6 +42,12 @@ const lines = (...parts) => parts.filter(Boolean).join(' ')
 
 const slug = (value) => encodeURIComponent(value)
 
+/** The same shape of address the site writes: lowercase, dashes, nothing else. */
+const slugify = (value) => (String(value ?? '')
+  .toLowerCase()
+  .replace(/[^a-z0-9]+/g, '-')
+  .replace(/(^-+|-+$)/g, '') || 'untitled')
+
 /** A card picture has to be somewhere a robot can fetch, over https. */
 const picture = (value) => (value && /^https:\/\//.test(value) ? value : null)
 
@@ -109,7 +115,7 @@ export async function writeItemPages(into = 'dist') {
 
   const add = (path, page) => pages.push({ path, ...page })
 
-  const [spaces, communities, people, events, assets] = await Promise.all([
+  const [spaces, communities, people, events, style, assets] = await Promise.all([
     read('spaces', 'select=content_id,slug,name,description,cover_url,emblem_url,visit_count,like_count,dislike_count,owner:profiles!spaces_owner_id_fkey(username,display_name)&is_published=eq.true&is_removed=eq.false&limit=5000'),
     read('communities', 'select=content_id,slug,name,description,icon_url,banner_url,member_count,owner:profiles!communities_owner_id_fkey(username,display_name)&is_public=eq.true&is_removed=eq.false&limit=5000'),
     read('profiles', 'select=content_id,username,display_name,bio,avatar_url,created_at&is_suspended=eq.false&limit=5000'),
@@ -117,6 +123,7 @@ export async function writeItemPages(into = 'dist') {
     // Everything a stranger can open gets a card, which is anything the
     // review let through. Taking something out of Create hides it from the
     // lists, not from the people you sent the link to, so it keeps its card.
+    read('style_items', 'select=content_id,name,description,slot,image_path,price,creator:profiles!style_items_creator_id_fkey(username,display_name)&is_public=eq.true&is_removed=eq.false&limit=5000'),
     readOr(
       'assets',
       'select=content_id,kind,name,description,download_count,created_at,is_public,preview_path,creator:profiles!assets_creator_id_fkey(username,display_name,avatar_url)&status=eq.approved&limit=5000',
@@ -196,7 +203,7 @@ export async function writeItemPages(into = 'dist') {
       : null
     const wide = picture(event.cover_url) ?? picture(event.community?.banner_url)
 
-    add(`e/${event.content_id}`, {
+    const page = {
       type: 'article',
       title: event.title,
       description: lines(
@@ -207,6 +214,33 @@ export async function writeItemPages(into = 'dist') {
       image: wide ?? picture(event.community?.icon_url),
       square: !wide && !!picture(event.community?.icon_url),
       imageAlt: event.title,
+    }
+
+    add(`e/${event.content_id}`, page)
+    add(`e/${event.content_id}/${slug(slugify(event.title).slice(0, 40) || 'event')}`, page)
+  }
+
+  /* Things to wear. The picture is the thing itself, which is already public
+     for anything in the shop. */
+  const slotWords = {
+    hat: 'A hat', hair: 'Hair', face: 'A face', accessory: 'An accessory', frame: 'A frame',
+  }
+
+  for (const item of style) {
+    if (!item.content_id) continue
+    const by = item.creator?.username ? `@${item.creator.username}` : 'somebody'
+
+    add(`style/STY-${item.content_id}`, {
+      type: 'website',
+      title: item.name,
+      description: lines(
+        `${slotWords[item.slot] ?? 'Something to wear'} by ${by} on Kobblon Style,`
+        + ` ${item.price > 0 ? `${item.price} Brix` : 'free'}.`,
+        shorten(item.description, 160),
+      ),
+      image: picture(item.image_path),
+      square: !!picture(item.image_path),
+      imageAlt: item.name,
     })
   }
 

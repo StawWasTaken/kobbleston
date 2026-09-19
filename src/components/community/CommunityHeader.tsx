@@ -11,6 +11,7 @@ import { formatCount } from '@/lib/format'
 import { asset } from '@/lib/asset'
 import { PAGE_WIDTH } from '@/components/layout/AppShell'
 import { cn } from '@/lib/cn'
+import { Emblem } from '@/components/community/Emblem'
 import type { Community, CommunityOverview } from '@/types/db'
 import { Verified } from '@/components/brand/Verified'
 
@@ -62,11 +63,12 @@ export function CommunityHeader({
       <div className="relative pt-40 sm:pt-52">
         <div className={cn('mx-auto w-full px-4 sm:px-6', PAGE_WIDTH.narrow)}>
           <div className="flex items-start gap-4">
-            <span className="grid h-20 w-20 shrink-0 place-items-center overflow-hidden rounded-2xl bg-brand-deep font-display text-xl font-extrabold shadow-pop sm:h-24 sm:w-24">
-              {group.icon_url
-                ? <img src={group.icon_url} alt="" className="h-full w-full object-cover" />
-                : group.name.slice(0, 2).toUpperCase()}
-            </span>
+            <Emblem
+              src={group.icon_url}
+              name={group.name}
+              rounded="rounded-2xl"
+              className="h-20 w-20 text-xl shadow-pop sm:h-24 sm:w-24"
+            />
 
             <div className="min-w-0 flex-1 pt-1">
               <h1 className="flex flex-wrap items-center gap-2 font-display text-2xl font-extrabold leading-tight sm:text-3xl">

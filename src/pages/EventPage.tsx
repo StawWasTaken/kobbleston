@@ -36,7 +36,7 @@ export default function EventPage() {
     async () => (Number.isFinite(number) ? getEvent(number) : null),
     [number],
   )
-  useCanonicalPath(event.data ? eventLink(event.data) : null)
+  useCanonicalPath(event.data?.content_id === number ? eventLink(event.data) : null)
 
   const going = useAsync(
     async () => (event.data ? listEventAttendees(event.data.id) : []),
