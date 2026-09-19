@@ -23,8 +23,22 @@ const admin = createClient(
   Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '',
 )
 
+/*
+ * The browser asks this function from kobblon.com, so it needs to be told it
+ * is allowed to. Without this the request never arrives and the site can only
+ * report that something went wrong, which is not the same as saying what.
+ */
+const allowed = {
+  'access-control-allow-origin': '*',
+  'access-control-allow-headers': 'authorization, x-client-info, apikey, content-type',
+  'access-control-allow-methods': 'GET, POST, OPTIONS',
+}
+
 const said = (message: string, status = 400) =>
-  new Response(message, { status, headers: { 'content-type': 'text/plain; charset=utf-8' } })
+  new Response(message, {
+    status,
+    headers: { ...allowed, 'content-type': 'text/plain; charset=utf-8' },
+  })
 
 const sendTo = (path: string) =>
   new Response(null, { status: 302, headers: { location: `${SITE}${path}` } })
@@ -62,6 +76,8 @@ const whoFromState = async (state: string) => {
 }
 
 Deno.serve(async (request) => {
+  if (request.method === 'OPTIONS') return new Response(null, { status: 204, headers: allowed })
+
   if (!CLIENT_ID || !CLIENT_SECRET || !REDIRECT) {
     return said('Discord is not set up on this Kobblon yet.', 503)
   }
@@ -84,7 +100,7 @@ Deno.serve(async (request) => {
     authorize.searchParams.set('prompt', 'consent')
 
     return new Response(JSON.stringify({ url: authorize.toString() }), {
-      headers: { 'content-type': 'application/json' },
+      headers: { ...allowed, 'content-type': 'application/json' },
     })
   }
 

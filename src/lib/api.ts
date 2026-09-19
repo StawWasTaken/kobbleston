@@ -163,7 +163,20 @@ export async function addressNow(
  */
 export async function startDiscordLink(): Promise<string> {
   const { data, error } = await supabase.functions.invoke<{ url: string }>('discord/start')
-  if (error) throw new Error('Discord is not set up on this Kobblon yet.')
+
+  if (error) {
+    /*
+     * Saying "not set up" for every failure hid a missing deployment behind a
+     * missing secret. The function says which it is; anything else is said as
+     * itself.
+     */
+    const status = (error as { context?: { status?: number } }).context?.status
+    if (status === 404) throw new Error('The Discord function is not deployed yet.')
+    if (status === 503) throw new Error('Discord is not set up on this Kobblon yet.')
+    if (status === 401) throw new Error('Sign in again, then try connecting Discord.')
+    throw new Error(error.message || 'Discord could not be reached just now.')
+  }
+
   if (!data?.url) throw new Error('Discord did not say where to go.')
   return data.url
 }

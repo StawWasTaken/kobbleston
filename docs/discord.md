@@ -37,8 +37,34 @@ On the dashboard instead: **Edge Functions** → deploy a function called
 `discord` with the contents of `supabase/functions/discord/index.ts`, then
 **Project Settings** → **Edge Functions** → **Secrets** for the three values.
 
-Until those are set, the function says so plainly and Settings shows the
-error rather than pretending the button works.
+**Turn JWT verification off for this function.** `supabase/config.toml` says
+so for the CLI; on the dashboard it is the **Verify JWT** switch on the
+function. Discord sends somebody back with a code and no Kobblon session, so
+a function that demands one refuses the callback before any of this code
+runs. The function does its own checking: it reads the session itself on the
+way out, and on the way back it only trusts a note it signed.
+
+## When it will not connect
+
+The site says which of these it is.
+
+- **"The Discord function is not deployed yet."** The secrets exist but the
+  function does not. Deploy it.
+- **"Discord is not set up on this Kobblon yet."** The function is there and
+  one of the three secrets is missing or misspelled. Names are exact, and
+  saving a secret does not redeploy: deploy again afterwards.
+- **"Sign in again, then try connecting Discord."** The session that reached
+  the function was not readable.
+- **Anything else** is what the function actually said.
+
+To see it from outside the site:
+
+```
+curl -i https://sdnjdgeqrhzkyfyohcsz.supabase.co/functions/v1/discord/start
+```
+
+401 means the function is up and wanted a session, which is right. 404 means
+it is not deployed. 503 means the secrets are not there.
 
 ## What happens when somebody presses Connect
 

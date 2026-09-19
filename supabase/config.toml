@@ -1,0 +1,21 @@
+# Which functions are allowed to answer without a Kobblon session.
+#
+# Supabase turns every function away without a signed in caller unless it is
+# told otherwise, which is right for most things and wrong for these three.
+# Each one checks for itself who is asking, in its own way.
+
+project_id = "sdnjdgeqrhzkyfyohcsz"
+
+# Logging in happens before there is anybody to be.
+[functions.login]
+verify_jwt = false
+
+# Link previews are read by robots that have no account.
+[functions.og]
+verify_jwt = false
+
+# Discord sends somebody back here with a code and no session of ours. The
+# function reads the Kobblon session itself on the way out, and on the way
+# back it trusts the note it signed rather than the caller.
+[functions.discord]
+verify_jwt = false
