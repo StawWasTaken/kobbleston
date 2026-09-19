@@ -81,6 +81,7 @@ export default {
         'pulse-ring': 'pulse-ring 1.8s ease-out infinite',
         bob: 'bob 4s ease-in-out infinite',
         drift: 'drift 48s linear infinite',
+        ticker: 'ticker 60s linear infinite',
       },
     },
   },

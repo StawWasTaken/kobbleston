@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import {
   faMagnifyingGlass, faPlus, faCheck, faShirt, faUpload, faXmark, faEyeSlash, faStore,
 } from '@fortawesome/free-solid-svg-icons'
@@ -117,16 +118,26 @@ export default function Style() {
   const { profile, refreshProfile } = useAuth()
   const toast = useToast()
 
-  const [term, setTerm] = useState('')
-  const [search, setSearch] = useState('')
+  /*
+   * The words can arrive in the address, because the bar at the top of the
+   * site hands its search straight to this page, and because a search worth
+   * making is a search worth sending somebody.
+   */
+  const [params, setParams] = useSearchParams()
+  const [term, setTerm] = useState(params.get('q') ?? '')
+  const [search, setSearch] = useState(params.get('q') ?? '')
   const [slot, setSlot] = useState<StyleItem['slot'] | null>(null)
   const [tab, setTab] = useState<'shop' | 'mine'>('shop')
   const [busy, setBusy] = useState<string | null>(null)
 
   useEffect(() => {
-    const timer = window.setTimeout(() => setSearch(term.trim()), 250)
+    const timer = window.setTimeout(() => {
+      const words = term.trim()
+      setSearch(words)
+      setParams(words ? { q: words } : {}, { replace: true })
+    }, 250)
     return () => window.clearTimeout(timer)
-  }, [term])
+  }, [term, setParams])
 
   const shop = useAsync(() => styleShop({ search, slot }), [search, slot])
   const mine = useAsync(async () => (profile ? myStyle() : []), [profile?.id])

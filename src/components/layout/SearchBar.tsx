@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import {
-  faMagnifyingGlass, faXmark, faLayerGroup, faUser, faShapes, faUsers,
+  faMagnifyingGlass, faXmark, faLayerGroup, faUser, faShapes, faUsers, faShirt,
 } from '@fortawesome/free-solid-svg-icons'
 import type { IconDefinition } from '@fortawesome/fontawesome-svg-core'
 import { cn } from '@/lib/cn'
@@ -12,20 +12,23 @@ export const searchScopes: { tab: string; label: string; icon: IconDefinition }[
   { tab: 'spaces', label: 'Spaces', icon: faLayerGroup },
   { tab: 'people', label: 'People', icon: faUser },
   { tab: 'create', label: 'Creator Marketplace', icon: faShapes },
+  { tab: 'style', label: 'Style', icon: faShirt },
   { tab: 'communities', label: 'Communities', icon: faUsers },
 ]
 
 /**
  * Each kind of thing is searched where it lives: Spaces in Discover, people
- * on People, Communities on Communities, content in the marketplace. The bar
- * hands you over to the right one with your words already in its box, rather
- * than showing four thin copies of those pages on one results screen.
+ * on People, Communities on Communities, content in the marketplace, things
+ * to wear in the Style shop. The bar hands you over to the right one with
+ * your words already in its box, rather than showing five thin copies of
+ * those pages on one results screen.
  */
 const destinations: Record<string, (query: string) => string> = {
   spaces: (q) => `/discover?q=${encodeURIComponent(q)}`,
   people: (q) => `/people?q=${encodeURIComponent(q)}`,
   communities: (q) => `/communities?q=${encodeURIComponent(q)}`,
   create: (q) => `/create/marketplace?q=${encodeURIComponent(q)}`,
+  style: (q) => `/style?q=${encodeURIComponent(q)}`,
 }
 
 

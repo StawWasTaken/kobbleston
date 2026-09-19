@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import {
-  faArrowRight, faShieldHalved, faEye, faUserAstronaut, faBolt, faLayerGroup,
+  faArrowRight, faShieldHalved, faStore, faEye, faUserAstronaut, faBolt, faLayerGroup,
 } from '@fortawesome/free-solid-svg-icons'
 import type { IconDefinition } from '@fortawesome/fontawesome-svg-core'
 import { Button } from '@/components/ui/Button'
@@ -286,29 +286,38 @@ export default function Landing() {
 
       {/* ------------------------------------------------------------ Style */}
       <section className="border-y border-white/5 bg-white/[0.02] py-24 sm:py-32">
-        <div className="mx-auto max-w-6xl px-4 sm:px-8">
-          <Opening
-            number="04"
-            kicker="Style"
-            title="Express Your"
-            accent="Own Style"
-            body="Hats, hair and whatever else people make, worn on your own picture. Put one on and you wear it everywhere you turn up on Kobbleston."
-            to="/style"
-            action="Open the shop"
-          />
-        </div>
+        <div className="mx-auto grid max-w-6xl items-center gap-12 px-4 sm:px-8 lg:grid-cols-[minmax(0,1fr)_22rem] lg:gap-16">
+          {/* The catalogue, coming down the page on its own. */}
+          <div className="min-w-0">
+            {!style.loading && !style.data?.length ? (
+              <div className="flex items-center gap-5 rounded-[1.75rem] border border-white/10 bg-ink-card p-6">
+                <Kobby mood="style" size="sm" bob={false} />
+                <p className="text-sm text-white/55">
+                  The shop is filling up. Verified accounts are making the first things for it.
+                </p>
+              </div>
+            ) : (
+              <StyleShelf items={style.data ?? []} loading={style.loading} />
+            )}
+          </div>
 
-        <div className="mt-14">
-          {!style.loading && !style.data?.length ? (
-            <div className="mx-auto flex max-w-6xl items-center gap-5 rounded-[1.75rem] border border-white/10 bg-ink-card p-6">
-              <Kobby mood="style" size="sm" bob={false} />
-              <p className="text-sm text-white/55">
-                The shop is filling up. Verified accounts are making the first things for it.
-              </p>
-            </div>
-          ) : (
-            <StyleShelf items={style.data ?? []} loading={style.loading} />
-          )}
+          <div>
+            <Kobby mood="style" size="lg" bob={false} />
+            <p className="mt-6 flex items-center gap-3 font-display text-xs font-extrabold uppercase tracking-[0.3em] text-white/40">
+              <span className="text-brand-bright">04</span>
+              <span className="h-px w-8 bg-white/20" />
+              Style
+            </p>
+            <h2 className="mt-4 font-display text-4xl font-extrabold leading-[0.92] sm:text-5xl">
+              Express your
+              <span className="block text-brand-bright">own style</span>
+            </h2>
+            <p className="mt-5 text-base leading-relaxed text-white/60">
+              Hats, hair and whatever else people make, worn on your own picture. Put one on and
+              you wear it everywhere you turn up on Kobbleston.
+            </p>
+            <Button className="mt-7" to="/style" icon={faStore}>Open the shop</Button>
+          </div>
         </div>
       </section>
 
