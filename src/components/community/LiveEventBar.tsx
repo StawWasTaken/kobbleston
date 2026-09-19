@@ -7,7 +7,10 @@ import { announceStartedEvents, currentEvent } from '@/lib/api'
 import { formatCount } from '@/lib/format'
 
 /**
- * A green bar under the top of a community while something is on there.
+ * A green bar under the top bar of a community while something is on there.
+ *
+ * It stays under the top bar as the page moves, because something happening
+ * now is worth keeping in sight, and what is on is said in the middle of it.
  *
  * It belongs to the community page and nowhere else: the rest of the site
  * does not need to know that a club night has started. Closing it puts it
@@ -29,13 +32,15 @@ export function LiveEventBar({ communityId }: { communityId: string }) {
   if (!event || closed) return null
 
   return (
-    <div className="border-b border-space/40 bg-space/15">
-      <div className="mx-auto flex max-w-5xl items-center gap-3 px-4 py-2.5 sm:px-8">
+    <div className="sticky top-14 z-30 border-b border-space/40 bg-space/15 backdrop-blur">
+      {/* What is on is said in the middle of the bar; the way in and the way
+          out sit at the ends without pushing it off centre. */}
+      <div className="relative flex items-center justify-center gap-3 px-16 py-2.5">
         <span className="grid h-7 w-7 shrink-0 place-items-center rounded-lg bg-space text-xs text-[#fff]">
           <FontAwesomeIcon icon={faCalendarDay} />
         </span>
 
-        <p className="min-w-0 flex-1 text-sm">
+        <p className="min-w-0 truncate text-center text-sm">
           <span className="font-bold text-space-bright">Happening now:</span>{' '}
           <span className="font-bold">{event.title}</span>
           {event.subtitle && <span className="text-muted"> · {event.subtitle}</span>}
@@ -46,21 +51,23 @@ export function LiveEventBar({ communityId }: { communityId: string }) {
           )}
         </p>
 
-        <Link
-          to={event.content_id ? `/e/${event.content_id}` : '#'}
-          className="inline-flex shrink-0 items-center gap-1.5 rounded-lg bg-space px-3 py-1.5 text-xs font-extrabold text-[#fff] transition-colors hover:brightness-110"
-        >
-          Go
-          <FontAwesomeIcon icon={faArrowRight} className="text-[10px]" />
-        </Link>
+        <span className="absolute right-3 flex items-center gap-2">
+          <Link
+            to={event.content_id ? `/e/${event.content_id}` : '#'}
+            className="inline-flex shrink-0 items-center gap-1.5 rounded-lg bg-space px-3 py-1.5 text-xs font-extrabold text-[#fff] transition-colors hover:brightness-110"
+          >
+            Go
+            <FontAwesomeIcon icon={faArrowRight} className="text-[10px]" />
+          </Link>
 
-        <button
-          onClick={() => setClosed(true)}
-          aria-label="Put this away for now"
-          className="grid h-7 w-7 shrink-0 place-items-center rounded-lg text-white/50 transition-colors hover:bg-ink-hover hover:text-white"
-        >
-          <FontAwesomeIcon icon={faXmark} className="text-xs" />
-        </button>
+          <button
+            onClick={() => setClosed(true)}
+            aria-label="Put this away for now"
+            className="grid h-7 w-7 shrink-0 place-items-center rounded-lg text-white/50 transition-colors hover:bg-ink-hover hover:text-white"
+          >
+            <FontAwesomeIcon icon={faXmark} className="text-xs" />
+          </button>
+        </span>
       </div>
     </div>
   )
