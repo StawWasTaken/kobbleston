@@ -18,9 +18,10 @@ import { Announcements } from '@/components/community/Announcements'
 import { AssetTile } from '@/components/create/AssetTile'
 import { useAuth } from '@/hooks/useAuth'
 import { useAsync } from '@/hooks/useAsync'
+import { useCanonicalPath } from '@/hooks/useCanonicalPath'
 import { useTitle, useSocialCard } from '@/hooks/useTitle'
 import {
-  communitySlugById, getCommunity, getCommunityOverview, joinCommunity, leaveCommunity,
+  addressNow, communitySlugById, getCommunity, getCommunityOverview, joinCommunity, leaveCommunity,
   listCommunityAssets, listCommunityEvents, listCommunitySpaces, listRelations,
   setEventAttendance,
 } from '@/lib/api'
@@ -47,6 +48,19 @@ export default function CommunityPage() {
 
   const community = useAsync(async () => (slug ? getCommunity(slug) : null), [slug])
   const group = community.data
+
+  // The address says what the Community is called now, not what it was
+  // called when somebody sent the link.
+  useCanonicalPath(id && group ? communityLink(group) : null)
+
+  useEffect(() => {
+    if (id || community.loading || group || !slug) return
+    let live = true
+    void addressNow('community', slug).then((now) => {
+      if (live && now && now !== slug) navigate(`/c/${now}`, { replace: true })
+    })
+    return () => { live = false }
+  }, [id, community.loading, group, slug, navigate])
 
   const rights = useAsync(
     async () => (group ? getCommunityOverview(group.id) : null),

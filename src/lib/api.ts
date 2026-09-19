@@ -144,6 +144,17 @@ export async function setLiked(spaceId: string, userId: string, liked: boolean) 
 // ---------------------------------------------------------------- profiles
 
 /** The name behind a number, for a link like /u/1042/stawrer. */
+/**
+ * Where an address that has moved goes now: a Space or Community slug that
+ * changed with its name, or a username somebody used to have.
+ */
+export async function addressNow(
+  kind: 'space' | 'community' | 'person',
+  old: string,
+): Promise<string | null> {
+  return (unwrap(await supabase.rpc('address_now', { kind, old_slug: old })) as string | null) ?? null
+}
+
 export async function usernameById(contentId: number): Promise<string | null> {
   return (unwrap(await supabase.rpc('username_by_id', { target: contentId })) as string | null) ?? null
 }

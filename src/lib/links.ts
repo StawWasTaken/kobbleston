@@ -6,6 +6,8 @@
  * Where the number has not been loaded, the name-only form is used instead.
  * Those addresses still work and send you on to the numbered one.
  */
+import { slugify } from './format'
+
 const slugPart = (value: string) => encodeURIComponent(value)
 
 export function profileLink(person: { username: string; content_id?: number | null }) {
@@ -27,4 +29,14 @@ export function communityLink(community: { slug: string; content_id?: number | n
   return community.content_id
     ? `/c/${community.content_id}/${slugPart(community.slug)}`
     : `/c/${slugPart(community.slug)}`
+}
+
+/**
+ * An event's address. Its title is written into the link as a slug rather
+ * than as the title itself, so a renamed event gets a tidy address and the
+ * number keeps the old link working.
+ */
+export function eventLink(event: { content_id: number | null; title: string }) {
+  if (!event.content_id) return '#'
+  return `/e/${event.content_id}/${slugPart(slugify(event.title).slice(0, 40) || 'event')}`
 }

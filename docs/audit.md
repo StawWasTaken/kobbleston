@@ -133,7 +133,24 @@ page that says plainly where somebody stands without exposing internal
 moderation notes, and appeals that create real rows a moderator sees. No
 decorative pages: if it is on screen, it is connected to something.
 
-## 10. Create is built around uploads and Spaces
+## 10. Addresses used to keep the name a thing had when it was made (done)
+
+**Was:** a link carries a number and a name, and the name was frozen at
+creation. A Community renamed in March still had February's name in every
+link, and the slug in `/c/:slug` and `/u/:username/:slug` never moved.
+
+**Now:** the stored slug follows the name, in a trigger rather than in a form,
+so it holds however the row is written. Whatever the slug used to be is kept
+in `slug_history`, and `address_now` answers where an old one goes, which
+covers a username somebody used to have as well. Pages rewrite the address to
+the current one once they know it, replacing the history entry rather than
+adding to it, so the back button still behaves.
+
+**Left:** an item in Create or the Catalog has a number and no name in its
+address, which is consistent but says less. Worth revisiting when the Catalog
+grows.
+
+## 11. Create is built around uploads and Spaces
 
 The hub's rail is Spaces, Uploads, Marketplace, Inventory, Analytics, Ads. The
 direction wants Spaces, Avatar, Catalog and, later, experiences.

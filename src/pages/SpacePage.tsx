@@ -22,9 +22,11 @@ import { RefImage } from '@/components/create/RefImage'
 import { profileLink, spaceLink } from '@/lib/links'
 import { useAuth } from '@/hooks/useAuth'
 import { useAsync } from '@/hooks/useAsync'
+import { useCanonicalPath } from '@/hooks/useCanonicalPath'
 import { useExactTitle, useSocialCard } from '@/hooks/useTitle'
 import {
-  enterSpace, getSpace, getSpaceStats, leaveSpace, listSpaceBadges, spaceById, toggleSpaceFlag,
+  addressNow, enterSpace, getSpace, getSpaceStats, leaveSpace, listSpaceBadges, spaceById,
+  toggleSpaceFlag,
 } from '@/lib/api'
 import { formatCount, timeAgo } from '@/lib/format'
 import { cn } from '@/lib/cn'
@@ -71,6 +73,19 @@ export default function SpacePage() {
   useEffect(() => {
     if (!id && space?.content_id) navigate(spaceLink(space), { replace: true })
   }, [id, space?.content_id, navigate])
+
+  // A Space that has been renamed carries its new name in the address.
+  useCanonicalPath(id && space ? spaceLink(space) : null)
+
+  // An address from before a rename still lands, rather than in a 404.
+  useEffect(() => {
+    if (id || loading || space || !username || !slug) return
+    let live = true
+    void addressNow('space', slug).then((now) => {
+      if (live && now && now !== slug) navigate(`/u/${username}/${now}`, { replace: true })
+    })
+    return () => { live = false }
+  }, [id, loading, space, username, slug, navigate])
   const stats = useAsync(
     async () => (space ? getSpaceStats(space.id) : null),
     [space?.id, profile?.id],

@@ -1,0 +1,1 @@
+import{Vn as e,Wn as t}from"./format-vkAVyAAw.js";import{t as n}from"./useSignedUrl-BaE_4c5T.js";var r=t();function i({value:t,alt:i,className:a,fallback:o,style:s}){let c=n(t)??o??null;return c?(0,r.jsx)(`img`,{src:c,alt:i,loading:`lazy`,draggable:!1,onContextMenu:e=>e.preventDefault(),style:s,className:e(`select-none`,a)}):null}export{i as t};

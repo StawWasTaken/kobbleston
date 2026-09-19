@@ -13,6 +13,8 @@ import { EmptyState, ErrorState, Skeleton } from '@/components/ui/States'
 import { Tooltip } from '@/components/ui/Tooltip'
 import { useToast } from '@/components/ui/Toast'
 import { useAsync } from '@/hooks/useAsync'
+import { useCanonicalPath } from '@/hooks/useCanonicalPath'
+import { eventLink } from '@/lib/links'
 import { useExactTitle, useSocialCard } from '@/hooks/useTitle'
 import { getEvent, listEventAttendees, setEventAttendance } from '@/lib/api'
 import { avatarOf } from '@/lib/avatars'
@@ -34,6 +36,8 @@ export default function EventPage() {
     async () => (Number.isFinite(number) ? getEvent(number) : null),
     [number],
   )
+  useCanonicalPath(event.data ? eventLink(event.data) : null)
+
   const going = useAsync(
     async () => (event.data ? listEventAttendees(event.data.id) : []),
     [event.data?.id],

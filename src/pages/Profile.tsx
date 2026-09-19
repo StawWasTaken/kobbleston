@@ -27,9 +27,10 @@ import { ColourPicker } from '@/components/ui/ColourPicker'
 import { GuestGate } from '@/components/ui/GuestGate'
 import { useAuth } from '@/hooks/useAuth'
 import { useAsync } from '@/hooks/useAsync'
+import { useCanonicalPath } from '@/hooks/useCanonicalPath'
 import { useTitle, useSocialCard } from '@/hooks/useTitle'
 import {
-  getProfileByUsername, getProfileOverview, isFollowing, listEarnedBadges, peopleList,
+  addressNow, getProfileByUsername, getProfileOverview, isFollowing, listEarnedBadges, peopleList,
   listMemberCommunities, listSpacesByOwner, sendFriendRequest, setFollowing, standingWith,
   startConversation,
   usernameHistory, usernameById, listAssetsByCreator, updateProfile, uploadAvatar,
@@ -247,6 +248,21 @@ export default function Profile() {
   useEffect(() => {
     if (!id && user?.content_id) navigate(profileLink(user), { replace: true })
   }, [id, user?.content_id, navigate])
+
+  // Somebody who changed their name carries the new one in the address.
+  useCanonicalPath(id && user ? profileLink(user) : null)
+
+  // A name somebody used to have still lands on them.
+  useEffect(() => {
+    if (id || person.loading || user || !username) return
+    let live = true
+    void addressNow('person', username).then((now) => {
+      if (live && now && now.toLowerCase() !== username.toLowerCase()) {
+        navigate(`/u/${encodeURIComponent(now)}`, { replace: true })
+      }
+    })
+    return () => { live = false }
+  }, [id, person.loading, user, username, navigate])
 
   const toggleFollow = async () => {
     if (!me || !user) return

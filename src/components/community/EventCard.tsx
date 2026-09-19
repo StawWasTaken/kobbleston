@@ -4,10 +4,8 @@ import { faCalendarDay, faUserGroup, faBan } from '@fortawesome/free-solid-svg-i
 import { Button } from '@/components/ui/Button'
 import { formatCount } from '@/lib/format'
 import { cn } from '@/lib/cn'
+import { eventLink } from '@/lib/links'
 import type { CommunityEvent } from '@/types/db'
-
-export const eventLink = (event: { content_id: number | null; title: string }) =>
-  event.content_id ? `/e/${event.content_id}/${encodeURIComponent(event.title.slice(0, 40))}` : '#'
 
 /** When something starts, written the way a person would say it. */
 export function eventWhen(iso: string) {
