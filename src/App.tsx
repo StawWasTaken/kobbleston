@@ -38,6 +38,7 @@ const CreateAds = lazyPage(() => import('@/pages/CreateAds'))
 const ConfigureCommunity = lazyPage(() => import('@/pages/ConfigureCommunity'))
 const Terms = lazyPage(() => import('@/pages/Policies').then((m) => ({ default: m.Terms })))
 const Guidelines = lazyPage(() => import('@/pages/Policies').then((m) => ({ default: m.Guidelines })))
+const Privacy = lazyPage(() => import('@/pages/Policies').then((m) => ({ default: m.Privacy })))
 const Friends = lazyPage(() => import('@/pages/Friends'))
 const Library = lazyPage(() => import('@/pages/Library'))
 const Style = lazyPage(() => import('@/pages/Style'))
@@ -89,6 +90,7 @@ export default function App() {
             <Routes>
               <Route path="/terms" element={<Terms />} />
               <Route path="/guidelines" element={<Guidelines />} />
+              <Route path="/privacy" element={<Privacy />} />
 
               <Route path="/login" element={<Auth mode="login" />} />
               <Route path="/signup" element={<Auth mode="signup" />} />

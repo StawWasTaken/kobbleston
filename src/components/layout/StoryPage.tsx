@@ -77,6 +77,7 @@ export function StoryPage({
           <nav className="flex items-center gap-5 text-sm font-semibold text-white/50">
             <Link to="/terms" className="hover:text-white">Terms</Link>
             <Link to="/guidelines" className="hover:text-white">Guidelines</Link>
+            <Link to="/privacy" className="hover:text-white">Privacy</Link>
           </nav>
         </header>
 

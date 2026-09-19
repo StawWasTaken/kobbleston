@@ -336,6 +336,7 @@ export default function Landing() {
             <div className="mt-6 flex flex-wrap gap-4 text-sm font-bold">
               <Link to="/guidelines" className="text-link hover:underline">Community Guidelines</Link>
               <Link to="/terms" className="text-link hover:underline">Terms of Service</Link>
+              <Link to="/privacy" className="text-link hover:underline">Privacy</Link>
             </div>
           </div>
 

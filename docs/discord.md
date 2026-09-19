@@ -12,11 +12,18 @@ and nothing else. The service role lives in the edge function.
 ## Setting it up
 
 1. On the [Discord developer portal](https://discord.com/developers/applications),
-   **New Application**, name it Kobblon.
+   **New Application**, name it Kobblon. The Terms of Service URL is
+   `https://kobblon.com/terms` and the Privacy Policy URL is
+   `https://kobblon.com/privacy`. No bot user is needed, and the application
+   does not have to be installed anywhere.
 2. **OAuth2** → **Redirects** → add
    `https://sdnjdgeqrhzkyfyohcsz.supabase.co/functions/v1/discord/callback`.
-3. Copy the **Client ID** and **Client Secret**.
-4. Put them where the function can read them, and nowhere else:
+3. The **Client ID** is on **General Information**, as Application ID. The
+   **Client Secret** is on the **OAuth2** page: press **Reset Secret**, then
+   copy it. Discord shows it once. It never goes in the repository, a
+   screenshot or the browser.
+4. Put them where the function can read them, and nowhere else. If a secret
+   is ever seen by anybody, reset it on that page and set it again here:
 
 ```
 supabase secrets set \

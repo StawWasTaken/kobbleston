@@ -88,6 +88,7 @@ export function PublicLayout() {
           <Link to="/create" className="hover:text-white">Create</Link>
           <Link to="/terms" className="hover:text-white">Terms</Link>
           <Link to="/guidelines" className="hover:text-white">Guidelines</Link>
+            <Link to="/privacy" className="hover:text-white">Privacy</Link>
         </div>
       </footer>
     </div>

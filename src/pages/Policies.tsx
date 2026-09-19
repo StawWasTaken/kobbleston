@@ -111,6 +111,84 @@ const guidelines: StorySection[] = [
   },
 ]
 
+
+const privacy: StorySection[] = [
+  {
+    id: 'what',
+    heading: 'What Kobblon keeps',
+    body: [
+      'An account: your username, your display name, your password in a hashed form we cannot read back, your email if you gave one, and your birthday, which decides whether you are old enough to be here.',
+      'What you make and do: Spaces, uploads, Catalog items, communities, posts, messages, friendships, blocks, reports, and what you own and are wearing.',
+      `Your ${currency.plural} and everything that has moved on your account, which is what the transactions page shows you.`,
+      'Being here: whether you are online, what you are doing in broad terms, and when you were last seen. This is what the dot beside your picture is drawn from.',
+      'Technical records kept by the services Kobblon runs on, including addresses your browser connects from, which exist so we can keep the place working and deal with abuse.',
+    ],
+  },
+  {
+    id: 'discord',
+    heading: 'If you connect Discord',
+    body: [
+      'Connecting Discord stores your Discord id, the name Discord shows for you, and when you connected it. Nothing else: we ask Discord only who you are, never about your servers, your friends or your messages.',
+      'Your Discord name then appears on your profile, and your Discord id leads to your profile, which is the point of connecting it.',
+      'Unlinking removes all three straight away, and you can do it yourself in Settings.',
+    ],
+  },
+  {
+    id: 'why',
+    heading: 'What it is used for',
+    body: [
+      'Running the place: signing you in, showing your things to the people you meant to show them to, keeping friends and chat working, and paying creators what they are owed.',
+      'Keeping it safe: moderation, reports, working out who is behind abuse, and stopping somebody who has been removed from simply coming back.',
+      'Nothing else. Kobblon does not sell what it knows about you, and does not hand it to advertisers. Ads on Kobblon are bought against places on the site, not against people.',
+    ],
+  },
+  {
+    id: 'who-sees',
+    heading: 'Who can see what',
+    body: [
+      'Public: your profile, your username, your picture and avatar, your published Spaces, what you have made, your communities, your badges, and whether you are around.',
+      'Private: your email, your birthday, your messages, your reports, and anything you have not published. Moderators can see reports and what was reported.',
+      'Other people on Kobblon see what you have published and nothing else. A Space or a game you go into never receives your account: it gets whatever narrow thing it has been given permission to ask for, and no more.',
+    ],
+  },
+  {
+    id: 'yours',
+    heading: 'What you can do about it',
+    body: [
+      'Change your name, your picture, your bio and your settings whenever you like, from your profile and from Settings.',
+      'Delete what you have made. Taking something down removes it from the site.',
+      'Ask for your account to be deleted, and we will delete it and what is on it. Some records have to outlive that: moderation records about serious harm, and anything a law says must be kept.',
+      'Write to us and ask what is held about you.',
+    ],
+  },
+  {
+    id: 'where',
+    heading: 'Where it lives',
+    body: [
+      'Kobblon runs on Supabase, which stores the database and the files people upload, and on GitHub Pages, which serves the website itself.',
+      'Passwords are never stored in a form anybody at Kobblon can read. Nobody at Kobblon will ever ask you for yours.',
+      'Uploads are private by default: a file is fetched with a short lived link rather than sitting at an address anybody can guess.',
+    ],
+  },
+  {
+    id: 'age',
+    heading: 'Age',
+    body: [
+      'Kobblon is for people aged 15 and over, and we ask for a birthday at signup for that reason.',
+      'If we find an account belongs to somebody under that age, we remove it.',
+    ],
+  },
+  {
+    id: 'standing',
+    heading: 'Where this page stands',
+    body: [
+      'This is written plainly, and it says what actually happens rather than covering every possibility in language nobody reads.',
+      'It has not yet been through a lawyer. It will be before Kobblon is open widely, and this page will say so when it has.',
+      'If something here is wrong or out of date, tell us and it gets fixed.',
+    ],
+  },
+]
+
 export function Terms() {
   useTitle('Terms of Service')
   return (
@@ -133,6 +211,19 @@ export function Guidelines() {
       intro="What is fine here, and what will get your things taken down. Short, because the rules that matter are short."
       sections={guidelines}
       footnote="Breaking these does not always mean losing the account. Doing it on purpose, repeatedly, usually does."
+    />
+  )
+}
+
+export function Privacy() {
+  useTitle('Privacy')
+  return (
+    <StoryPage
+      eyebrow="Your data"
+      title="Privacy"
+      intro="What Kobblon keeps about you, why, who can see it, and what you can do about it."
+      sections={privacy}
+      footnote="Questions about anything here go to the same place as everything else: report it, or write to us."
     />
   )
 }

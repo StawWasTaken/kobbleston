@@ -60,6 +60,11 @@ export const pages = [
     description: 'The short version of the deal between you and Kobblon, written so it can actually be read.',
   },
   {
+    path: 'privacy',
+    title: 'Privacy - Kobblon',
+    description: 'What Kobblon keeps about you, why, who can see it, and what you can do about it.',
+  },
+  {
     path: 'guidelines',
     title: 'Community Guidelines - Kobblon',
     description: 'What is fine on Kobblon, and what will get your things taken down.',
