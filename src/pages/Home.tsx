@@ -9,7 +9,6 @@ import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
 import { EmptyState, Skeleton } from '@/components/ui/States'
 import { FriendsRail } from '@/components/social/FriendsRail'
-import { StyleStrip } from '@/components/style/StyleStrip'
 import { EmblemTile } from '@/components/spaces/EmblemTile'
 import { coverFor, fallbackFor } from '@/components/spaces/SpaceCard'
 import { AdBanner } from '@/components/ads/AdBanner'
@@ -218,10 +217,6 @@ export default function Home() {
           {mine.data.map((space) => <EmblemTile key={space.id} space={space} />)}
         </Row>
       )}
-
-      {/* What people made to wear, on a face, the way Style is meant to be
-          looked at. */}
-      <StyleStrip />
 
       <AdBanner className="mb-9" quiet />
 
